@@ -14,3 +14,6 @@ wheels/
 
 # DJANGO
 *.sqlite3
+
+# Node
+node_modules/

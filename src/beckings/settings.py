@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from decouple import config
@@ -35,14 +36,20 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "django_cotton",
+    "django_htmx",
+    "tailwind",
 ]
 
 if DEBUG:
     THIRD_PARTY_APPS.append("debug_toolbar")
 
-INTERNAL_APPS = []
+INTERNAL_APPS = [
+    "theme"
+]
 
 INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_APPS))
+
+TAILWIND_APP_NAME = "theme"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -52,6 +59,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    # HTMX
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 if DEBUG:
@@ -140,3 +150,8 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SITE_ID = 1
+
+# Windows
+if sys.platform.startswith("win"):
+
+    NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"

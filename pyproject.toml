@@ -6,9 +6,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "cloudinary>=1.43.0",
+    "cookiecutter>=2.6.0",
+    "dj-database-url>=2.3.0",
     "django>=5.2",
     "django-cotton>=2.0.3",
+    "django-htmx>=1.23.0",
+    "django-tailwind>=4.0.1",
     "djangorestframework>=3.16.0",
+    "psycopg2[binary]>=2.9.10",
     "python-decouple>=3.8",
     "rav>=0.0.9",
     "whitenoise>=6.9.0",
