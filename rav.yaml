@@ -2,3 +2,4 @@ name: beckings
 scripts:
   dev: cd src/ && python manage.py runserver
   migrate: cd src/ && python manage.py migrate
+  migrations: cd src/ && python manage.py makemigrations
