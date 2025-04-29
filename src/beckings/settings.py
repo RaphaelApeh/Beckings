@@ -44,7 +44,8 @@ if DEBUG:
     THIRD_PARTY_APPS.append("debug_toolbar")
 
 INTERNAL_APPS = [
-    "theme"
+    "theme",
+    "products",
 ]
 
 INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_APPS))
