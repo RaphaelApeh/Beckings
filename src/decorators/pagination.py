@@ -8,8 +8,20 @@ from django.db.models import QuerySet
 from rest_framework.response import Response
 from rest_framework.pagination import BasePagination
 
+from helpers import parse_request
 
-def paginate(pagination_class: BasePagination, **kwargs: dict[str, Any]) -> Any:
+
+def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], Any]:
+    
+    """
+    Decorator for paginating a function base view. \n
+    Example:
+    >>> @api_view(["GET"])
+    >>> @paginate(PageNumberPagination, page_size=3)
+    >>> def list_users_view(request):
+    >>>     users = User.objects.all()
+    >>>     return users, UserSerializer(users).data
+    """
 
     assert issubclass(pagination_class, BasePagination)
 
@@ -25,13 +37,13 @@ def paginate(pagination_class: BasePagination, **kwargs: dict[str, Any]) -> Any:
 
             self.__doc__ = pagination_class.__doc__
 
-    def inner(func: Callable[[], tuple[QuerySet, dict]]):
+    def inner(func: Callable[[], tuple[QuerySet, dict]]) -> Callable[[], Response]:
 
         @wraps(func)
-        def _warpper(request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
+        def _warpper(*args: Any, **kwargs: Any) -> Response:
             
-            queryset, data = func(request, *args, **kwargs)
-
+            queryset, data = func(*args, **kwargs)
+            request : HttpRequest = parse_request(args)
             assert isinstance(queryset, QuerySet)
 
             paginator = Paginator()
@@ -43,3 +55,4 @@ def paginate(pagination_class: BasePagination, **kwargs: dict[str, Any]) -> Any:
         return _warpper
 
     return inner
+
