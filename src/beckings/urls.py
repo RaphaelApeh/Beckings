@@ -10,6 +10,8 @@ def health_check_view(request: HttpRequest) -> HttpResponse:
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health_check_view, name="health-check"),
+
+    path("api/", include("api.urls"))
 ]
 
 if settings.DEBUG:

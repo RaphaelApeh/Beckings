@@ -8,8 +8,6 @@ from django.db.models import QuerySet
 from rest_framework.response import Response
 from rest_framework.pagination import BasePagination
 
-from helpers import parse_request
-
 
 def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], Any]:
     
@@ -40,10 +38,10 @@ def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], A
     def inner(func: Callable[[], tuple[QuerySet, dict]]) -> Callable[[], Response]:
 
         @wraps(func)
-        def _warpper(*args: Any, **kwargs: Any) -> Response:
+        def _warpper(request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
             
-            queryset, data = func(*args, **kwargs)
-            request : HttpRequest = parse_request(args)
+            queryset, data = func(request, *args, **kwargs)
+
             assert isinstance(queryset, QuerySet)
 
             paginator = Paginator()
