@@ -2,8 +2,6 @@
 
 source /opt/venv/bin/activate
 
-cd app
-
 python manage.py makemigrations
 
 python manage.py migrate
