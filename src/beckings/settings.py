@@ -141,6 +141,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+(BASE_DIR / "static").mkdir(exists_ok=True)
+
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
