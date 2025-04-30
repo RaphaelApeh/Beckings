@@ -28,12 +28,10 @@ def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], A
         def __init__(self) -> None:
 
             for key, value in kwargs.items():
-                assert hasattr(self, key), f"{pagination_class.__name__} has no attribute {key}"
-                if callable(value):
-                    raise TypeError
+                
                 setattr(self, key, value)
 
-            self.__doc__ = pagination_class.__doc__
+            # self.__doc__ = pagination_class.__doc__
 
     def inner(func: Callable[[], tuple[QuerySet, dict]]) -> Callable[[], Response]:
 
@@ -45,7 +43,7 @@ def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], A
             assert isinstance(queryset, QuerySet)
 
             paginator = Paginator()
-            paginator.paginate_queryset(queryset, request, func)
+            paginator.paginate_queryset(queryset, request)
 
             return paginator.get_paginated_response(data)
 

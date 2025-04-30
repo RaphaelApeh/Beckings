@@ -2,4 +2,6 @@ name: beckings
 scripts:
   dev: cd src/ && python manage.py runserver
   migrate: cd src/ && python manage.py migrate
+  start: cd src/ && python manage.py tailwind start
+  build: cd src/ && python manage.py tailwind build
   migrations: cd src/ && python manage.py makemigrations

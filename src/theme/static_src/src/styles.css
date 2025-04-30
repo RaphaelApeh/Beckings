@@ -8,3 +8,4 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+@source "../../templates/**/*.html";
