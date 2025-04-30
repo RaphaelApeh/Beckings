@@ -1,33 +1,64 @@
 
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim-bullseye
 
-RUN mkdir -p /apps
+# Create a virtual environment
+RUN python -m venv /opt/venv
 
-WORKDIR /apps
+# Set the virtual environment as the current location
+ENV PATH=/opt/venv/bin:$PATH
 
-COPY .src/ apps/
+# Upgrade pip
+RUN pip install --upgrade pip
 
-RUN python -m venv opt/venv
+# Set Python-related environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-RUN srouce opt/venv/bin/activate
+# ubuntu linux os deps
+# Install os dependencies for our mini vm
+RUN apt-get update && apt-get install -y \
+    # for postgres
+    libpq-dev \
+    # for Pillow
+    libjpeg-dev \
+    # for CairoSVG
+    libcairo2 \
+    # other
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt opt/requirements.txt
+# Create the mini vm's code directory
+RUN mkdir -p /app
 
-RUN pip install -r opt/requirements.txt
+# Set the working directory to that same code directory
+WORKDIR /app
 
-COPY .scripts/run.sh /opt/.scripts/run.sh
+# Copy the requirements file into the container
+COPY requirements.txt /tmp/requirements.txt
 
-# Django
+# copy the project code into the container's working directory
+COPY ./src /app
 
-ARG DJANGO_SECRET_KEY="django_secret_key"
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
+
 ARG DJANGO_DEBUG=0
+ARG DJANGO_SECRET_KEY=django_secret_key
 
-ENV DJANGO_DEBUG ${DJANGO_DEBUG}
+ENV DJANGO_DEBUG=${DJANGO_DEBUG}
+ENV DJANGO_SECRET_KEY=#{DJANGO_DEBUG}
 
-ENV DJANGO_SECRET_KEY ${DJANGO_SECRET_KEY}
+# add our static files to container itself on build
+RUN python manage.py collectstatic --noinput
 
-# Running the application
+COPY ./.scripts/run.sh /opt/run.sh
 
-RUN chmod +x /opt/.scripts/run.sh
+RUN chmod +x /opt/run.sh
 
-CMD /opt/scripts/run.sh
+# Clean up apt cache to reduce image size
+RUN apt-get remove --purge -y \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD ["/opt/run.sh"]

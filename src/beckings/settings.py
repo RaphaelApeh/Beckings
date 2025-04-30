@@ -16,7 +16,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=0)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"] # Testing
 
 
 # Application definition
