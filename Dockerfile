@@ -48,6 +48,8 @@ ARG DJANGO_SECRET_KEY=django_secret_key
 ENV DJANGO_DEBUG=${DJANGO_DEBUG}
 ENV DJANGO_SECRET_KEY=${DJANGO_DEBUG}
 
+RUN mkdir -p app/static
+
 # add our static files to container itself on build
 RUN python manage.py collectstatic --noinput
 
