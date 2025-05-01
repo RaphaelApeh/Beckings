@@ -163,3 +163,5 @@ SITE_ID = 1
 if sys.platform.startswith("win"):
 
     NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+DEFAULT_PRICE_CURRENCY = "₦"
