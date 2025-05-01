@@ -9,7 +9,6 @@ User = get_user_model()
 
 class Product(models.Model):
 
-    id = models.UUIDField(primary_key=True, db_default=uuid.uuid1(), editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_products")
     product_name = models.CharField(max_length=100)
     product_description = models.TextField(null=True, blank=True)
