@@ -40,7 +40,7 @@ THIRD_PARTY_APPS = [
     "tailwind",
 ]
 
-if DEBUG:
+if DEBUG: 
     THIRD_PARTY_APPS.append("debug_toolbar")
 
 INTERNAL_APPS = [
@@ -69,7 +69,7 @@ MIDDLEWARE = [
 if DEBUG:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = [
-        "0.0.0.0:8000"
+        "127.0.0.0:8000"
     ]
 ROOT_URLCONF = "beckings.urls"
 
