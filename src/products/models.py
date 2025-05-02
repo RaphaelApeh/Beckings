@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 
@@ -18,3 +19,9 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.product_name
+
+
+    def get_absolute_url(self) -> str:
+
+        return reverse("product-detail", kwargs={"pk": self.pk, "slug": self.product_slug})
+    

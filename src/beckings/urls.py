@@ -4,6 +4,8 @@ from django.shortcuts import render
 from django.urls import path, include
 from django.http import HttpRequest, HttpResponse
 
+from .feeds import ProductFeed
+
 
 def health_check_view(request: HttpRequest) -> HttpResponse:
     
@@ -17,6 +19,7 @@ def comingsoon_view(request: HttpRequest) -> HttpRequest:
 urlpatterns = [
     path("", comingsoon_view, name="coming-soon"),
     path("admin/", admin.site.urls),
+    path("products-rss/", ProductFeed()),
     path("health/", health_check_view, name="health-check"),
     path("products/", include("products.urls")),
     path("api/", include("api.urls"))

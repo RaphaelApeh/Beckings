@@ -1,5 +1,8 @@
-from django.views.generic import View
 from django.http import HttpRequest, HttpResponse
+from django.views.generic import (
+    View,
+    DetailView
+    )
 from django.shortcuts import render
 
 from .models import Product
@@ -23,4 +26,12 @@ class ProductListView(View):
 
         return render(request, template_name, context)
     
+
+
+class ProductDetailView(DetailView):
+
+    model = Product
+    template_name = "products/product-detail.html"
+    query_pk_and_slug = True
+
 
