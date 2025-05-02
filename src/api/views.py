@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 
-from decorators import paginate
+from helpers.decorators import paginate
 from helpers import UserSerializer
 
 User = get_user_model()
