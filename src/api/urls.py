@@ -1,7 +1,15 @@
-from django.urls import path
+from django.urls import path #noqa
+from rest_framework.routers import DefaultRouter
 
 from . import views
 
-urlpatterns = [
-    path("users/", views.users_list_view)
-]
+
+urlpatterns = []
+
+
+router = DefaultRouter()
+
+router.register("users", views.UserAPIView)
+
+urlpatterns += router.urls
+

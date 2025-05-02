@@ -13,6 +13,8 @@ wheels/
 # Environment
 *.env
 
+.lib
+
 # DJANGO
 staticfiles/
 *.sqlite3
