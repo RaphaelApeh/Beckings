@@ -37,9 +37,9 @@ class Product(models.Model):
 def auto_slugify_product(sender: Product, instance: type[Product], **kwargs: dict[str, Any]) -> None:
     
     value = slugify(instance.product_name)[:10]
-    prefix = ""
+    suffix = ""
     if Product.objects.filter(product_slug=value).exists():
-        prefix = get_random_string(5)
-    instance.product_slug = slugify(f"{value}{prefix}".strip())
+        suffix = get_random_string(5)
+    instance.product_slug = slugify(f"{value}{suffix}".strip())
 
 
