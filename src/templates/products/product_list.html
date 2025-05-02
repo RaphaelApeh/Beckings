@@ -9,9 +9,8 @@
 {% endblock %}
 
 {% block content %}
-
     {% for object in queryset %}
-       <h1 class="bg-red-500 text-white p-2">{{ object.product_name }}</h1>
+       <h1 class="bg-red-500 text-white p-2">{{ object.product_name }} <a href="{{ object.get_absolute_url }}">Hello</a></h1>
     {% endfor %}
 
 {% endblock content %}
