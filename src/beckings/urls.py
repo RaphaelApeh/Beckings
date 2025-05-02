@@ -18,7 +18,7 @@ urlpatterns = [
     path("", comingsoon_view, name="coming-soon"),
     path("admin/", admin.site.urls),
     path("health/", health_check_view, name="health-check"),
-
+    path("products/", include("products.urls")),
     path("api/", include("api.urls"))
 ]
 

@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DJANGO_DEBUG", default=False)
+DEBUG = config("DJANGO_DEBUG", cast=bool, default=0)
 
 ALLOWED_HOSTS = ["*"] # Testing
 
@@ -84,6 +84,10 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            "builtins": [
+                "django.templatetags.static",
+                "tailwind.templatetags.tailwind_tags"
+            ]
         },
     },
 ]
@@ -142,11 +146,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-(BASE_DIR / "static").mkdir(exist_ok=True)
+# (BASE_DIR / "static").mkdir(exist_ok=True)
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static"
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static"
+# ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 

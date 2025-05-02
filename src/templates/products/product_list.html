@@ -1,0 +1,17 @@
+{% extends "base_page.html" %}
+
+{% block title %}Products | {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+
+    {% tailwind_css %}
+
+{% endblock %}
+
+{% block content %}
+
+    {% for object in queryset %}
+       <h1 class="bg-red-500 text-white p-2">{{ object.product_name }}</h1>
+    {% endfor %}
+
+{% endblock content %}
