@@ -14,6 +14,7 @@ dependencies = [
     "django-tailwind>=4.0.1",
     "djangorestframework>=3.16.0",
     "psycopg2[binary]>=2.9.10",
+    "psycopg[binary]>=3.2.7",
     "python-decouple>=3.8",
     "rav>=0.0.9",
     "whitenoise>=6.9.0",
