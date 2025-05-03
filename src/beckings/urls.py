@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import path, include
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from .feeds import ProductFeed
 
@@ -12,11 +12,17 @@ def health_check_view(request: HttpRequest) -> HttpResponse:
     return HttpResponse("Ok")
 
 
-def comingsoon_view(request: HttpRequest) -> HttpRequest:
-    return render(request, "landing/comingsoon.html")
+def homepage_view(request: HttpRequest) -> HttpResponse | HttpResponseRedirect:
+    
+    _viewed = request.session.get("_viewed")
+    if _viewed and request.user.is_authenticated:
+        return redirect("/products/")
+    if _viewed is None:
+        request.session["_viewed"] = True
+    return render(request, "landing/base.html")
 
 urlpatterns = [
-    path("", comingsoon_view, name="coming-soon"),
+    path("", homepage_view, name="home"),
     path("admin/", admin.site.urls),
     path("products-rss/", ProductFeed()),
     path("health/", health_check_view, name="health-check"),
