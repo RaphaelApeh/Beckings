@@ -42,7 +42,7 @@ COPY ./src /app
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
-ARG DJANGO_DEBUG=0
+ARG DJANGO_DEBUG=False
 ARG DJANGO_SECRET_KEY=django_secret_key
 
 ENV DJANGO_DEBUG=${DJANGO_DEBUG}

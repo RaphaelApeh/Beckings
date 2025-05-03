@@ -13,7 +13,6 @@ def health_check_view(request: HttpRequest) -> HttpResponse:
 
 
 def comingsoon_view(request: HttpRequest) -> HttpRequest:
-
     return render(request, "landing/comingsoon.html")
 
 urlpatterns = [
