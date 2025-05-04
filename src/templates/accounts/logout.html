@@ -1,0 +1,10 @@
+{% extends "base_page.html" %}
+
+{% block content %}
+    {% tailwind_css %}
+    <c-base-header />
+    <form method="post">
+        {% csrf_token %}
+        Are you sure you want to logout? <button>Yes</button> <a href="{{ request.META.HTTP_REFERER }}">Back</a>
+    </form>
+{% endblock %}

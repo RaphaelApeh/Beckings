@@ -1,0 +1,12 @@
+{% extends "base_page.html" %}
+
+{% block content %}
+    {% tailwind_css %}
+    <c-base-header />
+    <form method="post">
+        {% csrf_token %}
+        {{ form.errors }}
+        {{ form.as_p }}
+        <button>Sign Up</button>
+    </form>
+{% endblock %}

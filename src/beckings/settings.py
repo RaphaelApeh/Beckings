@@ -46,6 +46,7 @@ if DEBUG:
 INTERNAL_APPS = [
     "theme",
     "products",
+    "clients",
 ]
 
 INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_APPS))

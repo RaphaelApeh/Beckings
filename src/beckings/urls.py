@@ -15,7 +15,7 @@ def health_check_view(request: HttpRequest) -> HttpResponse:
 def homepage_view(request: HttpRequest) -> HttpResponse | HttpResponseRedirect:
     
     _viewed = request.session.get("_viewed")
-    if _viewed and request.user.is_authenticated:
+    if _viewed or request.user.is_authenticated:
         return redirect("/products/")
     if _viewed is None:
         request.session["_viewed"] = True
@@ -25,10 +25,13 @@ urlpatterns = [
     path("", homepage_view, name="home"),
     path("admin/", admin.site.urls),
     path("products-rss/", ProductFeed()),
+    path("accounts/", include("clients.urls")),
     path("health/", health_check_view, name="health-check"),
     path("products/", include("products.urls")),
     path("api/", include("api.urls"))
 ]
 
-if settings.DEBUG:
-    urlpatterns.insert(0, path("__debug__/", include("debug_toolbar.urls")))
+# if settings.DEBUG:
+#     from debug_toolbar.urls import urlpatterns as debug_urlpatterns
+
+#     urlpatterns += debug_urlpatterns
