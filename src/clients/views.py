@@ -13,9 +13,9 @@ class LoginView(FormView):
     form_class = LoginForm
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect("/products/")
-        return super().dispatch(request, *args, **kwargs)
+        
+        return redirect("/products/")
+        #return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs =  super().get_form_kwargs()
