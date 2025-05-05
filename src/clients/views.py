@@ -1,8 +1,10 @@
+from typing import Any
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.http import HttpResponseBadRequest
 from django.views.generic import View, FormView
-from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth import logout, login, authenticate, REDIRECT_FIELD_NAME
 
 from .forms import (LoginForm, RegisterForm)
 
@@ -16,26 +18,29 @@ class LoginView(FormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("/products/")
+        self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "Login"
         return context
     
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs =  super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
 
-    def form_valid(self, form):
-        data = form.cleaned_data
+    def form_valid(self, form: LoginForm):
         request = self.request
-        _login = data["login"]
-        password = data["password"]
-        user = authenticate(request, username=_login, password=password)
-        if user is None:
-            messages.error(request, "Invalid credentials :(")
-            return redirect("login") # refresh
+        user = form.get_user()
         login(request, user)
         messages.success(request, "Login Successfully :)")
-        return redirect(self.success_url)
+        next_url = self.next_url or self.success_url
+        return redirect(next_url)
     
 
 class RegisterView(FormView):
