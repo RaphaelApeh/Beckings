@@ -16,8 +16,14 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", cast=bool, default=False)
 
-ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1"] # Testing
+ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1", "0.0.0.0"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://beckings-production.up.railway.app/"
+]
+
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = not DEBUG
 
 # Application definition
 DJANGO_APPS = [
