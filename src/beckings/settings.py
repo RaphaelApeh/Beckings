@@ -16,7 +16,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", cast=bool, default=False)
 
-ALLOWED_HOSTS = ["*"] # Testing
+ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1"] # Testing
 
 
 # Application definition
@@ -39,9 +39,6 @@ THIRD_PARTY_APPS = [
     "django_htmx",
     "tailwind",
 ]
-
-if DEBUG: 
-    THIRD_PARTY_APPS.append("debug_toolbar")
 
 INTERNAL_APPS = [
     "theme",
@@ -67,11 +64,7 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware",
 ]
 
-if DEBUG:
-    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
-    INTERNAL_IPS = [
-        "127.0.0.0:8000"
-    ]
+
 ROOT_URLCONF = "beckings.urls"
 
 TEMPLATES = [

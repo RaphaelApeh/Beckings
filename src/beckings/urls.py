@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import path, include
@@ -31,7 +30,3 @@ urlpatterns = [
     path("api/", include("api.urls"))
 ]
 
-# if settings.DEBUG:
-#     from debug_toolbar.urls import urlpatterns as debug_urlpatterns
-
-#     urlpatterns += debug_urlpatterns

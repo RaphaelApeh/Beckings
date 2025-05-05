@@ -15,7 +15,7 @@
                     <form class="mt-4 space-y-4 lg:mt-5 md:space-y-5" action="#">
                         {% for field in form %}
                         <div>
-                            <label for="email" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
+                            <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
                             {{ field }}
                             {% if field.errors %}
                             <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>

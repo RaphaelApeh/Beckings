@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.http import HttpResponseBadRequest
 from django.views.generic import View, FormView
@@ -13,22 +14,9 @@ class LoginView(FormView):
     form_class = LoginForm
 
     def dispatch(self, request, *args, **kwargs):
-        
-        return redirect("/products/")
-        #return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs =  super().get_form_kwargs()
-        kwargs["request"] = self.request
-        return kwargs
-
-    def get_form(self, form_class = None):
-
-        form = form_class if form_class is not None else self.form_class
-
-        assert form is not None
-        return form(self.get_form_kwargs())
-
+        if request.user.is_authenticated:
+            return redirect("/products/")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -37,7 +25,16 @@ class LoginView(FormView):
     
 
     def form_valid(self, form):
-        
+        data = form.cleaned_data
+        request = self.request
+        _login = data["login"]
+        password = data["password"]
+        user = authenticate(request, username=_login, password=password)
+        if user is None:
+            messages.error(request, "Invalid credentials :(")
+            return redirect("login") # refresh
+        login(request, user)
+        messages.success(request, "Login Successfully :)")
         return redirect(self.success_url)
     
 

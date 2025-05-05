@@ -4,24 +4,17 @@ from django.contrib.auth.forms import UserCreationForm
 
 User = get_user_model()
 
+
 class PasswordField(forms.CharField):
 
-    def __init__(self, *args, **kwargs) -> None:
-        kwargs["widget"] = forms.PasswordInput()
-        super().__init__(*args, **kwargs)
+    widget = forms.PasswordInput
 
 
 class LoginForm(forms.Form):
 
-    login = forms.CharField(label="Username or Email", required=True)
+    login = forms.CharField(label="Username or Email", required=True, widget=forms.TextInput({"class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"}))
 
-    password = PasswordField()
-
-    def __init__(self, *args,  **kwargs) -> None:
-        super().__init__(args, **kwargs)
-        request = kwargs.pop("request", None)
-        assert request is not None
-        self._request = request
+    password = PasswordField(widget=forms.PasswordInput({"class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"}))
 
 
 class RegisterForm(UserCreationForm):
