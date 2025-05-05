@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Products for Cleaning, freshening, and disinfecting, and very good for muiltipurpose.">
+    <meta name="keywords" content="Beckings, Products, Nigeria, Abuja">
+    <meta name="author" content="Beckings inc.">
     <title>{% block title %}Beckings{% endblock %}</title>
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -21,7 +24,7 @@
     
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body hx-headers="{'X-CSRF-TOKEN': '{{ csrf_token }}'}">
     {% block content %}
     {% endblock %}
     
