@@ -8,7 +8,7 @@ from .forms import (LoginForm, RegisterForm)
 
 class LoginView(FormView):
 
-    template_name = "accounts/login.html"
+    template_name = "accounts/auth.html"
     success_url = "/products/"
     form_class = LoginForm
 
@@ -28,6 +28,12 @@ class LoginView(FormView):
 
         assert form is not None
         return form(self.get_form_kwargs())
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Login"
+        return context
     
 
     def form_valid(self, form):
@@ -37,7 +43,7 @@ class LoginView(FormView):
 
 class RegisterView(FormView):
 
-    template_name = "accounts/register.html"
+    template_name = "accounts/auth.html"
     form_class = RegisterForm
 
     def dispatch(self, request, *args, **kwargs):
@@ -45,6 +51,10 @@ class RegisterView(FormView):
             return redirect("/products/")
         return super().dispatch(request, *args, **kwargs)
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Sign Up"
+        return context
 
     def form_valid(self, form):
         data = form.cleaned_data
