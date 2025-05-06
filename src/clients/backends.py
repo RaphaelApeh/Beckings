@@ -2,6 +2,7 @@ from typing import Unpack
 from typing import TypedDict
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.backends import ModelBackend
 
 
@@ -16,7 +17,7 @@ class _EmailAuth(TypedDict):
 
 class EmailBackend(ModelBackend):
 
-    def authenticate(self, request, **kwargs: Unpack[_EmailAuth]):
+    def authenticate(self, request, **kwargs: Unpack[_EmailAuth]) -> AbstractBaseUser | None:
 
         email = kwargs["username"]
         password = kwargs["password"]
@@ -24,9 +25,11 @@ class EmailBackend(ModelBackend):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
+
+            User().set_password(password)
             return None
         else:
-            if user.check_password(password):
+            if user.check_password(password) and user.is_active:
                 return user
             return None
 
