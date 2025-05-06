@@ -86,6 +86,7 @@ TEMPLATES = [
             ],
             "builtins": [
                 "django.templatetags.static",
+                "django.templatetags.i18n",
                 "tailwind.templatetags.tailwind_tags",
                 "helpers.templatetags.utils",
             ]
@@ -134,7 +135,7 @@ AUTHENTICATION_BACKENDS = [
     # default
     "django.contrib.auth.backends.ModelBackend",
     
-    # custom
+    # email
     "clients.backends.EmailBackend"
 ]
 
@@ -155,11 +156,13 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-# (BASE_DIR / "static").mkdir(exist_ok=True)
+STATIC_DIR = BASE_DIR / "static"
 
-# STATICFILES_DIRS = [
-#     BASE_DIR / "static"
-# ]
+STATIC_DIR.mkdir(exist_ok=True)
+
+STATICFILES_DIRS = [
+    STATIC_DIR
+]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -178,3 +181,19 @@ if sys.platform.startswith("win"):
     NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 DEFAULT_PRICE_CURRENCY = "₦"
+SITE_ADMIN_NAME = config("SITE_ADMIN_NAME", default="")
+# Email
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail"
+EMAIL_HOST_USER = config("EMAIL_USERNAME", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_PASSWORD", default="")
+EMAIL_USE_TLS = True
+EMAIL_PORT = 568
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Admin
+
+ADMINS = [
+    (SITE_ADMIN_NAME, EMAIL_HOST_USER)
+]
