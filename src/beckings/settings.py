@@ -14,12 +14,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config("DJANGO_DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1", "0.0.0.0"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://beckings-production.up.railway.app/"
+    "https://beckings-production.up.railway.app"
 ]
 
 CSRF_COOKIE_SECURE = not DEBUG
