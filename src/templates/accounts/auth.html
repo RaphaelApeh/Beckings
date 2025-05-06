@@ -17,7 +17,7 @@
                         {% for field in form %}
                         <div>
                             <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
-                            {{ field }}
+                            {{ field|form_class }}
                             {% if field.errors %}
                             <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>
                             {% endif %}

@@ -86,7 +86,8 @@ TEMPLATES = [
             ],
             "builtins": [
                 "django.templatetags.static",
-                "tailwind.templatetags.tailwind_tags"
+                "tailwind.templatetags.tailwind_tags",
+                "helpers.templatetags.utils",
             ]
         },
     },
