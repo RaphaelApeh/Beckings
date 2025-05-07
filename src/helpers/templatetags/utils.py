@@ -9,6 +9,8 @@ DEFAULT_TAILWIND_CSS = "bg-gray-50 border border-gray-300 text-gray-900 text-sm 
 
 def do_form_class(field: BoundField, class_attr: str | None = None) -> BoundField:
 
+    if not isinstance(field, BoundField):
+        return field
     class_attr = class_attr if class_attr is not None else DEFAULT_TAILWIND_CSS
 
     field.field.widget.attrs.setdefault("class", class_attr)

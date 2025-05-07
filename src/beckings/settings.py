@@ -19,6 +19,8 @@ DEBUG = config("DJANGO_DEBUG", cast=bool, default=False)
 ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1", "0.0.0.0"]
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://*.up.railway.app",
+    "https://*.railway.app"
     "https://beckings-production.up.railway.app"
 ]
 
