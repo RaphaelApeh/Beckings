@@ -6,7 +6,7 @@
     <div class="mx-auto max-w-7xl">
         <c-base-header />
         <div class="container max-w-sm py-32 mx-auto mt-px text-left sm:max-w-md md:max-w-lg sm:px-4 md:max-w-none md:text-center">
-            <h1 class="text-3xl font-bold leading-10 tracking-tight text-left text-gray-900 md:text-center sm:text-4xl md:text-7xl lg:text-8xl p-2">Becking`s Products</h1>
+            <h1 id="ProductText" class="text-3xl font-bold leading-10 tracking-tight text-left text-gray-900 md:text-center sm:text-4xl md:text-7xl lg:text-8xl p-2">Becking`s Products</h1>
             <div class="mx-auto mt-5 text-gray-400 md:mt-8 md:max-w-lg md:text-center md:text-xl">Products for Cleaning, freshening, and disinfecting, and very good for muiltipurpose.</div>
             <div class="flex flex-col items-center justify-center mt-8 space-y-4 text-center sm:flex-row sm:space-y-0 sm:space-x-4">
                 <span class="relative inline-flex w-full md:w-auto">
@@ -24,4 +24,10 @@
         </div>
     </div>
 </section>
+<script>
+    const ProductContent = document.getElementById("ProductText");
+    setInterval(function(){
+        ProductContent.classList.toggle("text-indigo-600")
+    }, 3000)
+</script>
 {% endblock %}

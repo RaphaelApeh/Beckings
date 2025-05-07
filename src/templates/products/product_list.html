@@ -3,14 +3,13 @@
 {% block title %}Products | {{ block.super }}{% endblock %}
 
 {% block extra_head %}
-
     {% tailwind_css %}
-
 {% endblock %}
 
 {% block content %}
-    {% for object in queryset %}
-       <h1 class="bg-red-500 text-white p-2">{{ object.product_name }} <a href="{{ object.get_absolute_url }}">Hello</a></h1>
-    {% endfor %}
-
+    <c-base-header />
+    <div class="mt-12 px-6 text-center">
+        <h1 class="font-bold text-lg hover:text-indigo-800">No Products Yet.</h1>
+        <p class="mt-4 text-gray-500 text-sm">Please contact the Site Administrator for more information.</p>
+    </div>
 {% endblock content %}
