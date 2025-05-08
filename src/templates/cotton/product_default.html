@@ -1,0 +1,10 @@
+<div class="mt-4 mb-4 rounded-lg overflow-hidden border border-neutral-200/60 bg-white text-neutral-700 shadow-sm w-[380px]">
+    <div class="relative">
+        <img  class="w-full h-auto" />
+    </div>
+    <div class="p-7">
+        <h2 class="mb-2 text-lg font-bold leading-none tracking-tight">{{ object.product_name }}</h2>
+        <p class="mb-5 text-neutral-500">{{ object.product_description }}</p>
+        <a href="{{ object.get_absolute_url }}" class="inline-flex items-center justify-center w-full h-10 px-4 py-2 text-sm font-medium text-white transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-neutral-950 hover:bg-neutral-950/90">Product</a>
+    </div>
+</div>

@@ -1,2 +1,13 @@
+{% extends "base_page.html" %}
 
-<h1>Detail: {{ object.product_name }}</h1>
+{% block title %}{{ object.product_name|title }} | {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+    {% tailwind_css %}
+{% endblock %}
+
+{% block content %}
+    <c-base-header />
+    <c-product-detail />
+    <c-footer />
+{% endblock %}
