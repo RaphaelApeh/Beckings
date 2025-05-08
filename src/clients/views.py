@@ -17,6 +17,7 @@ class LoginView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
+            messages.error(request, "Authenticated User can re-login.")
             return redirect("/products/")
         self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
@@ -38,7 +39,7 @@ class LoginView(FormView):
         request = self.request
         user = form.get_user()
         login(request, user)
-        messages.success(request, "Login Successfully :)")
+        messages.success(request, "Loggedin Successfully :)")
         next_url = self.next_url or self.success_url
         return redirect(next_url)
     
@@ -50,6 +51,7 @@ class RegisterView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
+            messages.error(request, "Authenticated User can re-login.")
             return redirect("/products/")
         return super().dispatch(request, *args, **kwargs)
     
@@ -67,7 +69,9 @@ class RegisterView(FormView):
             return HttpResponseBadRequest()
         user = authenticate(self.request, username=username, password=password)
         if user is None:
+            messages.error(self.request, "Something went Wrong.")
             return redirect("login") # return to the login page
+        messages.success(self.request, "Account created Successfully.")
         login(self.request, user)
         return redirect("product-list")
 
@@ -80,6 +84,7 @@ class LogoutView(View):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
+            messages.warning(request, "Something went wrong :(")
             return redirect("login")
         return super().dispatch(request, *args, **kwargs)
 
@@ -90,7 +95,7 @@ class LogoutView(View):
     def post(self, request):
 
         logout(request)
-
+        messages.warning(request, "Loggedout Successfully.")
         return redirect("/accounts/login/")
     
 

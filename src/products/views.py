@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.views.generic import (
     View,
@@ -24,6 +25,7 @@ class ProductListView(View):
             queryset = queryset.filter()
 
         template_name = self.template_name
+        messages.warning(request, "This site is currently in development mode.")
         return render(request, template_name, context)
     
 
