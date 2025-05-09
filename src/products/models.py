@@ -4,9 +4,7 @@ from typing import Any
 
 from django.db import models
 from django.urls import reverse
-from django.dispatch import receiver
 from django.utils.text import slugify
-from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 
 
@@ -33,13 +31,6 @@ class Product(models.Model):
         return reverse("product-detail", kwargs={"pk": self.pk, "slug": self.product_slug})
     
 
-@receiver(models.signals.pre_save, sender=Product)
-def auto_slugify_product(sender: Product, instance: type[Product], **kwargs: dict[str, Any]) -> None:
-    
-    value = slugify(instance.product_name)[:10]
-    suffix = ""
-    if Product.objects.filter(product_slug=value).exists():
-        suffix = get_random_string(5)
-    instance.product_slug = slugify(f"{value}{suffix}".strip())
-
-
+    def save(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
+        self.product_slug = slugify(self.product_name)
+        super().save(*args, **kwargs)
