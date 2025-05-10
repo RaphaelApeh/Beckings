@@ -1,9 +1,14 @@
 from typing import Any
 
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.http import HttpRequest
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.http import HttpResponseBadRequest
+from django.shortcuts import redirect, render
 from django.views.generic import View, FormView
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_variables
 from django.contrib.auth import logout, login, authenticate, REDIRECT_FIELD_NAME
 
 from .forms import (LoginForm, RegisterForm)
@@ -15,17 +20,14 @@ class LoginView(FormView):
     success_url = "/products/"
     form_class = LoginForm
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
             return redirect("/products/")
         self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Login"
         return context
@@ -35,9 +37,12 @@ class LoginView(FormView):
         kwargs["request"] = self.request
         return kwargs
 
-    def form_valid(self, form: LoginForm):
+    def form_valid(self, form: LoginForm) -> HttpResponseRedirect:
         request = self.request
         user = form.get_user()
+        if user is None:
+            messages.error(request, "Something went wrong :(")
+            return redirect("register")
         login(request, user)
         messages.success(request, "Loggedin Successfully :)")
         next_url = self.next_url or self.success_url
@@ -49,18 +54,19 @@ class RegisterView(FormView):
     template_name = "accounts/auth.html"
     form_class = RegisterForm
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
             return redirect("/products/")
         return super().dispatch(request, *args, **kwargs)
     
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Sign Up"
         return context
 
-    def form_valid(self, form):
+    @method_decorator(sensitive_variables(["username", "password", "password1"]))
+    def form_valid(self, form: RegisterForm) -> HttpResponseRedirect:
         data = form.cleaned_data
         form.save()
         username = data["username"]
@@ -82,17 +88,17 @@ class LogoutView(View):
     Logout page
     """
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if request.user.is_anonymous:
             messages.warning(request, "Something went wrong :(")
             return redirect("login")
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
 
         return render(request, "accounts/logout.html")
     
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponseRedirect:
 
         logout(request)
         messages.warning(request, "Loggedout Successfully.")
