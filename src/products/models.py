@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
+from .manager import ProductManager
+
 
 User = get_user_model()
 
@@ -22,9 +24,12 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     timpstamp = models.DateTimeField(auto_now_add=True)
 
+    SEARCH_FIELDS = ("product_name", "product_description", "price")
+
     def __str__(self) -> str:
         return self.product_name
 
+    objects = ProductManager()
 
     def get_absolute_url(self) -> str:
 
