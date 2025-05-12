@@ -1,5 +1,5 @@
-from django.conf import settings
-from django.contrib import messages
+from urllib.parse import unquote
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import (
@@ -30,8 +30,6 @@ class ProductListView(View):
             queryset = queryset.filter()
 
         template_name = self.template_name
-        if settings.DEBUG:
-            messages.warning(request, "This site is currently in development mode.")
         return render(request, template_name, context)
     
 
@@ -58,16 +56,16 @@ class ProductSearchView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
 
         context = {}
-        query = request.GET.get("q")
+        query = unquote(request.GET.get("q"))
         queryset = Product.objects.all()
         if query:
-            queryset.search(query)
+            queryset.filter(product_name__icontains=query)
         else:
             queryset.none()
         
         context["queryset"] = queryset
 
-        return render(request, "products/partials/product_list.html". context)
+        return render(request, "products/partials/product_list.html", context)
     
 
 product_search_view = ProductSearchView.as_view()
