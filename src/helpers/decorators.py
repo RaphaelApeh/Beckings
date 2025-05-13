@@ -2,11 +2,16 @@ from typing import Any
 from typing import Callable
 from functools import wraps
 
+from django.http import HttpResponse
 from django.http import HttpRequest
 from django.db.models import QuerySet
+from django.http import HttpResponseNotAllowed
 
 from rest_framework.response import Response
 from rest_framework.pagination import BasePagination
+
+from helpers._typing import HTMXHttpRequest
+
 
 
 def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], Any]:
@@ -51,4 +56,19 @@ def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], A
         return _warpper
 
     return inner
+
+
+
+def require_htmx(view_func: Callable[[], HttpResponse]) -> Callable[[], Any]:
+     
+    @wraps(view_func)
+    def inner(request: HTMXHttpRequest, *args, **kwargs) -> HttpResponse:
+
+        if hasattr(request, "htmx") and request.htmx:
+            return view_func(request, *args, **kwargs)
+        
+        return HttpResponseNotAllowed()
+
+    return inner
+
 

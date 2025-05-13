@@ -48,7 +48,7 @@ class ProductDetailView(DetailView):
         return obj
 
 
-@method_decorator(require_htmx)
+@method_decorator(require_htmx, name="dispatch")
 class ProductSearchView(View):
 
     def get(self, request: HttpRequest) -> HttpResponse:
