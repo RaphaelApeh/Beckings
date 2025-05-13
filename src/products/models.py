@@ -22,7 +22,7 @@ class Product(models.Model):
     price = models.FloatField(default=1000.0)
     active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
-    timpstamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     SEARCH_FIELDS = ("product_name", "product_description", "price")
 

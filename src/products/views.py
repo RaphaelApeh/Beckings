@@ -1,5 +1,3 @@
-from urllib.parse import unquote
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import (
@@ -50,16 +48,16 @@ class ProductDetailView(DetailView):
         return obj
 
 
-@method_decorator(require_htmx, "dispatch")
+@method_decorator(require_htmx)
 class ProductSearchView(View):
 
     def get(self, request: HttpRequest) -> HttpResponse:
 
         context = {}
-        query = unquote(request.GET.get("q"))
+        query = request.GET.get("q")
         queryset = Product.objects.all()
         if query:
-            queryset.filter(product_name__icontains=query)
+            queryset.filter(product_name=query).order_by("-timestamp")
         else:
             queryset.none()
         
