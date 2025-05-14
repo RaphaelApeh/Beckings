@@ -15,3 +15,5 @@ class HTMXHttpRequest(HttpRequest):
 
 
 Bit = dict[str, Any]
+
+List = list[str]

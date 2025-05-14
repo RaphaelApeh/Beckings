@@ -1,7 +1,9 @@
 from django.urls import path #noqa
 from rest_framework.routers import DefaultRouter
 
-from . import views
+from .views import (
+    UserAPIView,
+    ProductViewSet)
 
 
 urlpatterns = []
@@ -9,7 +11,8 @@ urlpatterns = []
 
 router = DefaultRouter()
 
-router.register("users", views.UserAPIView)
+router.register("users", UserAPIView)
+router.register("products", ProductViewSet)
 
 urlpatterns += router.urls
 
