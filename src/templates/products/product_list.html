@@ -10,7 +10,7 @@
     <c-base-header />
     <c-search />
     {% if queryset %}
-        <c-products />
+        <c-products :queryset="queryset" />
     {% else %}
         <div class="mt-12 mb-12 px-6 text-center">
             <h1 class="font-bold text-lg hover:text-indigo-800">No Products Yet.</h1>

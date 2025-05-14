@@ -1,6 +1,6 @@
 {# HTMX request #}
 {% if queryset %}
-    <c-products />
+    <c-products :querset="queryset" />
 {% else %}
     <p>No Product Found.</p>
 {% endif %}

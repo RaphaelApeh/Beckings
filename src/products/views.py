@@ -11,10 +11,9 @@ from helpers.decorators import require_htmx
 from .models import Product
 
 
-
 class ProductListView(View):
 
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("user").all()
     template_name = "products/product_list.html"
     
 
