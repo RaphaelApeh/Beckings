@@ -47,7 +47,6 @@ THIRD_PARTY_APPS = [
     "django_cotton",
     "django_htmx",
     "tailwind",
-    "template_partials",
 ]
 
 INTERNAL_APPS = [
