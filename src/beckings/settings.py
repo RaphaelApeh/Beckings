@@ -38,7 +38,8 @@ DJANGO_APPS = [
     "django.contrib.sites",
     "django.contrib.sitemaps",
     "django.contrib.humanize",
-    "django.contrib.syndication"
+    "django.contrib.syndication",
+    "django.contrib.postgres",
 ]
 
 THIRD_PARTY_APPS = [
@@ -46,6 +47,7 @@ THIRD_PARTY_APPS = [
     "django_cotton",
     "django_htmx",
     "tailwind",
+    "template_partials",
 ]
 
 INTERNAL_APPS = [

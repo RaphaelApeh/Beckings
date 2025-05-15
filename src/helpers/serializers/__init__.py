@@ -1,11 +1,8 @@
 from django.db.models import Model
 from rest_framework.serializers import ModelSerializer
 
-from .users import UserSerializer
-
 
 __all__ = [
-    "UserSerializer",
     "serializer_factory",
 ]
 

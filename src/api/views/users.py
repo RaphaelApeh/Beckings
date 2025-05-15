@@ -5,15 +5,15 @@ from rest_framework.request import Request
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
-from helpers import UserSerializer
+from .base import SerializerFactoryMixin
 
 User = get_user_model()
 
 
-class UserAPIView(ModelViewSet):
+class UserAPIView(SerializerFactoryMixin, ModelViewSet):
 
     queryset = User.objects.order_by("-date_joined")
-    serializer_class = UserSerializer
+    serializer_fields = ["username", "email"]
     permission_classes = [
         permissions.IsAdminUser
     ]
