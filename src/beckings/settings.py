@@ -179,7 +179,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-SITE_ID = 1
+SITE_ID = config("SITE_ID", cast=int, default=1)
 
 # Windows
 if sys.platform.startswith("win"):
