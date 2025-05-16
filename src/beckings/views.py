@@ -16,4 +16,3 @@ def homepage_view(request: HttpRequest) -> HttpResponse | HttpResponseRedirect:
         request.session["_viewed"] = True
     return render(request, "landing/base.html")
 
-

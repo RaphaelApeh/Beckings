@@ -2,6 +2,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import (
     View,
+    ListView,
     DetailView
     )
 from django.shortcuts import get_object_or_404, render
@@ -11,24 +12,11 @@ from helpers.decorators import require_htmx
 from .models import Product
 
 
-class ProductListView(View):
+class ProductListView(ListView):
 
-    queryset = Product.objects.select_related("user").all()
+    queryset = Product.objects.select_related("user")
     template_name = "products/product_list.html"
-    
-
-    def get(self, request: HttpRequest) -> HttpResponse:
-
-        queryset = self.queryset
-
-        context = {"queryset": queryset}
-
-        if hasattr(request, "htmx") and request.htmx:
-            queryset = queryset.filter()
-
-        template_name = self.template_name
-        return render(request, template_name, context)
-    
+    context_object_name = "queryset"
 
 
 class ProductDetailView(DetailView):
