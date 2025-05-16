@@ -56,7 +56,7 @@ class RegisterView(FormView):
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if request.user.is_authenticated:
-            messages.error(request, "Authenticated User can re-login.")
+            messages.error(request, "Authenticated User can register.")
             return redirect("/products/")
         return super().dispatch(request, *args, **kwargs)
     
@@ -79,7 +79,7 @@ class RegisterView(FormView):
             return redirect("login") # return to the login page
         messages.success(self.request, "Account created Successfully.")
         login(self.request, user)
-        return redirect("product-list")
+        return redirect("products")
 
 
 class LogoutView(View):
