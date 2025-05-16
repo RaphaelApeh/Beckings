@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     path("", views.homepage_view, name="home"),
     path("admin/", admin.site.urls),
+    path("robots.txt", views.robots_txt),
     path("products-rss/", ProductFeed()),
     path("accounts/", include("clients.urls")),
     path("health/", views.health_check_view, name="health-check"),
