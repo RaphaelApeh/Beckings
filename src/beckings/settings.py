@@ -44,6 +44,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "rest_framework.authtoken", # Later drf-something
     "django_cotton",
     "django_htmx",
     "tailwind",
@@ -202,3 +203,14 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMINS = [
     (SITE_ADMIN_NAME, EMAIL_HOST_USER)
 ]
+
+
+# Rest framework
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication"
+    ],
+
+}

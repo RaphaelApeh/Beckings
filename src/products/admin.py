@@ -26,9 +26,9 @@ class ProductAdmin(admin.ModelAdmin):
     def has_add_permission(self, request: HttpRequest) -> bool:
         return True if request.user.is_superuser else False
     
-    def has_delete_permission(self, request: HttpRequest, obj: "Product" | None = ...):
+    def has_delete_permission(self, request: HttpRequest, obj: Product | None = ...):
         return super().has_delete_permission(request, obj)
 
-    def save_model(self, request: HttpRequest, obj: "Product", form, change) -> Any:
+    def save_model(self, request: HttpRequest, obj: Product, form, change) -> Any:
         obj.user = request.user
         return super().save_model(request, obj, form, change)
