@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypeVar, Generic
 
 from rest_framework.serializers import ModelSerializer
 
@@ -6,7 +6,10 @@ from helpers._typing import List
 from helpers.serializers import serializer_factory
 
 
-class SerializerFactoryMixin:
+T = TypeVar("T")
+
+
+class SerializerFactoryMixin(Generic[T]):
 
     serializer_fields: List | None = None
     exclude_fields: List | None = None

@@ -1,12 +1,16 @@
-from django.urls import path #noqa
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
     UserAPIView,
-    ProductViewSet)
+    ProductViewSet,
+    TokenLoginAPIView
+    )
 
 
-urlpatterns = []
+urlpatterns = [
+    path("login/", TokenLoginAPIView.as_view(), name="api_login")
+]
 
 
 router = DefaultRouter()

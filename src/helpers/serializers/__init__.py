@@ -1,10 +1,13 @@
 from django.db.models import Model
 from rest_framework.serializers import ModelSerializer
 
+from .token import TokenLoginSerializer
 
 __all__ = [
+    "TokenLoginSerializer",
     "serializer_factory",
 ]
+
 
 
 def serializer_factory(model: type[Model], serializer = ModelSerializer, *, fields: list[str] | str | None = None, exclude: list[str] | None =None) -> ModelSerializer:
