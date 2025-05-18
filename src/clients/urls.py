@@ -1,10 +1,13 @@
 from django.urls import path
 from django.urls import reverse_lazy
+from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 
 from . import views
 
 urlpatterns = [
+    path("", RedirectView.as_view(pattern_name="login")),
+
     path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path("register/", views.RegisterView.as_view(), name="register"),

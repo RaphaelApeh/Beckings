@@ -45,8 +45,6 @@ class ProductSearchView(View):
         queryset = Product.objects.all()
         if query:
             queryset = queryset.filter(product_name__icontains=query).order_by("-timestamp")
-        else:
-            queryset = queryset.none()
         
         context["queryset"] = queryset
 
