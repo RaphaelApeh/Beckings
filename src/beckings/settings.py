@@ -45,6 +45,8 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework.authtoken", # Later drf-something
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_cotton",
     "django_htmx",
     "tailwind",
@@ -213,4 +215,20 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication"
     ],
 
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
+
+}
+
+# DRF Spectacular
+
+SPECTACULAR_SETTINGS = {
+
+    "TITLE": "Beckings API",
+    "DESCRIPTION": "",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR"
+    
 }

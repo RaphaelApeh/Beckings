@@ -13,3 +13,4 @@ uvicorn
 psycopg2>=2.9.10
 psycopg-binary==3.2.7 # version 3
 dj-database-url>=2.3.0
+drf-spectacular[sidecar]>=0.28.0
