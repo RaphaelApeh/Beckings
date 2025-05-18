@@ -22,11 +22,8 @@ class PasswordField(CharField):
 
 class TokenLoginSerializer(serializers.Serializer):
 
-
-    def __init__(self, instance=None, data=..., **kwargs) -> None:
-        super().__init__(instance, data, **kwargs)
-        self.fields["login"] = CharField()
-        self.fields["password"] = PasswordField()
+    login = CharField()
+    password = PasswordField()
 
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
