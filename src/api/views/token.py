@@ -22,7 +22,7 @@ class TokenLoginAPIView(GenericAPIView):
 		if not serializer.is_valid():
 			return Response({"errors": "Invalid Data :("}, status=status.HTTP_401_UNAUTHORIZED)
 		
-		return Response(serializer.data, status=status.HTTP_200_OK)
+		return Response(serializer.validated_data, status=status.HTTP_200_OK)
 	
 
 	def get_serializer(self, *args, **kwargs) -> TokenLoginSerializer:

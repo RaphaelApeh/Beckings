@@ -22,18 +22,18 @@ class PasswordField(CharField):
 
 class TokenLoginSerializer(serializers.Serializer):
 
-    login = CharField()
+    username = CharField()
     password = PasswordField()
 
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         data = super().validate(attrs)
         request = self.context["request"]
-        login = data.pop("login", None)
+        username = data.pop("username", None)
         password = data.pop("password", None)
         credentials = {
             "request": request,
-            "username": login,
+            "username": username,
             "password": password
         }
         user = authenticate(**credentials)
@@ -42,7 +42,7 @@ class TokenLoginSerializer(serializers.Serializer):
         update_last_login(sender=None, user=user)    
         obj, _ = Token.objects.get_or_create(user=user)
         data["token"] = obj.key
-        data["username"] = login
+        data["username"] = username
         return data
     
 
