@@ -165,7 +165,6 @@ STATIC_URL = "static/"
 
 STATIC_DIR = BASE_DIR / "static"
 
-STATIC_DIR.mkdir(exist_ok=True)
 
 STATICFILES_DIRS = [
     STATIC_DIR
