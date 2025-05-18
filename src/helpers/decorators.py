@@ -5,7 +5,7 @@ from functools import wraps
 from django.http import HttpResponse
 from django.http import HttpRequest
 from django.db.models import QuerySet
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseBadRequest
 
 from rest_framework.response import Response
 from rest_framework.pagination import BasePagination
@@ -28,29 +28,22 @@ def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Callable[[], A
 
     assert issubclass(pagination_class, BasePagination)
 
-    class Paginator(pagination_class):
+    Paginator = type("Paginator", (pagination_class,), kwargs)
 
-        def __init__(self) -> None:
-
-            for key, value in kwargs.items():
-                
-                setattr(self, key, value)
-
-            # self.__doc__ = pagination_class.__doc__
-
-    def inner(func: Callable[[], tuple[QuerySet, dict]]) -> Callable[[], Response]:
+    def inner(func: Callable[[], dict[str, Any]]) -> Callable[[], Response]:
 
         @wraps(func)
         def _warpper(request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
             
-            queryset, data = func(request, *args, **kwargs)
+            data = func(request, *args, **kwargs)
 
+            queryset = data["queryset"]
             assert isinstance(queryset, QuerySet)
 
             paginator = Paginator()
             paginator.paginate_queryset(queryset, request)
 
-            return paginator.get_paginated_response(data)
+            return paginator.get_paginated_response(data["data"])
 
 
         return _warpper
@@ -67,7 +60,7 @@ def require_htmx(view_func: Callable[[], HttpResponse]) -> Callable[[], Any]:
         if hasattr(request, "htmx") and request.htmx:
             return view_func(request, *args, **kwargs)
         
-        return HttpResponseNotAllowed()
+        return HttpResponseBadRequest()
 
     return inner
 
