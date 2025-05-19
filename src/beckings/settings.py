@@ -224,7 +224,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
 
     "TITLE": "Beckings API",
-    "DESCRIPTION": "",
+    "DESCRIPTION": "Products for Cleaning, freshening, and disinfecting, and very good for muiltipurpose.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
@@ -232,3 +232,12 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR"
     
 }
+
+
+# Cloudinary
+
+CLOUDINARY_API_KEY = config("CLOUDINARY_API_KEY", default="")
+CLOUDINARY_NAME = config("CLOUDINARY_NAME", default="")
+CLOUDINARY_SECRET_KEY = config("CLOUDINARY_SECRET_KEY", default="")
+
+
