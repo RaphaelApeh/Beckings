@@ -2,16 +2,20 @@ from __future__ import annotations
 
 from typing import Any
 
+from cloudinary import CloudinaryImage
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
+from helpers import init_cloudinary
 from .manager import ProductManager
 
 
 User = get_user_model()
 
+
+init_cloudinary()
 
 class Product(models.Model):
 
@@ -20,6 +24,7 @@ class Product(models.Model):
     product_description = models.TextField(null=True, blank=True)
     product_slug = models.SlugField(max_length=100, blank=True, null=True)
     price = models.FloatField(default=1000.0)
+    image = CloudinaryImage()
     active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
