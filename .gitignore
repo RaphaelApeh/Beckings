@@ -13,6 +13,9 @@ wheels/
 # Environment
 *.env
 
+# Pytest
+.pytest_cache
+
 .lib
 
 # DJANGO

@@ -15,6 +15,7 @@ dependencies = [
     "django-template-partials>=24.4",
     "djangorestframework>=3.16.0",
     "drf-spectacular[sidecar]>=0.28.0",
+    "gunicorn>=23.0.0",
     "psycopg2[binary]>=2.9.10",
     "psycopg[binary]>=3.2.7",
     "python-decouple>=3.8",
@@ -26,4 +27,10 @@ dependencies = [
 dev = [
     "black>=25.1.0",
     "django-debug-toolbar>=5.1.0",
+    "pytest>=8.3.5",
+    "pytest-django>=4.11.1",
 ]
+
+[tool.pytest.init_options]
+DJANGO_SETTINGS_MODULE = "src.beckings.settings"
+python_files = [ "src/tests/*", "src/tests/test_*.py" ]
