@@ -5,12 +5,17 @@ from rest_framework import permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter
+
 from products.models import Product
 from helpers.serializers.products import (
     ProductListSerializer,
     ProductCreateSerializer,
-    ProductUpdateSerializer # noqa
+    ProductUpdateSerializer
 )
+
+
 
 class ProductListCreateView(GenericAPIView):
 
@@ -31,9 +36,19 @@ class ProductListCreateView(GenericAPIView):
             return [permissions.IsAdminUser()]
         return super().get_permissions()
 
-
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="query",
+                type=OpenApiParameter.QUERY,
+                required=False,
+                description="Search for Products."
+            )
+        ],
+        responses=ProductListSerializer(many=True)
+    )
     def get(self, request, *args: list[str], **kwargs: dict[str, Any]) -> Response:
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -85,4 +100,7 @@ class ProductRetrieveView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    def patch(self, request, *args: list[str], **kwargs: dict[str, Any]) -> Response:
+        return self.put(request, *args, **kwargs)
 
