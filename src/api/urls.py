@@ -9,7 +9,8 @@ from drf_spectacular.views import (
 
 from .views import (
     UserAPIView,
-    ProductViewSet,
+    ProductListCreateView,
+    ProductRetrieveView,
     TokenLoginAPIView,
     ChangePasswordAPIView
     )
@@ -20,6 +21,10 @@ urlpatterns = [
 
     path("users/change-password/", ChangePasswordAPIView.as_view()),
     
+    # products Views
+    path("products/", ProductListCreateView.as_view(), name="product_list"),
+    path("products/<pk>/<product_slug>/", ProductRetrieveView.as_view(), name="product_retrieve"),
+
     # DRF Spectacular
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
@@ -30,7 +35,6 @@ urlpatterns = [
 router = DefaultRouter()
 
 router.register("users", UserAPIView)
-router.register("products", ProductViewSet)
 
 urlpatterns += router.urls
 

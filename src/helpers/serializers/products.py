@@ -16,21 +16,21 @@ class  ProductListSerializer(serializers.ModelSerializer):
 
 
     def __init__(self, *args, **kwargs) -> None:
-
         super().__init__(*args, **kwargs)
 
-        self.fields["image"] = serializers.ImageField()
 
-    updated_at = serializers.SerializerMethodField("updated_at")
-    timestamp = serializers.SerializerMethodField("timestamp")
+    updated_at = serializers.SerializerMethodField()
+    timestamp = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = [
             "pk",
             "product_name",
+            "product_slug",
             "product_description",
             "updated_at",
+            "timestamp",
             "price",
             "active"
         ]
@@ -88,12 +88,16 @@ class ProductCreateSerializer(BaseProductSerializer):
 class ProductUpdateSerializer(BaseProductSerializer):
 
 
-    def update[T](self, instance: T, validated_data: dict[str, Any]) -> T:
+    def validate(self, data: dict[str, Any]):
+        
+        instance = self.instance
+        assert instance is not None
 
         with transaction.atomic():
-            for (key, value) in validated_data.items():
+            for (key, value) in data.items():
+                assert hasattr(instance, key), "%s has no attribute, %d" % (instance.__class__.__name__, key)
                 setattr(instance, key, value)
             instance.save()
-        return instance
+        return data
     
 
