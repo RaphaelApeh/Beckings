@@ -11,6 +11,7 @@ dependencies = [
     "django>=5.2",
     "django-cotton>=2.0.3",
     "django-htmx>=1.23.0",
+    "django-redis>=5.4.0",
     "django-tailwind>=4.0.1",
     "django-template-partials>=24.4",
     "djangorestframework>=3.16.0",

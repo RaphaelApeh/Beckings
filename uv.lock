@@ -43,6 +43,7 @@ dependencies = [
     { name = "django" },
     { name = "django-cotton" },
     { name = "django-htmx" },
+    { name = "django-redis" },
     { name = "django-tailwind" },
     { name = "django-template-partials" },
     { name = "djangorestframework" },
@@ -71,6 +72,7 @@ requires-dist = [
     { name = "django", specifier = ">=5.2" },
     { name = "django-cotton", specifier = ">=2.0.3" },
     { name = "django-htmx", specifier = ">=1.23.0" },
+    { name = "django-redis", specifier = ">=5.4.0" },
     { name = "django-tailwind", specifier = ">=4.0.1" },
     { name = "django-template-partials", specifier = ">=24.4" },
     { name = "djangorestframework", specifier = ">=3.16.0" },
@@ -297,6 +299,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/3c/8bf0e45b60094bbfc2147d48088a6af712534f319765352d5463c7433064/django_htmx-1.23.0.tar.gz", hash = "sha256:71e6242ac6bd32a0e14fcb12b340f901c9a924f0b4e9b461a5e6a6eea8d9c6dd", size = 63450 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/82/47/53ac27bd75d164fa6f3996367c082933ed7ff7a0d59463e09ae97c148ff8/django_htmx-1.23.0-py3-none-any.whl", hash = "sha256:bca2d7590f3df8611a32a436b9f098d8bccb9762b99b01c08dc42336966700a0", size = 60822 },
+]
+
+[[package]]
+name = "django-redis"
+version = "5.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "redis" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/83/9d/2272742fdd9d0a9f0b28cd995b0539430c9467a2192e4de2cea9ea6ad38c/django-redis-5.4.0.tar.gz", hash = "sha256:6a02abaa34b0fea8bf9b707d2c363ab6adc7409950b2db93602e6cb292818c42", size = 52567 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/f1/63caad7c9222c26a62082f4f777de26389233b7574629996098bf6d25a4d/django_redis-5.4.0-py3-none-any.whl", hash = "sha256:ebc88df7da810732e2af9987f7f426c96204bf89319df4c6da6ca9a2942edd5b", size = 31119 },
 ]
 
 [[package]]
@@ -725,6 +740,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9f/48/8f0d257726cfabac975ba73ef7616f45dd2784ebccc120a8865050611212/rav-0.0.9.tar.gz", hash = "sha256:ebd4eb7efb620f9ec5016a0d40f27ff28ce69ddfc013c74c44c83d53bf50e9cc", size = 5383 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8a/ff/ab9a502d9f8fe3cde5e009caa7c3148d964d9da2f27e53f2020c1d292164/rav-0.0.9-py3-none-any.whl", hash = "sha256:5a9429cade688b10ee11321d1c022435b6ac60baa6017c5c636791a4bb2a18c4", size = 6557 },
+]
+
+[[package]]
+name = "redis"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/af/e875d57383653e5d9065df8552de1deb7576b4d3cf3af90cde2e79ff7f65/redis-6.1.0.tar.gz", hash = "sha256:c928e267ad69d3069af28a9823a07726edf72c7e37764f43dc0123f37928c075", size = 4629300 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/28/5f/cf36360f80ae233bd1836442f5127818cfcfc7b1846179b60b2e9a4c45c9/redis-6.1.0-py3-none-any.whl", hash = "sha256:3b72622f3d3a89df2a6041e82acd896b0e67d9f54e9bcd906d091d23ba5219f6", size = 273750 },
 ]
 
 [[package]]
