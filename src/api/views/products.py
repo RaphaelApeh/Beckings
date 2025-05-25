@@ -77,7 +77,7 @@ class ProductRetrieveView(GenericAPIView):
         return obj
     
     def get_serializer_class(self):
-        if self.request.method == "PUT":
+        if self.request.method in ["PUT", "PATCH"]:
             return ProductUpdateSerializer
         return super().get_serializer_class()
 
@@ -96,7 +96,7 @@ class ProductRetrieveView(GenericAPIView):
     
 
     def put(self, request, *args: list[str], **kwargs: dict[str, Any]) -> Response:
-        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer = self.get_serializer(instance=self.get_object(), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

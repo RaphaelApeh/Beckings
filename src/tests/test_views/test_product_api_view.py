@@ -2,6 +2,7 @@ import pytest
 
 from django.urls import reverse
 from rest_framework import status
+from django.utils.lorem_ipsum import words
 
 from django.contrib.auth import get_user_model
 
@@ -41,4 +42,22 @@ class TestProductAPIViews:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+    def test_product_retrieve_api_view(self, authenticated_client, products) -> None:
+        obj = products.create(product_name="Hello WORLD", product_description=words(12))
+        response = authenticated_client.get(reverse("product_retrieve", kwargs={"pk": obj.pk, "product_slug": obj.product_slug}))
 
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["product_name"] == obj.product_name
+
+
+    def test_product_update_api_view(self, authenticated_client, products) -> None:
+        
+        obj = products.create(product_name="Hello WORLD", product_description=words(12))
+        
+        data = {
+            "product_description": "A good product description."
+        }
+        response = authenticated_client.put(reverse("product_retrieve", kwargs={"pk": obj.pk, "product_slug": obj.product_slug}), data)
+
+        assert response.data["product_description"] == data["product_description"]
+        assert response.status_code == status.HTTP_200_OK
