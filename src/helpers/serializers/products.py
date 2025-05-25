@@ -1,7 +1,9 @@
+import copy
 from typing import Any, TypeVar
 
 from django.db import transaction
 from rest_framework import serializers
+from django.forms.models import model_to_dict
 from django.contrib.auth.models import AbstractBaseUser
 from rest_framework.exceptions import ValidationError
 
@@ -79,9 +81,16 @@ class ProductCreateSerializer(BaseProductSerializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """ Create Product """
         user = self.get_user()
+        product_name = attrs["product_name"]
+        product = Product.objects.all()
+        if product.filter(product_name__iexact=product_name).exists():
+            raise ValidationError("product already exists.")
         
-        Product.objects.create(user=user, **attrs)
-
+        obj = product.create(user=user, **attrs)
+        attrs = copy.copy(attrs)
+        attrs["product_slug"] = obj.product_slug
+        attrs["user"] = model_to_dict(obj.user, fields=["username", "email"])
+        
         return super().validate(attrs)
 
 

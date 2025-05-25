@@ -23,6 +23,7 @@ class TestProductAPIViews:
         
         assert response.status_code == 201
         assert len(products) > 0 # Insert to the product model
+        assert response.data["product_name"] == data["product_name"]
 
 
     def test_create_api_view_not_admin(self, db, api_client) -> None:
