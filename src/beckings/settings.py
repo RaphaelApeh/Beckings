@@ -241,3 +241,20 @@ CLOUDINARY_NAME = config("CLOUDINARY_NAME", default="")
 CLOUDINARY_SECRET_KEY = config("CLOUDINARY_SECRET_KEY", default="")
 
 
+# Redis
+
+REDIS_URL = config("REDIS_URL", default="")
+
+if REDIS_URL:
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient"
+            }
+        }
+    }
+
+
