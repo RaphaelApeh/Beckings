@@ -7,8 +7,11 @@ from django.contrib.auth.models import update_last_login
 from rest_framework import serializers
 from rest_framework.fields import CharField
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.authtoken.models import Token
 
+from api.models import get_token_model
+
+
+Token = get_token_model()
 
 class PasswordField(CharField):
 

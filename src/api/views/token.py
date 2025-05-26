@@ -4,9 +4,12 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
-from rest_framework.authtoken.models import Token
 
+from ..models import get_token_model
 from helpers.serializers import TokenLoginSerializer
+
+
+Token = get_token_model()
 
 
 class TokenLoginAPIView(GenericAPIView):

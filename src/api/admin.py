@@ -11,9 +11,9 @@ Token = get_token_model()
 class TokenAdmin(admin.ModelAdmin):
 
     fields = ("user",)
-    list_display = ("user__username", "created", "expired")
+    list_display = ("user__username", "created", "expired_at")
     search_fields = ["user__username", "key"]
-    list_filter = ["created", "expired"]
+    list_filter = ["created", "expired_at"]
 
 
     def get_queryset(self, request) -> QuerySet:

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from datetime import timedelta
 
 from decouple import config
 
@@ -221,6 +222,7 @@ REST_FRAMEWORK = {
 }
 
 API_TOKEN_MODEL = "api.Token"
+API_TOKEN_EXPIRE_TIME = timedelta(days=2) # two days
 
 # DRF Spectacular
 

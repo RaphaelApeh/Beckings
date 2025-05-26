@@ -27,6 +27,20 @@ def get_token_model() -> type[Token]:
         return model
 
 
+def create_token_expire(sender, instance, *args, **kwargs) -> None:
+
+    expire_when = settings.API_TOKEN_EXPIRE_TIME
+
+    if instance.expired_at is None:
+        created = instance.created
+
+        expire = created + expire_when
+    
+        instance.expired_at = expire
+        instance.save()
+
+    return None
+
 
 class Token(models.Model):
 
@@ -36,7 +50,7 @@ class Token(models.Model):
         on_delete=models.CASCADE, verbose_name=_("User")
     )
     created = models.DateTimeField(_("Created"), auto_now_add=True)
-    expired = models.DateTimeField(_("Expired"), blank=True, null=True)
+    expired_at = models.DateTimeField(_("Expired"), blank=True, null=True)
 
     class Meta:
         indexes = [
@@ -55,4 +69,8 @@ class Token(models.Model):
 
     def __str__(self) -> str:
         return self.key
+
+
+
+models.signals.post_save.connect(create_token_expire, sender=Token)
 
