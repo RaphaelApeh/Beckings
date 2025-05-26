@@ -44,7 +44,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
-    "rest_framework.authtoken", # Later drf-something
+    # "rest_framework.authtoken", # Removed
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "django_cotton",
@@ -54,6 +54,7 @@ THIRD_PARTY_APPS = [
 
 INTERNAL_APPS = [
     "theme",
+    "api",
     "products",
     "clients",
     "helpers",
@@ -211,13 +212,15 @@ ADMINS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "api.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication"
     ],
 
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
 
 }
+
+API_TOKEN_MODEL = "api.Token"
 
 # DRF Spectacular
 
