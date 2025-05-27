@@ -35,11 +35,10 @@ class TokenLoginSerializer(serializers.Serializer):
         username = data.pop("username", None)
         password = data.pop("password", None)
         credentials = {
-            "request": request,
             "username": username,
             "password": password
         }
-        user = authenticate(**credentials)
+        user = authenticate(request=request, **credentials)
         if user is None:
             raise AuthenticationFailed("invaild credentials :(.")
         update_last_login(sender=None, user=user)    
@@ -52,3 +51,22 @@ class TokenLoginSerializer(serializers.Serializer):
     def __class_getitem__(cls, *args: list[Any], **kwargs: dict[str, Any]):
 
         return cls
+    
+
+class TokenLogoutSerializer(serializers.Serializer):
+
+    token = serializers.CharField()
+
+    def validate(self, attrs: dict[str, Any]) -> dict[None, None]:
+        
+        token = attrs["token"]
+        try:
+            obj = Token.objects.get(key=token)
+        except Token.DoesNotExist:
+            raise serializers.ValidationError("invalid token %s" % token)
+        else:
+            obj.delete()
+
+        return {}
+
+
