@@ -32,5 +32,7 @@ class TestTokenLogin:
             "username": "test_user"
         }
         response = api_client.post(reverse("api_login"), data)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert response.data["errors"] == "Invalid Data :("
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        
+        error = response.data["password"]
+        assert "This field is required." in error

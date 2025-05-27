@@ -12,12 +12,14 @@ from .views import (
     ProductListCreateView,
     ProductRetrieveView,
     TokenLoginAPIView,
-    ChangePasswordAPIView
+    ChangePasswordAPIView,
+    TokenLogoutAPIView
     )
 
 
 urlpatterns = [
     path("login/", TokenLoginAPIView.as_view(), name="api_login"),
+    path("logout/", TokenLogoutAPIView.as_view(), name="api_logout"),
 
     path("users/change-password/", ChangePasswordAPIView.as_view()),
     

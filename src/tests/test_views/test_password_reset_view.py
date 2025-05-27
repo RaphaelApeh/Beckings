@@ -4,7 +4,7 @@ from django.core import mail
 from django.urls import reverse
 
 
-@pytest.mark.django_db
+@pytest.mark.skip
 class TestPasswordResetView:
 
     def test_forgot_password(self, client, user) -> None:

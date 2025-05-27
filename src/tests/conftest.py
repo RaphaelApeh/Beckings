@@ -42,6 +42,13 @@ def user(db):
     return User.objects.create_superuser(username="test_user", email="admin@test.com", password="password")
 
 
+@pytest.fixture(autouse=True)
+def token(db):
+    from api.models import get_token_model
+    Token = get_token_model()
+    return Token
+
+
 @pytest.fixture
 def authenticated_client(api_client, user):
     """
