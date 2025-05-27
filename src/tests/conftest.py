@@ -39,7 +39,7 @@ def user(db):
     """
     Create dumb user credencials 
     """
-    return User.objects.create_superuser(username="test_user", password="password")
+    return User.objects.create_superuser(username="test_user", email="admin@test.com", password="password")
 
 
 @pytest.fixture
