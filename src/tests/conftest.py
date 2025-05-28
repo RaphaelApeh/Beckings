@@ -21,6 +21,7 @@ def console_email_backend(settings) -> None:
     """
     For sending emails to the console.
     """
+    settings.DEFAULT_FROM_EMAIL = "team@beckings.com"
     settings.EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 

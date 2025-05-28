@@ -4,7 +4,7 @@ from django.core import mail
 from django.urls import reverse
 
 
-@pytest.mark.skip # working on the test.
+@pytest.mark.skip
 class TestPasswordResetView:
 
     def test_forgot_password(self, client, user) -> None:
@@ -18,7 +18,8 @@ class TestPasswordResetView:
         response = client.post(reverse("password_reset"), {"email": user.email})
 
         assert response.status_code == 302
-        assert len(mail.outbox) == 1
+        assert response.url == reverse("password_reset_done")
+        assert len(mail.outbox) == 1 # TODO raises an exception
         assert "Password Reset Sent" in mail.outbox[0].subject
 
 

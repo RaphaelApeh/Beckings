@@ -21,7 +21,7 @@ urlpatterns = [
     path("login/", TokenLoginAPIView.as_view(), name="api_login"),
     path("logout/", TokenLogoutAPIView.as_view(), name="api_logout"),
 
-    path("users/change-password/", ChangePasswordAPIView.as_view()),
+    path("users/change-password/", ChangePasswordAPIView.as_view(), name="api_user_change_password"),
     
     # products Views
     path("products/", ProductListCreateView.as_view(), name="product_list"),
