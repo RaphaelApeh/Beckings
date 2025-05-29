@@ -24,10 +24,10 @@ class ChangePasswordAPIView(GenericAPIView):
 
         serializer = self.get_serializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer.is_valid(raise_exception=True)
 
         return Response({"success": "Password set Successfully."}, status=status.HTTP_200_OK)
+
 
 class UserAPIView(SerializerFactoryMixin, ModelViewSet):
 
