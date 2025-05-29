@@ -61,3 +61,15 @@ class TestProductAPIViews:
 
         assert response.data["product_description"] == data["product_description"]
         assert response.status_code == status.HTTP_200_OK
+
+    
+    def test_product_delete_api_view(self, authenticated_client, products) -> None:
+
+        obj = products.create(product_name="Hello WORLD", product_description=words(12))
+        
+        response = authenticated_client.delete(reverse("product_retrieve", kwargs={"pk": obj.pk, "product_slug": obj.product_slug}))
+
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not products.filter(product_name=obj.product_name).exists()
+
