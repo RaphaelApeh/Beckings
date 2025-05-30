@@ -30,6 +30,7 @@ dev = [
     "django-debug-toolbar>=5.1.0",
     "pytest>=8.3.5",
     "pytest-django>=4.11.1",
+    "time-machine>=2.16.0",
 ]
 
 [tool.pytest.init_options]
