@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
 from cloudinary import CloudinaryImage #noqa
@@ -7,6 +8,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 from .manager import ProductManager
 
@@ -48,3 +50,44 @@ class Product(models.Model):
     def save(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
         self.product_slug = slugify(self.product_name)
         super().save(*args, **kwargs)
+
+
+ORDER_CHOICES = {
+    
+    "default": _("Default"),
+
+    "delivered": _("Delivered"),
+    
+    "cancelled": _("Cancelled")
+}
+
+
+class Order(models.Model):
+
+    order_id = models.UUIDField(primary_key=True,
+                                verbose_name=_("Order ID"), 
+                                default=uuid.uuid1(),
+                                editable=False)
+    
+    product = models.ForeignKey(Product, 
+                                on_delete=models.CASCADE,
+                                verbose_name=_("Product"))
+    
+    user = models.ForeignKey(User,
+                             on_delete=models.SET_NULL,
+                             null=True,
+                             blank=True,
+                             verbose_name=_("User"))
+    
+    manifest = models.TextField(blank=True, 
+                                null=True,
+                                verbose_name=_("Manifest"))
+    
+    status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="default")
+
+
+    def __str__(self) -> str:
+
+        return "{id} - {user} {name}".format(id=self.order_id, user=self.user.username, name=self.__class__.__name__)
+
+
