@@ -66,7 +66,7 @@ class Order(models.Model):
 
     order_id = models.UUIDField(primary_key=True,
                                 verbose_name=_("Order ID"), 
-                                default=uuid.uuid1(),
+                                default=uuid.uuid1,
                                 editable=False)
     
     product = models.ForeignKey(Product, 
@@ -83,6 +83,7 @@ class Order(models.Model):
                                 null=True,
                                 verbose_name=_("Manifest"))
     
+    timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="default")
 
 
@@ -91,3 +92,16 @@ class Order(models.Model):
         return "{id} - {user} {name}".format(id=self.order_id, user=self.user.username, name=self.__class__.__name__)
 
 
+
+class OrderProxy(Order):
+
+    class Meta:
+        proxy = True
+        verbose_name = _("User Order")
+        verbose_name_plural = _("User Orders")
+    
+    
+    def cancelled(self) -> bool:
+        return self.status == "cancelled"
+
+    cancelled.short_description = _("Cancelled")

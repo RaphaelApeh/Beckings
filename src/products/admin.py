@@ -1,10 +1,13 @@
-from typing import Any
+from typing import Any, List
 
 from django.contrib import admin
 from django.db.models import QuerySet
 from django.http import HttpRequest
 
-from .models import Product
+from .models import (
+    Product,
+    OrderProxy
+)
 
 
 @admin.register(Product)
@@ -32,3 +35,18 @@ class ProductAdmin(admin.ModelAdmin):
     def save_model(self, request: HttpRequest, obj: Product, form, change) -> Any:
         obj.user = request.user
         return super().save_model(request, obj, form, change)
+
+
+
+@admin.register(OrderProxy)
+class OrderAdmin(admin.ModelAdmin):
+
+    fields: List[str] = ["user", "product", "manifest", "status"]
+    list_display: tuple[str, ...] = ("user__username", 
+                    "product__product_name",
+                    "cancelled")
+
+    def get_queryset(self, request) -> QuerySet:
+        return super().get_queryset(request).select_related("user", "product")
+
+
