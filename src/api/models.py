@@ -6,6 +6,7 @@ import os
 from django.db import models
 from django.apps import apps
 from django.conf import settings
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ImproperlyConfigured
 
@@ -67,9 +68,16 @@ class Token(models.Model):
     def generate_key(cls) -> str:
         return binascii.hexlify(os.urandom(20)).decode()
 
+    
     def __str__(self) -> str:
         return self.key
 
+
+    def is_expired(self) -> bool:
+
+        if self.expired_at is None:
+            return False
+        return timezone.now() >= self.expired_at
 
 
 models.signals.post_save.connect(create_token_expire, sender=Token)
