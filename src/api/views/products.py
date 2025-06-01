@@ -9,6 +9,8 @@ from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import OpenApiParameter
 
 from products.models import Product
+from helpers.serializers.order import \
+                    UserOrderCreateSerializer
 from helpers.serializers.products import (
     ProductListSerializer,
     ProductCreateSerializer,
@@ -65,6 +67,9 @@ class ProductRetrieveView(GenericAPIView):
 
     queryset = Product.objects.select_related("user")
     serializer_class = ProductListSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
 
     def get_object(self):
 
@@ -79,6 +84,8 @@ class ProductRetrieveView(GenericAPIView):
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return ProductUpdateSerializer
+        if self.request.method == "POST":
+            return UserOrderCreateSerializer
         return super().get_serializer_class()
 
 
@@ -87,7 +94,31 @@ class ProductRetrieveView(GenericAPIView):
         serializer = self.get_serializer(self.get_object(), many=False)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    def get_serializer_context(self):
+     
+        kwargs = {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self
+        }
+        if self.request.method == "POST":
+            kwargs["product_id"] = self.get_object().pk
+        
+        return kwargs
 
+
+    def post(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
+        """
+        Create user orders
+        """
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+          
+        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+    
 
     def delete(self, request, *args: list[str], **kwargs: dict[str, Any]) -> Response:
         obj = self.get_object()
