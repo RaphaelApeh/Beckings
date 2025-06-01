@@ -1,3 +1,5 @@
+from django.db.models import QuerySet
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import (
@@ -52,4 +54,13 @@ class ProductSearchView(View):
     
 
 product_search_view = ProductSearchView.as_view()
+
+
+@method_decorator(login_required, name="dispatch")
+class UserOrderListView(ListView):
+
+    def get_queryset(self) -> QuerySet:
+        return self.request.user.order_set.select_related("user", "product")
+    
+    template_name = "orders/order_list.html"
 
