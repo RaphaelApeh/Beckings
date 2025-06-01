@@ -1,3 +1,5 @@
+from typing import Union, Optional
+
 from django.db.models import Model
 from rest_framework.serializers import ModelSerializer
 
@@ -11,7 +13,11 @@ __all__ = [
 
 
 
-def serializer_factory(model: type[Model], serializer = ModelSerializer, *, fields: list[str] | str | None = None, exclude: list[str] | None =None) -> ModelSerializer:
+def serializer_factory(model: type[Model], 
+                       serializer = ModelSerializer, 
+                       *, 
+                       fields: Union[list[str], Optional[str]] = None, 
+                       exclude: Optional[list[str]] = None) -> type[ModelSerializer]:
 
     assert model is not None
     assert issubclass(model, Model)

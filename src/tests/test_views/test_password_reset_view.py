@@ -8,7 +8,7 @@ from django.urls import reverse
 class TestPasswordResetView:
 
     def test_forgot_password(self, client, user) -> None:
-
+        mail.outbox = []
         response = client.get(reverse("password_reset"))
 
         assert response.status_code == 200

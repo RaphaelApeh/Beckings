@@ -13,7 +13,8 @@ from .views import (
     ProductRetrieveView,
     TokenLoginAPIView,
     ChangePasswordAPIView,
-    TokenLogoutAPIView
+    TokenLogoutAPIView,
+    UserOrderListAPIView,
     )
 
 
@@ -30,7 +31,10 @@ urlpatterns = [
     # DRF Spectacular
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc")
+    path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+
+    # User Orders
+    path("orders/", UserOrderListAPIView.as_view(), name="user_order"),
 ]
 
 
