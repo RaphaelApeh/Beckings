@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Any
 
 from rest_framework import permissions, status, serializers
 from django.contrib.auth import get_user_model
@@ -9,7 +9,9 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
 from .base import SerializerFactoryMixin
-from helpers.serializers.users import ChangePasswordSerializer
+from helpers.serializers.users import ChangePasswordSerializer, \
+                                    UserCreationSerializer
+
 
 User = get_user_model()
 
@@ -36,6 +38,25 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
     permission_classes = [
         permissions.IsAdminUser
     ]
+
+    
+    def get_serializer_class(self):
+
+        if self.action == "create":
+            return UserCreationSerializer
+        
+        return super().get_serializer_class()
+
+
+    def create(self, request, *args: Any, **kwargs: Any) -> Response:
+        
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        
+        return Response(serializer.validated_data, 
+                        status=status.HTTP_201_CREATED)
+
 
     @action(["GET"],
             detail=False,
