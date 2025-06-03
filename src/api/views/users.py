@@ -39,6 +39,15 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
         permissions.IsAdminUser
     ]
 
+    def get_permissions(self):
+        
+        if self.action == "create":
+            return [permissions.AllowAny()]
+        
+        if self.action == "destroy":
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
     
     def get_serializer_class(self):
 
