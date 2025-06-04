@@ -4,11 +4,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import OpenApiParameter
 
 from products.models import Product
+from helpers.decorators import paginate
 from helpers.serializers.order import \
                     UserOrderCreateSerializer
 from helpers.serializers.products import (
@@ -19,6 +21,7 @@ from helpers.serializers.products import (
 
 
 
+@paginate(PageNumberPagination, page_size=1)
 class ProductListCreateView(GenericAPIView):
 
 
@@ -51,6 +54,12 @@ class ProductListCreateView(GenericAPIView):
     )
     def get(self, request, *args: list[str], **kwargs: dict[str, Any]) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

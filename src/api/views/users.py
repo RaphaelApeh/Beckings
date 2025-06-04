@@ -9,6 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
 from .base import SerializerFactoryMixin
+from ..permissions import IsUser
 from helpers.serializers.users import ChangePasswordSerializer, \
                                     UserCreationSerializer
 
@@ -35,21 +36,22 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
 
     queryset = User.objects.order_by("-date_joined")
     serializer_fields = ["pk", "username", "email", "last_login"]
-    permission_classes = [
-        permissions.IsAdminUser
-    ]
+    permission_classes = (
+        IsUser,
+    )
 
     def get_permissions(self):
         
         if self.action == "create":
             return [permissions.AllowAny()]
         
-        if self.action == "destroy":
-            return [permissions.IsAuthenticated()]
+        if self.action == "list":
+            return [permissions.IsAdminUser()]
+    
         return super().get_permissions()
 
-    
-    def get_serializer_class(self):
+
+    def get_serializer_class[T](self) -> type[T]:
 
         if self.action == "create":
             return UserCreationSerializer
@@ -66,11 +68,6 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
         return Response(serializer.validated_data, 
                         status=status.HTTP_201_CREATED)
 
-
-    def destroy(self, request, *args, **kwargs) -> Response:
-        if (request.user != self.get_object()) or not request.user.is_staff:
-            return Response({"detail": "error"}, status=status.HTTP_401_UNAUTHORIZED)
-        return super().destroy(request, *args, **kwargs)
 
     @action(["GET"],
             detail=False,
