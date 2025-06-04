@@ -67,6 +67,11 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
 
+    def destroy(self, request, *args, **kwargs) -> Response:
+        if (request.user != self.get_object()) or not request.user.is_staff:
+            return Response({"detail": "error"}, status=status.HTTP_401_UNAUTHORIZED)
+        return super().destroy(request, *args, **kwargs)
+
     @action(["GET"],
             detail=False,
             permission_classes=[permissions.IsAuthenticated])
