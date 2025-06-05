@@ -11,7 +11,8 @@ from rest_framework.response import Response
 from .base import SerializerFactoryMixin
 from ..permissions import IsUser
 from helpers.serializers.users import ChangePasswordSerializer, \
-                                    UserCreationSerializer
+                                    UserCreationSerializer, \
+                                    UserUpdateSerializer
 
 
 User = get_user_model()
@@ -56,13 +57,35 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
         if self.action == "create":
             return UserCreationSerializer
         
+        if self.action == "update":
+            return UserUpdateSerializer
         return super().get_serializer_class()
 
+
+    def perform_update(self, serializer) -> None:
+        
+        return None #
+    
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        
 
     def create(self, request, *args: Any, **kwargs: Any) -> Response:
         
         serializer = self.get_serializer(data=request.data)
-
+        self.update
         serializer.is_valid(raise_exception=True)
         
         return Response(serializer.validated_data, 

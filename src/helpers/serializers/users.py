@@ -1,5 +1,6 @@
 from typing import Any, TypeVar
 
+from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
@@ -104,6 +105,9 @@ class UserCreationSerializer(serializers.Serializer):
         if password1 != password2:
             raise serializers.ValidationError(_("Password not Match."))
         
+        if User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError(_("A User with this email already exists."))
+
         obj = User.objects.create_user(username,
                                  email,
                                  password1)
@@ -118,3 +122,33 @@ class UserCreationSerializer(serializers.Serializer):
         }
 
         return data
+
+
+
+class UserUpdateSerializer(serializers.Serializer):
+
+    username = UsernameField(required=False)
+    email = serializers.EmailField(required=False)
+
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        
+        if self.instance is None or \
+                self.initial_data is None:
+            raise serializers.ValidationError("an error ocured.")
+
+        if not attrs:
+            raise serializers.ValidationError("data is null.")
+        
+        data = {"message": _("details updated.")}
+        instance = self.instance
+
+        with transaction.atomic():
+            for (key, value) in attrs.items():
+                if not hasattr(instance, key):
+                    continue
+                setattr(instance, key, value)
+            instance.save()
+        return data
+
+

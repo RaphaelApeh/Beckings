@@ -56,7 +56,7 @@ class TestUserAPIView:
         assert qs.exists()
 
 
-    def test_user_create_api_delete(self, api_client) -> None:
+    def test_user_delete_api_endpoint(self, api_client) -> None:
 
         user = User.objects.create_user("hello_world", password="bad_password")
         api_client.force_authenticate(user=user)
@@ -65,4 +65,36 @@ class TestUserAPIView:
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not User.objects.filter(pk=user.pk).exists()
+
+
+    def test_user_update_api_endpoint(self, api_client) -> None:
+
+        data = {
+            "username": "johndoe",
+            "email": "johndoe@test.com",
+            "password1": "a_strong_password",
+            "password2": "a_strong_password"
+        }
+        response = api_client.post(reverse("user-list"), data)
+        qs = User.objects.filter(username=data["username"])
+
+        assert qs.exists()
+        assert len(qs) == 1
+        assert response.status_code == status.HTTP_201_CREATED
+
+        user = qs.get()
+        api_client.force_authenticate(user=user)
+        updated_data = {
+            "username": "johnsmith"
+        }
+        response = api_client.put(reverse("user-detail", 
+                                          args=(user.pk,)), 
+                                          updated_data)
+        
+
+        user.refresh_from_db()
+
+        assert response.status_code == status.HTTP_200_OK
+        assert user.username == updated_data["username"]
+        assert "details updated." in response.data.get("message")
 
