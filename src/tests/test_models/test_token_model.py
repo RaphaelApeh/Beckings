@@ -45,6 +45,10 @@ class TestToken:
 
         with time_machine.travel(timezone.now() + settings.API_TOKEN_EXPIRE_TIME): # travel 2 days
             assert obj.is_expired()
+
+        with time_machine.travel(timezone.now() + \
+                                timezone.timedelta(days=1)):
+            assert not obj.is_expired()
         
         assert not obj.is_expired()
 

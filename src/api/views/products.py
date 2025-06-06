@@ -11,6 +11,7 @@ from drf_spectacular.utils import OpenApiParameter
 
 from products.models import Product
 from helpers.decorators import paginate
+from helpers.filters import ModelSearchFilterBackend
 from helpers.serializers.order import \
                     UserOrderCreateSerializer
 from helpers.serializers.products import (
@@ -27,7 +28,9 @@ class ProductListCreateView(GenericAPIView):
 
     serializer_class = ProductListSerializer
     queryset = Product.objects.select_related("user")
-
+    filter_backends = (
+        ModelSearchFilterBackend,
+    )
 
     def get_serializer_class(self):
 
