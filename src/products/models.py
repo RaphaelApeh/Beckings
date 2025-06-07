@@ -52,6 +52,16 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 
+def create_product(**kwargs: Any) -> Product:
+    return Product.objects.create(**kwargs)
+
+
+# for testing purposes
+
+def create_bulk_product(args: list[dict]) -> list[Product]:
+    return [create_product(**x) for x in args]
+
+
 ORDER_CHOICES = {
     
     "default": _("Default"),

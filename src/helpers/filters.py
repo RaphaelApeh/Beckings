@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, Optional, Literal
+from typing import TypeVar, Optional
 
 from django.db import models
 from django.db.models import Q
@@ -12,17 +12,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.filters import BaseFilterBackend
 
+from ._typing import LookUp
+
 
 View = TypeVar("View", GenericAPIView, APIView)
-
-
-LookUp = Literal["icontains", 
-                "iexact", 
-                "contains", 
-                "gt", 
-                "lt",
-                "gte",
-                "lte"]
 
 
 def qs_vector_search(model: type[models.Model],
@@ -48,7 +41,7 @@ def qs_filter(model: models.Model, query: Optional[str],
     qs = model.objects.select_related("user")
     
     if not query:
-        return qs.none() # return an empty queryset
+        return qs.all() # return all queryset
     
     for field in search_fields:
         

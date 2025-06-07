@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from django.http import HttpRequest
 from django_htmx.middleware import HtmxDetails
@@ -8,6 +8,7 @@ __all__ = [
     "HTMXHttpRequest",
     "Bit",
     "AuthUser",
+    "LookUp",
 ]
 
 class HTMXHttpRequest(HttpRequest):
@@ -19,6 +20,14 @@ Bit = dict[str, Any]
 
 List = list[str]
 
+
+LookUp = Literal["icontains", 
+                "iexact", 
+                "contains", 
+                "gt", 
+                "lt",
+                "gte",
+                "lte"]
 
 class AuthUser:
 

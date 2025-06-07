@@ -1,4 +1,5 @@
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Optional,\
+                    Union, NoReturn
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -13,6 +14,7 @@ from django.contrib.auth.password_validation import \
         validate_password
 
 from rest_framework import serializers
+from rest_framework.validators import qs_exists
 from rest_framework.exceptions import APIException
 
 from helpers._typing import AuthUser
@@ -27,6 +29,17 @@ class _APIException(APIException):
 
     status_code = 404
     default_detail = "error"
+
+
+def validate_user_field(instance: UserType, field: Union[str, None] = None,
+                        value: Optional[str] = None) -> NoReturn:
+
+    qs = User.objects.filter(is_active=True).exclude(pk=instance.pk)
+    if field and value:
+        qs = qs.filter(**{f"{field}__iexact": value})
+    if qs_exists(qs):
+        raise serializers.ValidationError("%(value)s already exists." %
+                                           {"value": value})
 
 
 class UsernameField(serializers.CharField):
@@ -127,7 +140,11 @@ class UserCreationSerializer(serializers.Serializer):
 
 class UserUpdateSerializer(serializers.Serializer):
 
+    UNIQUE_FIELDS = ["username", "email"]
+
     username = UsernameField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
 
 
@@ -142,13 +159,19 @@ class UserUpdateSerializer(serializers.Serializer):
         
         data = {"message": _("details updated.")}
         instance = self.instance
-
+        
         with transaction.atomic():
+        
             for (key, value) in attrs.items():
+        
                 if not hasattr(instance, key):
                     continue
+                if key in self.UNIQUE_FIELDS:
+                    validate_user_field(instance, field=key, value=value)
                 setattr(instance, key, value)
+        
             instance.save()
+        
         return data
 
 

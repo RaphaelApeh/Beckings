@@ -1,3 +1,12 @@
-<form action="">
-    <input type="text">
+{% load i18n %}
+<h2>{% trans "Becking`s Poducts Search" %}</h2>
+<form class="form-inline" method="get" action="">
+  <div class="form-group">
+    <div class="input-group">
+      <input type="text" class="form-control" style="width: 350px" name="{{ search_query }}">
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">{% trans "Search" %}</button>
+      </span>
+    </div>
+  </div>
 </form>

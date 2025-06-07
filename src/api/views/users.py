@@ -36,7 +36,12 @@ class ChangePasswordAPIView(GenericAPIView):
 class UserAPIView(SerializerFactoryMixin, ModelViewSet):
 
     queryset = User.objects.order_by("-date_joined")
-    serializer_fields = ["pk", "username", "email", "last_login"]
+    serializer_fields: tuple[str, ...] = ("pk",
+                        "username", 
+                        "email",
+                        "first_name",
+                        "last_name", 
+                        "last_login")
     permission_classes = (
         IsUser,
     )
