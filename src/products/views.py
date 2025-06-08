@@ -1,17 +1,27 @@
-from django.db.models import QuerySet
+from __future__ import annotations
+
+from typing import Any, Optional
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import (
     View,
     ListView,
-    DetailView
+    DetailView,
+    FormView
     )
 from django.shortcuts import get_object_or_404, render
 
+from django_htmx.http import HttpResponseClientRedirect
+
 from helpers.decorators import require_htmx
 
-from .models import Product
+from clients.views import \
+        FormRequestMixin
+from .models import Product, \
+                    OrderProxy
+from .forms import AddOrderForm
 
 
 class ProductListView(ListView):
@@ -59,8 +69,36 @@ product_search_view = ProductSearchView.as_view()
 @method_decorator(login_required, name="dispatch")
 class UserOrderListView(ListView):
 
-    def get_queryset(self) -> QuerySet:
-        return self.request.user.order_set.select_related("user", "product")
-    
+    queryset = OrderProxy.objects.select_related("user", "product")   
     template_name = "orders/order_list.html"
+
+
+
+@method_decorator([login_required, require_htmx], name="dispatch")
+class AddOrderView(FormRequestMixin, FormView):
+
+    template_name: Optional[str] = "orders/add_order.html"
+    form_class = AddOrderForm
+
+
+    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
+        
+        kw = {
+            "pk": kwargs.get("product_id")
+        }
+        product = get_object_or_404(Product, **kw)
+        self.product = product
+        return super().dispatch(request, *args, **kwargs)
+
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kw = super().get_form_kwargs()
+        kw["view"] = self
+        return kw
+
+    def form_valid(self, form) -> HttpResponse:
+        kwargs = {} # empty for now
+        form.save(**kwargs)
+        return HttpResponseClientRedirect(self.product.get_absolute_url())
+
 

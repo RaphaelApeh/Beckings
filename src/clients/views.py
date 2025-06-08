@@ -14,12 +14,22 @@ from django.contrib.auth import logout, login, authenticate, REDIRECT_FIELD_NAME
 from .forms import (LoginForm, RegisterForm)
 
 
-class LoginView(FormView):
+
+class FormRequestMixin:
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs =  super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
+
+class LoginView(FormRequestMixin, FormView):
 
     template_name = "accounts/auth.html"
     success_url = "/products/"
     form_class = LoginForm
 
+    
     def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
@@ -27,15 +37,12 @@ class LoginView(FormView):
         self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
 
+    
     def get_context_data(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Login"
         return context
     
-    def get_form_kwargs(self) -> dict[str, Any]:
-        kwargs =  super().get_form_kwargs()
-        kwargs["request"] = self.request
-        return kwargs
 
     def form_valid(self, form: LoginForm) -> HttpResponseRedirect:
         request = self.request
@@ -48,6 +55,11 @@ class LoginView(FormView):
         next_url = self.next_url or self.success_url
         return redirect(next_url)
     
+
+    def validate_path(self, path: str) -> None:
+        
+        if path.startswith(("https", "http")):...
+
 
 class RegisterView(FormView):
 

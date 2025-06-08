@@ -1,0 +1,11 @@
+<form hx-post="{{  request.path }}"
+    hx-headers="{'x-csrftoken': '{{ csrf_token }}' }"
+    class="mt-4 space-y-4 lg:mt-5 md:space-y-5">
+    {% csrf_token %}
+    {% for field in form %}
+        <p class="text-bold text-black">{{ field.label }}</p>
+        {{ field|form_class }}
+        <p class="font-bold mb-4 mt-0 text-sm">{{ field.help_text }}</p>
+    {% endfor %}
+    <c-button title="Order" />
+</form>

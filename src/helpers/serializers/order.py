@@ -30,7 +30,8 @@ class UserOrderSerializer(serializers.ModelSerializer):
         fields = (
             "product",
             "user",
-            "manifest"
+            "manifest",
+            "number_of_items"
         )
 
 
@@ -45,7 +46,7 @@ class UserOrderCreateSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
         self.product_id = self.context["product_id"]
         self.fields["manifest"] = serializers.CharField(allow_blank=True)
-
+        self.fields["number_of_items"] = serializers.IntegerField(required=False)
 
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:

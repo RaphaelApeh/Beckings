@@ -20,7 +20,10 @@ class ProductAdmin(admin.ModelAdmin):
         (None, {"fields": ("product_name",)}),
         ("Price", {"fields": ("price",)}),
         ("Description", {"fields": ("product_description",)}),
-        ("Extra Data", {"fields": ("active", "product_slug")})
+        ("Extra Data", {"fields": ("active", "product_slug")}),
+        ("Quantities", {"fields": (
+            "quantities",
+        )})
     )
 
     def get_queryset(self, request: HttpRequest) -> QuerySet:

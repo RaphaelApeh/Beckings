@@ -95,32 +95,43 @@
           </div>
 
           <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-            <a
-              hx-post="/contact/"
-              hx-trigger="click"
-              hx-target="this"
-              class="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
-              role="button"
-            >
-              <svg
-                class="w-5 h-5 -ms-2 me-2"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
+            {% if request.user.is_authenticated and object.quantities > 0 %}
+              <a
+                hx-get="{% url 'add_user_order' object.pk %}"
+                hx-trigger="click"
+                hx-target="this"
+                hx-swap="outerHTML"
+                class="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
+                role="button"
               >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12.01 6.001C6.5 1 1 8 5.782 13.001L12.011 20l6.23-7C23 8 17.5 1 12.01 6.002Z"
-                />
-              </svg>
-              Contact
-            </a>
+                <svg
+                  class="w-5 h-5 -ms-2 me-2"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12.01 6.001C6.5 1 1 8 5.782 13.001L12.011 20l6.23-7C23 8 17.5 1 12.01 6.002Z"
+                  />
+                </svg>
+                Order
+              </a>
+            {% elif request.user.is_anonymous %}
+              <p class="text-center font-bold">
+                Please Log In to Order <a class="text-blue-400 hover:text-blue-300" href="{% url 'login' %}?next={% url 'product-detail' pk=object.pk slug=object.product_slug %}">Login</a>
+              </p>
+            {% else %}
+              <p class="text-red-700 font-bold text-center text-lg">
+                  Out of Stock
+              </p>
+            {% endif %}
           </div>
 
           <hr class="my-6 md:my-8 border-gray-200" />

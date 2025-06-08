@@ -70,4 +70,3 @@ class RegisterForm(UserCreationForm):
             self.add_error("email", "Email already exists.")
         return super().clean()
     
-    
