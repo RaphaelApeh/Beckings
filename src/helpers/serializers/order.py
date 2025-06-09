@@ -58,12 +58,13 @@ class UserOrderCreateSerializer(serializers.Serializer):
         user = self.context["request"].user
         if not user:
             self.fail("required", field="User")
-        manifest = attrs.get("manifest", "")
         kwargs = {
             "user": user,
             "product_id": int(product_id)
         }
-        if manifest:
+        if (number_of_items := attrs.get("number_of_items")) is not None:
+            kwargs["number_of_items"] = number_of_items
+        if manifest := attrs.get("manifest"):
             kwargs["manifest"] = manifest
         OrderProxy.objects.create(**kwargs)
 

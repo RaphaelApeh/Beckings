@@ -61,7 +61,7 @@ class BaseProductSerializer(serializers.Serializer):
 
     product_name = serializers.CharField()
     product_description = serializers.CharField()
-    quantities = serializers.IntegerField()
+    quantities = serializers.IntegerField(required=False)
     price = serializers.FloatField()
     active = serializers.BooleanField()
 

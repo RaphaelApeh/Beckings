@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from django.db.models import QuerySet
 
@@ -9,6 +9,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
+from products.models import OrderProxy
 from helpers.serializers.order import UserOrderSerializer
 
 
@@ -35,4 +36,34 @@ class UserOrderListAPIView(BaseGenericAPIView):
         serailizer = self.get_serializer(queryset, many=True)
         
         return Response(serailizer.data, status=status.HTTP_200_OK)
+
+
+
+class UserOrderRetrieveAPIView(BaseGenericAPIView):
+
+
+    serializer_class = UserOrderSerializer
+
+    def get_object(self) -> Union[OrderProxy, Response]:
+
+        kwargs = {
+            "order_id": self.kwargs["order_id"]
+        }
+        try:
+            obj = OrderProxy.objects.get(**kwargs)
+        except OrderProxy.DoesNotExist:
+            return Response("object does not exists.", status=status.HTTP_404_NOT_FOUND)
+        else:
+            self.object = obj
+            return obj
+
+
+    def get(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
+        serializer = self.get_serializer(self.get_object())
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    def delete(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
+        ...
 

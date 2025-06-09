@@ -15,6 +15,7 @@ from .views import (
     ChangePasswordAPIView,
     TokenLogoutAPIView,
     UserOrderListAPIView,
+    UserOrderRetrieveAPIView,
     )
 
 
@@ -35,6 +36,7 @@ urlpatterns = [
 
     # User Orders
     path("orders/", UserOrderListAPIView.as_view(), name="user_order"),
+    path("orders/<uuid:order_id>/", UserOrderRetrieveAPIView.as_view(), name="order_retrieve")
 ]
 
 

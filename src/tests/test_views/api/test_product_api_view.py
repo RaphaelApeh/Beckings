@@ -27,7 +27,7 @@ class TestProductAPIViews:
         assert response.data["product_name"] == data["product_name"]
 
 
-    def test_create_api_view_not_admin(self, db, api_client) -> None:
+    def test_create_api_view_not_admin(self, db, api_client, products) -> None:
         
         user = User.objects.create_user("testuser1234", password="password")
         api_client.force_authenticate(user=user)
@@ -40,6 +40,7 @@ class TestProductAPIViews:
         response = api_client.post(reverse("product_list"), data)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert len(products) == 0
 
 
     def test_product_retrieve_api_view(self, authenticated_client, products) -> None:

@@ -3,7 +3,7 @@ import pytest
 from django.urls import reverse
 from django.utils.lorem_ipsum import words
 
-from products.models import Order
+from products.models import Order, create_bulk_product
 
 
 @pytest.mark.django_db
@@ -45,3 +45,25 @@ class TestOrderAPI:
         assert response.data["message"] == "Added Item"
         assert Order.objects.count() >= 1
 
+
+    def test_user_order_retrieve(self, user, authenticated_client) -> None:
+        
+        create_bulk_product([
+            {
+                "product_name": "IPhone",
+                "user": user,
+            },
+            {
+                "product_name": "Television",
+                "user": user,
+            },
+            {
+                "product_name": "Gucci Bag",
+                "user": user,
+            },
+        ])
+        obj = Order.objects.create(product_id=1, user=user)
+
+        response = authenticated_client.get(reverse("order_retrieve", args=(obj.order_id,)))
+
+        assert response.status_code == 200
