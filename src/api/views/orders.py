@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 from django.db.models import QuerySet
 
@@ -8,8 +8,11 @@ from rest_framework.permissions import (
     IsAuthenticated,
 )
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
+from rest_framework.mixins import DestroyModelMixin
 
 from products.models import OrderProxy
+from api.permissions import IsUser
 from helpers.serializers.order import UserOrderSerializer
 
 
@@ -39,31 +42,43 @@ class UserOrderListAPIView(BaseGenericAPIView):
 
 
 
-class UserOrderRetrieveAPIView(BaseGenericAPIView):
+class UserOrderRetrieveAPIView(DestroyModelMixin, BaseGenericAPIView):
 
 
     serializer_class = UserOrderSerializer
+    permission_classes = (
+        IsAuthenticated,
+        IsUser
+    )
 
-    def get_object(self) -> Union[OrderProxy, Response]:
+    def get_object(self) -> OrderProxy:
 
         kwargs = {
             "order_id": self.kwargs["order_id"]
         }
+
         try:
             obj = OrderProxy.objects.get(**kwargs)
         except OrderProxy.DoesNotExist:
-            return Response("object does not exists.", status=status.HTTP_404_NOT_FOUND)
+            raise NotFound("object does not exists.")
         else:
+            self.check_object_permissions(self.request, obj)
             self.object = obj
             return obj
 
 
     def get(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
-        serializer = self.get_serializer(self.get_object())
+
+        instance = self.object if hasattr(self, "object") \
+            else self.get_object()
+        serializer = self.get_serializer(instance)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
     def delete(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
-        ...
+        
+        return self.destroy(request, *args, **kwargs)
+
+
 
