@@ -40,7 +40,7 @@ class AddOrder:
         
         product_instace = self.product_instance
         number_of_items = data.get("number_of_items")
-        manifest = data.get("manifest")
+        manifest = data.get("manifest", "")
         assert product_instace is not None and number_of_items is \
                 not None
 

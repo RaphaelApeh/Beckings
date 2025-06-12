@@ -1,12 +1,16 @@
 from typing import Any
 
 from rest_framework import serializers
+
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.utils.translation import gettext_lazy as _
 
-from products.models import OrderProxy
+from products.order_utils import AddOrder
+from products.models import OrderProxy, Product
 from helpers.serializers import serializer_factory
+
 from .products import ProductListSerializer
 
 
@@ -45,28 +49,48 @@ class UserOrderCreateSerializer(serializers.Serializer):
         
         super().__init__(*args, **kwargs)
         self.product_id = self.context["product_id"]
-        self.fields["manifest"] = serializers.CharField(allow_blank=True)
-        self.fields["number_of_items"] = serializers.IntegerField(required=False)
+        self.fields["manifest"] = serializers.CharField()
+        self.fields["number_of_items"] = serializers.IntegerField()
 
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         
         product_id = self.product_id if hasattr(self, "product_id") else \
                             None
+        
+        user = self.context["request"].user
+        data = {}
+
+        assert user is not None
+        assert not isinstance(user, AnonymousUser)
+        
         if product_id is None:
             self.fail("required", field="Product Id")
         user = self.context["request"].user
+        
         if not user:
             self.fail("required", field="User")
+        
         kwargs = {
             "user": user,
             "product_id": int(product_id)
         }
+        
+        try:
+            product = Product.objects.get()
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("product does not exists.")
+        
         if (number_of_items := attrs.get("number_of_items")) is not None:
             kwargs["number_of_items"] = number_of_items
+            data["number_of_items"] = number_of_items
         if manifest := attrs.get("manifest"):
             kwargs["manifest"] = manifest
-        OrderProxy.objects.create(**kwargs)
+            data["manifest"] = manifest
+
+        AddOrder(
+            product_instance=product
+        ).create(user, data)
 
         kwargs.pop("user")
         qs = user.order_set.all()
