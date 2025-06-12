@@ -31,7 +31,7 @@ class  ProductListSerializer(serializers.ModelSerializer):
             "product_name",
             "product_slug",
             "product_description",
-            "quantities",
+            "quantity",
             "updated_at",
             "timestamp",
             "price",
@@ -61,7 +61,7 @@ class BaseProductSerializer(serializers.Serializer):
 
     product_name = serializers.CharField()
     product_description = serializers.CharField()
-    quantities = serializers.IntegerField(required=False)
+    quantity = serializers.IntegerField(required=False)
     price = serializers.FloatField()
     active = serializers.BooleanField()
 

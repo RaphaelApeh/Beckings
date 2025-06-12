@@ -2,10 +2,12 @@
     hx-headers="{'x-csrftoken': '{{ csrf_token }}' }"
     class="mt-4 space-y-4 lg:mt-5 md:space-y-5">
     {% csrf_token %}
+    {% if form.non_field_errors %}
+        <p class="text-red-700 font-bold text-center">{{ form.non_field_errors }}</p>
+    {% endif %}
     {% for field in form %}
         <p class="text-bold text-black">{{ field.label }}</p>
         {{ field|form_class }}
-        <p class="font-bold mb-4 mt-0 text-sm">{{ field.help_text }}</p>
     {% endfor %}
     <c-button title="Order" />
 </form>

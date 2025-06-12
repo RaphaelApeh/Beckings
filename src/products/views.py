@@ -97,7 +97,9 @@ class AddOrderView(FormRequestMixin, FormView):
         return kw
 
     def form_valid(self, form) -> HttpResponse:
-        kwargs = {} # empty for now
+        kwargs = {
+            "user": self.request.user
+        } # empty for now
         form.save(**kwargs)
         return HttpResponseClientRedirect(self.product.get_absolute_url())
 

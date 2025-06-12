@@ -95,7 +95,7 @@
           </div>
 
           <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-            {% if request.user.is_authenticated and object.quantities > 0 %}
+            {% if request.user.is_authenticated and object.quantity > 0 %}
               <a
                 hx-get="{% url 'add_user_order' object.pk %}"
                 hx-trigger="click"

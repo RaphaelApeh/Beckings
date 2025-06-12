@@ -25,7 +25,8 @@ class Product(models.Model):
     price = models.FloatField(default=1000.0)
     # image = CloudinaryImage()
     active = models.BooleanField(default=True)
-    quantities = models.PositiveSmallIntegerField(default=1)
+    quantities = None
+    quantity = models.PositiveSmallIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -64,8 +65,6 @@ def create_bulk_product(args: list[dict[str, Any]]) -> list[Product]:
 
 
 ORDER_CHOICES = {
-    
-    "default": _("Default"),
 
     "delivered": _("Delivered"),
 
@@ -98,12 +97,12 @@ class Order(models.Model):
     
     number_of_items = models.PositiveSmallIntegerField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="default")
+    status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="pending")
 
 
     def __str__(self) -> str:
 
-        return "{id} - {user} {name}".format(id=self.order_id, user=self.user.username, name=self.__class__.__name__)
+        return "{id} - {name}".format(id=self.order_id, name=self.__class__.__name__)
 
 
 

@@ -1,8 +1,8 @@
 from typing import Any, List
 
 from django.contrib import admin
-from django.db.models import QuerySet
 from django.http import HttpRequest
+from django.db.models import QuerySet
 
 from .models import (
     Product,
@@ -21,8 +21,8 @@ class ProductAdmin(admin.ModelAdmin):
         ("Price", {"fields": ("price",)}),
         ("Description", {"fields": ("product_description",)}),
         ("Extra Data", {"fields": ("active", "product_slug")}),
-        ("Quantities", {"fields": (
-            "quantities",
+        ("Quantity", {"fields": (
+            "quantity",
         )})
     )
 
@@ -45,11 +45,12 @@ class ProductAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
+    readonly_fields: List[str] = ["timestamp"]
     list_display: tuple[str, ...] = ("user__username", 
                     "product__product_name",
-                    "cancelled")
+                    "timestamp")
 
     def get_queryset(self, request) -> QuerySet:
-        return super().get_queryset(request).select_related("user", "product")
-
+        return super().get_queryset(request).select_related("user", "product").\
+        order_by("-timestamp")
 
