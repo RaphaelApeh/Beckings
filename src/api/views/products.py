@@ -83,7 +83,7 @@ class ProductRetrieveView(GenericAPIView):
         permissions.IsAuthenticated
     ]
 
-    def get_object(self):
+    def get_object(self) -> Product:
 
         model = self.get_queryset().model 
         kwargs = self.kwargs
@@ -116,7 +116,7 @@ class ProductRetrieveView(GenericAPIView):
             'view': self
         }
         if self.request.method == "POST":
-            kwargs["product_id"] = self.get_object().pk
+            kwargs["model"] = self.get_object()
         
         return kwargs
 

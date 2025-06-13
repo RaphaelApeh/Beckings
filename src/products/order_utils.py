@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import enum
 from typing import Optional, Any, \
-                    TypeVar, NoReturn
+                    TypeVar
 from dataclasses import dataclass
 
 from django.db.models import F
 from django.db import transaction
-from django.core.exceptions import ValidationError
 
 from .models import Product, Order
 from helpers._typing import Bit
@@ -35,21 +34,6 @@ class AddOrder:
 
         assert self.product_instance is not None
         assert isinstance(self.product_instance, Product)
-
-
-    def validate(self, number_of_items: int) -> NoReturn:
-        errors = []
-        match number_of_items:
-            case 0:
-                errors.append("Can not add an empty order.")
-            case n if n < 1:
-                errors.append("Can't add nagative item")
-            case s if s > self.product_instance.quantity:
-                errors.append("Not enough quantity to order.")
-            case _:
-                pass
-        if errors:
-            raise ValidationError(" ".join(errors))
 
 
     def create(self, user: U, data: Bit, **kwargs: Any) -> AddOrder:
