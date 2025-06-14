@@ -6,7 +6,8 @@ from rest_framework import serializers
 
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, \
+                                        AbstractUser
 from django.utils.translation import gettext_lazy as _
 
 from products.order_utils import AddOrder
@@ -56,11 +57,9 @@ class UserOrderCreateSerializer(serializers.Serializer):
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         
-        user = self.context["request"].user
+        user = self.user
         data = {}
         product = self.model
-        assert user is not None
-        assert not isinstance(user, AnonymousUser)
         
         if product is None:
             self.fail("required", field="Product")
@@ -78,10 +77,7 @@ class UserOrderCreateSerializer(serializers.Serializer):
             data["manifest"] = manifest
 
         self.validate_item(product, data.get("number_of_items"))
-        AddOrder(
-            product_instance=product
-        ).create(user, data)
-
+        self.save_order(product, data)
         qs = user.order_set.all()
         kwargs["message"] = _("Added Item")
         kwargs["item_count"] = qs.count()
@@ -90,7 +86,18 @@ class UserOrderCreateSerializer(serializers.Serializer):
             "username": user.username,
             "email": user.email
         }
-        return kwargs
+        return self.returned_data(**kwargs)
+
+
+    @property
+    def user(self) -> AbstractUser:
+        if not getattr(self, "_user", None):
+            self._user = self.context["request"].user
+        
+        assert self._user is not None
+        assert not isinstance(self._user, AnonymousUser)
+        
+        return self._user
 
 
     def validate_item(self, product: Product, number_of_items: int) -> NoReturn:
@@ -121,4 +128,18 @@ class UserOrderCreateSerializer(serializers.Serializer):
             self._model = model
             assert isinstance(self._model, Product)
         return self._model
+
+
+    def save_order(self, product: Product, data: dict[str, Any]) -> None:
+        
+        user = self.user
+        
+        AddOrder(
+            product_instance=product
+        ).create(user, data)
+
+
+    def returned_data(self, **kwargs: dict[Any, Any]) -> dict[Any, Any]:
+        #TODO        
+        return kwargs
 
