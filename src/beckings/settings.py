@@ -194,6 +194,8 @@ DEFAULT_PRICE_CURRENCY = "₦"
 SITE_ADMIN_NAME = config("SITE_ADMIN_NAME", default="")
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = "smtp.gmail"
 EMAIL_HOST_USER = config("EMAIL_USERNAME", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_PASSWORD", default="")
