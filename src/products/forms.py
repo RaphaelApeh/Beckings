@@ -5,12 +5,58 @@ from typing import Any
 from django import forms
 from django.forms.utils import pretty_name
 
+from .models import Product
 from .order_utils import AddOrder
+
 
 class TextField(forms.CharField):
     
     widget = forms.Textarea
 
+
+class ProductForm(forms.ModelForm):
+
+    class Meta:
+        model = Product 
+        fields = [
+            "product_name",
+            "product_description",
+            "price",
+            "quantity",
+            "active"
+        ]
+    
+    def __init__(self, *args, **kwargs) -> None:
+        request = kwargs.pop("request", None)
+        assert request is not None
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    @property
+    def user(self):
+
+        if not getattr(self, "_user", None):
+            self._user = self.request.user
+        assert self._user is not None
+        return self._user
+
+    @user.setter
+    def user(self, value) -> None:
+        self._user = value
+    
+    def clean(self):
+        data = super().clean()
+       
+        return data
+
+    def save(self, commit=True) -> Product:
+        instance = super().save(commit=False)
+        if instance.user is None:
+            instance.user = self.user
+        if commit:
+            instance.save()
+        return instance
+    
 
 class AddOrderForm(forms.Form):
 
@@ -35,7 +81,6 @@ class AddOrderForm(forms.Form):
 
     manifest = TextField(required=False)
     number_of_items = forms.IntegerField()
-
 
     def clean(self):
 

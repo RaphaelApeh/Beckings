@@ -38,6 +38,11 @@ class ProductAdmin(admin.ModelAdmin):
     def save_model(self, request: HttpRequest, obj: Product, form, change) -> Any:
         obj.user = request.user
         return super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        if hasattr(obj, "image"):
+            obj.image.delete()
+        return super().delete_model(request, obj)
 
 
 

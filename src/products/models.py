@@ -3,12 +3,13 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from cloudinary import CloudinaryImage #noqa
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+
+from cloudinary import CloudinaryImage #noqa
 
 from .manager import ProductManager
 
@@ -23,7 +24,7 @@ class Product(models.Model):
     product_description = models.TextField(null=True, blank=True)
     product_slug = models.SlugField(max_length=100, blank=True, null=True)
     price = models.FloatField(default=1000.0)
-    # image = CloudinaryImage()
+    # image = CloudinaryImage("image")
     active = models.BooleanField(default=True)
     quantities = None
     quantity = models.PositiveSmallIntegerField(default=1)

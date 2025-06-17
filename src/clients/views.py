@@ -33,7 +33,8 @@ class LoginView(FormRequestMixin, FormView):
     def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
-            return redirect("/products/")
+            _url = request.META["HTTP_RERFER"] or "/products/"
+            return redirect(_url)
         self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
 

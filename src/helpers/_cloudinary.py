@@ -27,7 +27,7 @@ def use_cloudinary() -> bool:
 
 
 
-class CloudinaryImageField(serializers.Field):
+class CloudinaryImageField(serializers.ImageField):
 
     default_error_messages = {
         "invalid": "Invalid key {key}"
@@ -42,7 +42,7 @@ class CloudinaryImageField(serializers.Field):
 
     def to_internal_value(self, data) -> str:
 
-        result = data # It can be a public_id or the url
+        result = str(data) # public_id
         print(data)
         
         if hasattr(data, "read"):
@@ -70,5 +70,5 @@ class CloudinaryImageField(serializers.Field):
         if hasattr(value, "build_url") and self.options:
             return value.build_url(**self.options)
                 
-        return value
+        return str(value)
 

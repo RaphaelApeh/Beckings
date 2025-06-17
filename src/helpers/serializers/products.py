@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from products.models import Product
 from helpers._typing import AuthUser
+from helpers._cloudinary import use_cloudinary, CloudinaryImageField
 
 
 UserType = TypeVar("UserType", AbstractBaseUser, AuthUser)
@@ -19,6 +20,9 @@ class  ProductListSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        if use_cloudinary():
+            self.fields["image"] = CloudinaryImageField()
+        
 
 
     updated_at = serializers.SerializerMethodField()
@@ -57,7 +61,9 @@ class BaseProductSerializer(serializers.Serializer):
         
         super().__init__(*args, **kwargs)
         request = self.context["request"]
-        self._user = request.user if hasattr(request, "user") else None 
+        self._user = request.user if hasattr(request, "user") else None
+        if use_cloudinary() and hasattr(Product, "image"):
+            self.fields["image"] = CloudinaryImageField(required=False)
 
     product_name = serializers.CharField()
     product_description = serializers.CharField()
