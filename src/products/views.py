@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
