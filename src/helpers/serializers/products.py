@@ -3,16 +3,19 @@ from typing import Any, TypeVar
 
 from django.db import transaction
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import AbstractBaseUser
 from rest_framework.exceptions import ValidationError
 
 from products.models import Product
 from helpers._typing import AuthUser
+from helpers.serializers import serializer_factory
 from helpers._cloudinary import use_cloudinary, CloudinaryImageField
 
 
 UserType = TypeVar("UserType", AbstractBaseUser, AuthUser)
+User = get_user_model()
 
 
 class  ProductListSerializer(serializers.ModelSerializer):
@@ -20,10 +23,11 @@ class  ProductListSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        UserSerializer = serializer_factory(User,
+                                            fields=["username", "email"])
+        self.fields["user"] = UserSerializer()
         if use_cloudinary():
             self.fields["image"] = CloudinaryImageField()
-        
-
 
     updated_at = serializers.SerializerMethodField()
     timestamp = serializers.SerializerMethodField()

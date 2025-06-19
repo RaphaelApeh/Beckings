@@ -31,6 +31,7 @@ class ProductForm(forms.ModelForm):
         assert request is not None
         super().__init__(*args, **kwargs)
         self.request = request
+        self.fields["active"].widget.attrs["class"] = "None"
 
     @property
     def user(self):

@@ -128,8 +128,8 @@
                 Order
               </a>
             {% elif request.user.is_anonymous %}
-              <p class="text-center font-bold">
-                Please Log In to Order <a class="text-blue-400 hover:text-blue-300" href="{% url 'login' %}?next={% url 'product-detail' pk=object.pk slug=object.product_slug %}">Login</a>
+              <p class="text-center font-bold text-gray-400">
+                Please Log In to Order <a class="text-blue-400 hover:text-blue-300 underline" href="{% url 'login' %}?next={% url 'product-detail' pk=object.pk slug=object.product_slug %}"> Login</a>
               </p>
             {% else %}
               <p class="text-red-700 font-bold text-center text-lg">
@@ -137,12 +137,14 @@
               </p>
             {% endif %}
             {% if change_product %}
-                <a x-show="showUpdate" @click="showOrder = !showOrder" hx-get="{{ request.path }}" hx-target="this" hx-trigger="click" hx-swap="outerHTML" class="flex items-center justify-center mt-4 py-2.5 px-5 text-sm font-mediu focus:outline-none bg-green-400 rounded-lg text-white border border-green-700 hover:bg-green-500 hover:text-primary-700 focus:z-10 focus:ring-4 cursor-pointer focus:ring-gray-100" role="button">Update</a>
+                <a x-show="showUpdate" @click="showOrder = !showOrder" hx-get="{{ request.path }}" hx-target="this" hx-trigger="click" hx-swap="outerHTML" class="flex items-center justify-center mt-4 py-2.5 px-5 text-sm font-bold focus:outline-none bg-green-500 rounded-lg text-white border border-green-700 hover:bg-green-700 hover:text-primary-700 focus:z-10 focus:ring-4 cursor-pointer focus:ring-gray-100" role="button">Update</a>
             {% endif %}
             {% if delete_product %}
-                <a x-show="showDelete" @click="showOrder = !showOrder" hx-delete="{{ request.path }}" hx-trigger="click"
-                hx-headers="{'x-csrftoken': '{{ csrf_token }}' }"
-                class="flex items-center justify-center mt-4 py-2.5 px-5 text-sm font-mediu focus:outline-none bg-red-500 rounded-lg text-white border border-red-700 hover:bg-red-600 hover:text-primary-700 focus:z-10 focus:ring-4 cursor-pointer focus:ring-gray-100" role="button">Delete</a>
+                <form hx-post="{% url 'product_delete' pk=object.pk product_slug=object.product_slug %}" hx-swap="outerHTML" hx-trigger="click" hx-confirm="Are you sure you want to delete {{ object.product_name }}" hx-headers="{'x-csrftoken': '{{ csrf_token }}' }" x-show="showDelete" @click="showOrder = !showOrder">
+                  {% csrf_token %}
+                  <button type="submit" class="w-full mt-4 text-white bg-red-600
+                  hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Delete</button>
+                </form>
             {% endif %}
           </div>
 
@@ -150,7 +152,7 @@
 
           {% if object.product_description != "" %}
           <p class="mb-6 text-gray-500">
-              {{ object.product_description }}
+              {{ object.product_description|safe }}
           </p>
           {% else %}
           <p class="mb-6 text-gray-500 text-lg text-center">

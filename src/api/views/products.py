@@ -22,7 +22,7 @@ from helpers.serializers.products import (
 
 
 
-@paginate(PageNumberPagination, page_size=1)
+@paginate(PageNumberPagination, page_size=10)
 class ProductListCreateView(GenericAPIView):
 
 

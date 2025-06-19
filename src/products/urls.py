@@ -15,6 +15,10 @@ urlpatterns = [
 
     path("search/", product_search_view, name="product_search"),
 
+    path("delete/<int:pk>/<slug:product_slug>/",
+         ProductDetailView.product_delete_view,
+         name="product_delete"),
+
     path("create/", product_create_view, name="product_create"),
 
     # Orders Path

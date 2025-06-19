@@ -16,15 +16,18 @@ from django.views.generic import (
 from django.http import (HttpRequest, 
                          HttpResponse, 
                          HttpResponseRedirect,
-                         Http404)
+                        )
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404, render
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import permission_required
 from django.contrib.admin.views.decorators import staff_member_required
 
 from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
-
+from helpers.filters import ModelSearchFilterBackend
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
@@ -62,11 +65,23 @@ class ProductDetailView(FormRequestMixin,
         "PUT": "{app_label}.change_{model_name}",
         "DELETE": "{app_label}.delete_{model_name}",
     }
+    method_map = {
+        "post": "add_product",
+        "put": "change_product",
+        "delete": "delete_product",
+    }
 
     def get_template_names(self):
+        
         if self.request.htmx:
             return ["products/partials/product_update.html"]
-        return super().get_template_names()
+        
+        assert self.template_name is not None
+        assert isinstance(self.template_name, (str, list, tuple))
+        
+        if isinstance(self.template_name, str):
+            return [self.template_name]
+        return self.template_name
 
     def get(self, request, *args, **kwargs):
         if self.request.htmx:
@@ -112,10 +127,6 @@ class ProductDetailView(FormRequestMixin,
         self.object.refresh_from_db()
         return HttpResponseClientRedirect(self.object.get_absolute_url())
 
-    def delete(self, request, *args, **kwargs):
-        self.delete_object(self.get_object())
-        return HttpResponseClientRedirect(reverse("products"))
-
     def check_user_permission(self, request) -> NoReturn:
         
         user = request.user
@@ -133,11 +144,7 @@ class ProductDetailView(FormRequestMixin,
         kw = {}
         user = self.request.user
         model = self.model
-        method_map = {
-            "post": "add_product",
-            "put": "change_product",
-            "delete": "delete_product",
-        }
+        method_map = self.method_map
         for key, perm in self.perms(model).items():
             method = method_map.get(key.lower())
             assert method is not None
@@ -145,6 +152,21 @@ class ProductDetailView(FormRequestMixin,
         
         return kw
 
+    @require_htmx
+    @permission_required("products.delete_product")
+    def product_delete_view(request, *args, **kwargs) -> HttpResponse:
+        
+        def get_object() -> Product:
+            obj = get_object_or_404(Product, **kwargs)
+            return obj
+        
+        if request.method in ("POST", "DELETE"):
+            get_object().delete()
+    
+            return HttpResponseClientRedirect(reverse("products"))
+        raise PermissionDenied()
+
+    staticmethod(product_delete_view)
 
     def get_context_data(self, **kwargs):
         kwargs = {**self.permissions, **kwargs}
@@ -160,24 +182,42 @@ class ProductDetailView(FormRequestMixin,
 
     def permission_denied(self):
         
-        raise Http404() # or PermissionDenied
+        raise PermissionDenied()
 
 
 @method_decorator(require_htmx, name="dispatch")
 class ProductSearchView(View):
 
+    filter_backends = [ModelSearchFilterBackend]
+
+    def get_query_param(self, request) -> str:
+        
+        return getattr(self, "search_query", "q")
+
     def get(self, request: HttpRequest) -> HttpResponse:
 
         context = {}
-        query = request.GET.get("q")
+        query = self.get_query_param(request)
         queryset = Product.objects.all()
         if query:
-            queryset = queryset.filter(product_name__icontains=query).order_by("-timestamp")
+            queryset = self.filter_queryset(request, queryset).order_by("-timestamp")
         
         context["queryset"] = queryset
 
         return render(request, "products/partials/product_list.html", context)
     
+
+    def filter_queryset(self, request, queryset: T) -> T:
+        
+        for filter in self._filters:
+            queryset = filter.filter_queryset(request, queryset, self)
+        return queryset
+
+    @property
+    def _filters(self):
+
+        return [x() for x in self.filter_backends]
+
 
 product_search_view = ProductSearchView.as_view()
 
@@ -221,10 +261,26 @@ class AddOrderView(FormRequestMixin, FormView):
 
 
 @method_decorator(staff_member_required(login_url="login"), name="dispatch")
-class ProductCreateView(FormRequestMixin, CreateView):
+class ProductCreateView(FormRequestMixin,
+                        PermissionRequiredMixin,
+                        CreateView):
 
     template_name = "products/product_create.html"
     form_class = ProductForm
+    model = Product
+    permission_required = "%(app_name)s.add_%(model_name)s"
+
+    def get_permission_required(self):
+        opts = self.model._meta
+        kwargs = {
+            "app_name": opts.app_label,
+            "model_name": opts.model_name
+
+        }
+        self.permission_required = self.permission_required % kwargs
+        
+        return super().get_permission_required()
+
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"

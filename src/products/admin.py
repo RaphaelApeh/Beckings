@@ -14,7 +14,7 @@ from .models import (
 class ProductAdmin(admin.ModelAdmin):
     
     list_display = ["user__username", "product_name", "product_slug", "active"]
-    search_fields = ["user__username", "products_name", "product_description"]
+    search_fields = ["user__username", "product_name", "product_description"]
     prepopulated_fields = {"product_slug": ("product_name",)}
     fieldsets = (
         (None, {"fields": ("product_name",)}),

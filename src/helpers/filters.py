@@ -67,7 +67,7 @@ class ModelSearchFilterBackend(BaseFilterBackend):
         assert view is not None
         search_query = getattr(view, "search_query", "q")
         
-        query = request.query_params.get(search_query, "")
+        query = self.get_query(request, search_query)
         
         search_fields = getattr(view, "filter_fields", None)
         model = queryset.model
@@ -76,7 +76,14 @@ class ModelSearchFilterBackend(BaseFilterBackend):
             return qs_vector_search(model, query)
         
         return qs_filter(model, search_fields=search_fields, query=query)
-    
+
+    def get_query(self, request, search_query) -> Optional[str]:
+
+        query_dict = request.GET
+        if hasattr(request, "query_params"):
+            query_dict = request.query_params
+
+        return query_dict.get(search_query, "")
 
     def to_html(self, request: Request, queryset: QuerySet, view: View) -> str:
 
