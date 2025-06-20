@@ -4,7 +4,8 @@ from .views import (ProductListView,
                     ProductDetailView,
                     product_search_view,
                     AddOrderView,
-                    product_create_view)
+                    product_create_view,
+                    user_orders_view)
 
 
 urlpatterns = [
@@ -22,7 +23,9 @@ urlpatterns = [
     path("create/", product_create_view, name="product_create"),
 
     # Orders Path
-    path("orders/add/<int:product_id>", 
+    path("orders/", user_orders_view, name="user_orders"),
+
+    path("orders/add/<int:product_id>/", 
         AddOrderView.as_view(), 
         name="add_user_order")
 ]

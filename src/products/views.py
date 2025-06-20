@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional, TypeVar, NoReturn
 
 from django.urls import reverse
+from django.contrib import messages
 from django.db.models import QuerySet
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -31,7 +32,7 @@ from helpers.filters import ModelSearchFilterBackend
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
-                    OrderProxy
+                    Order
 from .forms import AddOrderForm, \
                     ProductForm
 
@@ -92,8 +93,11 @@ class ProductDetailView(FormRequestMixin,
 
         form = self.get_form()
         if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+            return self.form_valid(request, form)
+        return self.form_invalid(request, form)
+    
+    def form_invalid(self, request, form):
+        return super().form_invalid(form)
     
     def put(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
@@ -122,9 +126,10 @@ class ProductDetailView(FormRequestMixin,
     def delete_object(self, instance) -> None:
         instance.delete()
 
-    def form_valid(self, form):
+    def form_valid(self, request, form):
         form.save()
         self.object.refresh_from_db()
+        messages.success(request, "Object Save")
         return HttpResponseClientRedirect(self.object.get_absolute_url())
 
     def check_user_permission(self, request) -> NoReturn:
@@ -159,9 +164,10 @@ class ProductDetailView(FormRequestMixin,
         def get_object() -> Product:
             obj = get_object_or_404(Product, **kwargs)
             return obj
-        
+        instance = get_object()
         if request.method in ("POST", "DELETE"):
-            get_object().delete()
+            messages.success(request, "%s deleted successfully" % instance)
+            instance.delete()
     
             return HttpResponseClientRedirect(reverse("products"))
         raise PermissionDenied()
@@ -223,14 +229,20 @@ product_search_view = ProductSearchView.as_view()
 
 
 @method_decorator(login_required, name="dispatch")
-class UserOrderListView(ListView):
+class UserOrderView(ListView):
 
-    queryset = OrderProxy.objects.select_related("user", "product")   
+    queryset = Order.objects.select_related("user", "product")   
     template_name = "orders/order_list.html"
+    allow_empty = False
+
+    def get_queryset(self) -> T:
+        user = self.request.user
+        return super().get_queryset().filter(user=user)
+
+user_orders_view = UserOrderView.as_view()
 
 
-
-@method_decorator([login_required, require_htmx], name="dispatch")
+@method_decorator((login_required, require_htmx), name="dispatch")
 class AddOrderView(FormRequestMixin, FormView):
 
     template_name: Optional[str] = "orders/add_order.html"
@@ -287,8 +299,10 @@ class ProductCreateView(FormRequestMixin,
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
-        self.object = form.save()
+        self.object = instance = form.save()
+        messages.success(self.request, "%s created success" % instance)
         return HttpResponseRedirect(self.get_success_url())
 
 
 product_create_view = ProductCreateView.as_view()
+
