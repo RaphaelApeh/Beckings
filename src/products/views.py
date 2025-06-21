@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 from typing import Any, Optional, TypeVar, NoReturn
 
+from faker import Faker
 from django.urls import reverse
 from django.contrib import messages
 from django.db.models import QuerySet
@@ -29,6 +31,7 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers.filters import ModelSearchFilterBackend
+from helpers.resources import ProductResource
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
@@ -306,3 +309,32 @@ class ProductCreateView(FormRequestMixin,
 
 product_create_view = ProductCreateView.as_view()
 
+
+
+class ExportProductView(View):
+
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+        qs = Product.objects.all()
+        export = self.export_data(request, qs)
+        mapping = {
+            "json": export.json,
+            "csv": export.csv,
+            "yaml": export.yaml
+        }
+        _type = request.GET.get("type", "json")
+        ds = mapping.get(_type)
+        hash = self.hash(Faker().sentence(5).encode())
+        response = HttpResponse(ds)
+        response["Content-Disposition"] = f'attachment; filename="product_{hash}.{_type}"'
+        return response
+    
+    def hash(self, _s) -> str:
+        return hashlib.md5(_s).hexdigest()
+    
+    def export_data(self, request, queryset: T) -> Any:
+
+        ds = ProductResource().export(queryset)
+        return ds
+    
+    def import_data(self, request, queryset: T) -> Any:
+        ...
