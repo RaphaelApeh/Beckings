@@ -4,6 +4,12 @@ from django.contrib import admin
 from django.http import HttpRequest
 from django.db.models import QuerySet
 
+from .actions import (
+    ReadOnlyMixin,
+    user_order_delivered_action,
+    user_order_cancelled_action,
+    user_order_pending_action
+)
 from .models import (
     Product,
     OrderProxy
@@ -47,13 +53,18 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(OrderProxy)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(ReadOnlyMixin, admin.ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
     readonly_fields: List[str] = ["timestamp"]
     list_display: tuple[str, ...] = ("user__username", 
                     "product__product_name",
                     "timestamp")
+    actions = (
+        user_order_delivered_action,
+        user_order_pending_action,
+        user_order_cancelled_action
+    )
 
     def get_queryset(self, request) -> QuerySet:
         return super().get_queryset(request).select_related("user", "product").\

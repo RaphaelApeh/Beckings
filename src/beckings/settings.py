@@ -51,6 +51,8 @@ THIRD_PARTY_APPS = [
     "django_cotton",
     "django_htmx",
     "tailwind",
+    "neapolitan",
+    "django_filters",
 ]
 
 INTERNAL_APPS = [
@@ -64,6 +66,9 @@ INTERNAL_APPS = [
 INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_APPS))
 
 TAILWIND_APP_NAME = "theme"
+
+if DEBUG:
+    INSTALLED_APPS.insert(0, "whitenoise.runserver_nostatic")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

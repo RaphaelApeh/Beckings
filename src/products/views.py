@@ -4,7 +4,9 @@ import hashlib
 from typing import Any, Optional, TypeVar, NoReturn
 
 from faker import Faker
+from tablib import Dataset
 from django.urls import reverse
+from django.db import transaction
 from django.contrib import messages
 from django.db.models import QuerySet
 from django.contrib.auth.decorators import login_required
@@ -37,7 +39,8 @@ from clients.views import \
 from .models import Product, \
                     Order
 from .forms import AddOrderForm, \
-                    ProductForm
+                    ProductForm, \
+                    ProductImportForm
 
 
 T = TypeVar("T", bound=QuerySet)
@@ -170,7 +173,8 @@ class ProductDetailView(FormRequestMixin,
         instance = get_object()
         if request.method in ("POST", "DELETE"):
             messages.success(request, "%s deleted successfully" % instance)
-            instance.delete()
+            with transaction.atomic():
+                instance.delete()
     
             return HttpResponseClientRedirect(reverse("products"))
         raise PermissionDenied()
@@ -337,4 +341,12 @@ class ExportProductView(View):
         return ds
     
     def import_data(self, request, queryset: T) -> Any:
-        ...
+        
+        resource = ProductResource()
+        form = ProductImportForm(files=request.FILES or None)
+        file = form.cleaned_data["file"]
+        ds = Dataset()
+        import_data = resource.import_data(ds.load(file.read().encode()), dry_run=True)
+        if not import_data.has_errors():
+            import_data = resource.import_data(ds.load(file.read().encode()), dry_run=False)
+

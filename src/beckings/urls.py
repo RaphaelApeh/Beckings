@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from .feeds import ProductFeed
 from . import views
-
+from .feeds import ProductFeed
 
 urlpatterns = [
     path("", views.homepage_view, name="home"),

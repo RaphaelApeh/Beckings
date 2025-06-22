@@ -115,3 +115,9 @@ class AddOrderForm(forms.Form):
            product_instance=self.product
        ).create(user, data)
 
+
+
+class ProductImportForm(forms.Form):
+
+    file = forms.FileField()
+
