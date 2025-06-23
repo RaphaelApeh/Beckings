@@ -5,7 +5,9 @@ from .views import (ProductListView,
                     product_search_view,
                     AddOrderView,
                     product_create_view,
-                    user_orders_view)
+                    user_orders_view,
+                    export_import_product_view,
+                    )
 
 
 urlpatterns = [
@@ -21,6 +23,8 @@ urlpatterns = [
          name="product_delete"),
 
     path("create/", product_create_view, name="product_create"),
+
+    path("export/", export_import_product_view, name="export_import_product"),
 
     # Orders Path
     path("orders/", user_orders_view, name="user_orders"),

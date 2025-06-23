@@ -1,5 +1,5 @@
 from typing import Any
-from typing import Callable
+from typing import Callable, TypeVar
 from functools import wraps
 
 from django.http import HttpResponse
@@ -9,6 +9,26 @@ from rest_framework.pagination import BasePagination
 
 from helpers._typing import HTMXHttpRequest
 
+
+T = TypeVar("T")
+
+try:
+    from django.utils.functional import classproperty
+except ImportError:
+    class classproperty:
+
+        def __init__(self, fget: Callable[..., Any]) -> None:
+
+            self.fget = fget
+        
+        def __get__(self, instance: T, cls=None) -> Callable[..., Any]:
+
+            assert cls is not None
+
+            return self.fget(cls)
+        
+        def getter(self, func):
+            self.fget = func
 
 
 def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Any:

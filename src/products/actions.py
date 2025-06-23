@@ -7,7 +7,7 @@ from .order_utils import OrderStatusOptions
 
 class ReadOnlyMixin:
 
-    def has_change_permission(self, request: Any, obj: Any) -> bool:
+    def has_change_permission(self, request: Any, obj: Any | None = None) -> bool:
         return False
 
 

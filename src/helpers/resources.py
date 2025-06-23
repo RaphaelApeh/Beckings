@@ -20,6 +20,19 @@ class ProductResource(ModelResource):
             "active",
             "quantity"
         )
+        import_id_fields = (
+            "product_name",
+            "product_description",
+            "price",
+            "active",
+            "quantity"
+        )
+    
+    def after_init_instance(self, instance, new, row, **kwargs):
+        assert "user" in kwargs, "Forgot to pass in `user` argument"
+        user = kwargs.pop("user")
+        instance.user = user
+        return super().after_init_instance(instance, new, row, **kwargs)
 
 
 class OrderResource(ModelResource):
@@ -44,4 +57,4 @@ class OrderResource(ModelResource):
             "number_of_items",
             "status"
         )
-
+    

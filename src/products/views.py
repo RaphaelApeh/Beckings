@@ -314,9 +314,10 @@ class ProductCreateView(FormRequestMixin,
 product_create_view = ProductCreateView.as_view()
 
 
-
 class ExportProductView(View):
 
+
+    @method_decorator(login_required)
     def get(self, request, *args, **kwargs) -> HttpResponse:
         qs = Product.objects.all()
         export = self.export_data(request, qs)
@@ -343,10 +344,28 @@ class ExportProductView(View):
     def import_data(self, request, queryset: T) -> Any:
         
         resource = ProductResource()
+        user = request.user
         form = ProductImportForm(files=request.FILES or None)
         file = form.cleaned_data["file"]
+        print(file)
+        print(type(file))
         ds = Dataset()
-        import_data = resource.import_data(ds.load(file.read().encode()), dry_run=True)
+        _file_data = ds.load(file.read().encode())
+        import_data = resource.import_data(_file_data, user=user, dry_run=True)
         if not import_data.has_errors():
-            import_data = resource.import_data(ds.load(file.read().encode()), dry_run=False)
+            import_data = resource.import_data(_file_data, dry_run=False, user=user)
+        return
 
+    def get_queryset(self):
+        return Product.objects.select_related("user")
+
+    @method_decorator(staff_member_required(login_url="login"))
+    def post(self, request, *args, **kwargs):
+        
+        queryset = self.get_queryset()
+        with transaction.atomic():
+            self.import_data(request, queryset)
+        return HttpResponseRedirect(request.Meta["HTTP_REFERER"])
+
+
+export_import_product_view = ExportProductView.as_view()

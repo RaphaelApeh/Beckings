@@ -3,7 +3,9 @@ from typing import Any, List
 from django.contrib import admin
 from django.http import HttpRequest
 from django.db.models import QuerySet
+from import_export.admin import ImportExportModelAdmin
 
+from helpers import resources
 from .actions import (
     ReadOnlyMixin,
     user_order_delivered_action,
@@ -17,7 +19,7 @@ from .models import (
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(ImportExportModelAdmin):
     
     list_display = ["user__username", "product_name", "product_slug", "active"]
     search_fields = ["user__username", "product_name", "product_description"]
@@ -31,6 +33,7 @@ class ProductAdmin(admin.ModelAdmin):
             "quantity",
         )})
     )
+    resource_classes = (resources.ProductResource, )
 
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         return super().get_queryset(request).select_related("user")
@@ -57,8 +60,10 @@ class OrderAdmin(ReadOnlyMixin, admin.ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
     readonly_fields: List[str] = ["timestamp"]
-    list_display: tuple[str, ...] = ("user__username", 
+    list_display: tuple[str, ...] = (
+                    "user__username", 
                     "product__product_name",
+                    "status",
                     "timestamp")
     actions = (
         user_order_delivered_action,

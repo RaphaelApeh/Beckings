@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any
 
 from django import forms
@@ -7,7 +8,16 @@ from django.forms.utils import pretty_name
 
 from .models import Product
 from .order_utils import AddOrder
+from helpers.decorators import classproperty
 
+
+class ExportType(Enum):
+    JSON = "json", "Json"
+    CSV = "csv", "Csv"
+
+    @classproperty
+    def choices(cls) -> list[str, tuple[str, ...]]:
+        return [x.value for x in cls]
 
 class TextField(forms.CharField):
     
@@ -121,3 +131,5 @@ class ProductImportForm(forms.Form):
 
     file = forms.FileField()
 
+
+class ExportTypeForm(forms.Form):...

@@ -147,6 +147,18 @@
                 </form>
             {% endif %}
           </div>
+          <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
+            <form method="get" action="{% url 'export_import_product' %}">
+              <select class="flex items-center mr-12" name="type">
+                <option value="">-----</option>
+                <option value="json">Json</option>
+                <option value="yaml">Yaml</option>
+                <option value="csv">Csv</option>
+              </select>
+              <button type="submit" class="w-full mt-4 text-white bg-indigo-600
+              hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Download</button>
+            </form>
+          </div>
 
           <hr class="my-6 md:my-8 border-gray-200" />
 

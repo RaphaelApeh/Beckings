@@ -51,7 +51,7 @@ THIRD_PARTY_APPS = [
     "django_cotton",
     "django_htmx",
     "tailwind",
-    "neapolitan",
+    "import_export",
     "django_filters",
 ]
 
