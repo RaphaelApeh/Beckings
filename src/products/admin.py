@@ -38,13 +38,13 @@ class ProductAdmin(ImportExportModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         return super().get_queryset(request).select_related("user")
     
-    def has_add_permission(self, request: HttpRequest) -> bool:
+    def has_add_permission(self, request) -> bool:
         return True if request.user.is_superuser else False
     
-    def has_delete_permission(self, request: HttpRequest, obj: Product | None = ...):
+    def has_delete_permission(self, request: HttpRequest, obj: Product | None = None):
         return super().has_delete_permission(request, obj)
 
-    def save_model(self, request: HttpRequest, obj: Product, form, change) -> Any:
+    def save_model(self, request, obj: Product, form, change) -> Any:
         obj.user = request.user
         return super().save_model(request, obj, form, change)
     

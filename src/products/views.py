@@ -40,7 +40,8 @@ from .models import Product, \
                     Order
 from .forms import AddOrderForm, \
                     ProductForm, \
-                    ProductImportForm
+                    ProductImportForm, \
+                    ExportTypeForm
 
 
 T = TypeVar("T", bound=QuerySet)
@@ -183,6 +184,7 @@ class ProductDetailView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs = {**self.permissions, **kwargs}
+        kwargs["export_form"] = ExportTypeForm()
         return super().get_context_data(**kwargs)
 
     def perms(self, model_class: Any) -> dict[str, str]:
@@ -326,7 +328,9 @@ class ExportProductView(View):
             "csv": export.csv,
             "yaml": export.yaml
         }
-        _type = request.GET.get("type", "json")
+        form = ExportTypeForm(request.GET)
+
+        _type = form.cleaned_data["fromat"]
         ds = mapping.get(_type)
         hash = self.hash(Faker().sentence(5).encode())
         response = HttpResponse(ds)
@@ -347,8 +351,6 @@ class ExportProductView(View):
         user = request.user
         form = ProductImportForm(files=request.FILES or None)
         file = form.cleaned_data["file"]
-        print(file)
-        print(type(file))
         ds = Dataset()
         _file_data = ds.load(file.read().encode())
         import_data = resource.import_data(_file_data, user=user, dry_run=True)
@@ -363,6 +365,7 @@ class ExportProductView(View):
     def post(self, request, *args, **kwargs):
         
         queryset = self.get_queryset()
+        form = ExportTypeForm(data=request.POST or None, files=request.FILES or None) # noqa
         with transaction.atomic():
             self.import_data(request, queryset)
         return HttpResponseRedirect(request.Meta["HTTP_REFERER"])

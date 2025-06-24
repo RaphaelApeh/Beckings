@@ -14,6 +14,7 @@ from helpers.decorators import classproperty
 class ExportType(Enum):
     JSON = "json", "Json"
     CSV = "csv", "Csv"
+    YAML = "yaml", "Yaml"
 
     @classproperty
     def choices(cls) -> list[str, tuple[str, ...]]:
@@ -130,6 +131,9 @@ class AddOrderForm(forms.Form):
 class ProductImportForm(forms.Form):
 
     file = forms.FileField()
+    format = forms.ChoiceField(choices=ExportType.choices, initial="json")
 
 
-class ExportTypeForm(forms.Form):...
+class ExportTypeForm(forms.Form):
+
+    format = forms.ChoiceField(choices=ExportType.choices)
