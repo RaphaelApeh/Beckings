@@ -14,7 +14,9 @@ T = TypeVar("T")
 
 try:
     from django.utils.functional import classproperty
+
 except ImportError:
+
     class classproperty:
 
         def __init__(self, fget: Callable[..., Any]) -> None:

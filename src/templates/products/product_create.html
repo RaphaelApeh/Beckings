@@ -34,6 +34,18 @@
                 </div>
               </section>
         </form>
+        <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
+            <form method="post" {% if import_form.is_multipart %} enctype="multipart/form-data" {% endif %} action="{% url 'export_import_product' %}">
+                {% csrf_token %}
+              {{ import_form.as_p }}
+              <button type="submit" class="w-full mt-4 text-white bg-indigo-600
+              hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Upload</button>
+            </form>
+        </div>
     </div>
+    
+{% endblock %}
+
+{% block extra_body %}
     <c-footer />
 {% endblock %}

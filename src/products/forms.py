@@ -131,7 +131,7 @@ class AddOrderForm(forms.Form):
 class ProductImportForm(forms.Form):
 
     file = forms.FileField()
-    format = forms.ChoiceField(choices=ExportType.choices, initial="json")
+    format = forms.ChoiceField(choices=ExportType.choices)
 
 
 class ExportTypeForm(forms.Form):

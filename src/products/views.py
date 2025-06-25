@@ -18,10 +18,13 @@ from django.views.generic import (
     FormView,
     CreateView
     )
-from django.http import (HttpRequest, 
-                         HttpResponse, 
-                         HttpResponseRedirect,
+from django.http import (
+                        HttpRequest,
+                        HttpResponse,
+                        HttpResponseBadRequest,
+                        HttpResponseRedirect,
                         )
+from django.http.response import HttpResponseBase
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404, render
@@ -305,6 +308,7 @@ class ProductCreateView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"
+        kwargs["import_form"] = ProductImportForm(initial={"format": "csv"})
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
@@ -321,42 +325,50 @@ class ExportProductView(View):
 
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs) -> HttpResponse:
-        qs = Product.objects.all()
-        export = self.export_data(request, qs)
+        export = self.export_data(request)
         mapping = {
-            "json": export.json,
-            "csv": export.csv,
-            "yaml": export.yaml
+            "json": {"type": export.json, "content-type": "application/json"},
+            "csv": {"type": export.csv, "content-type": "text/csv"},
+            "yaml": {"type": export.yaml, "content-type": "text/yaml"}
         }
-        form = ExportTypeForm(request.GET)
-
-        _type = form.cleaned_data["fromat"]
+        form = ExportTypeForm(request.GET or None)
+        _type = None
+        if form.is_valid():
+            _type = form.cleaned_data["format"]
         ds = mapping.get(_type)
-        hash = self.hash(Faker().sentence(5).encode())
-        response = HttpResponse(ds)
-        response["Content-Disposition"] = f'attachment; filename="product_{hash}.{_type}"'
+
+        hash = self.hash()
+        response = HttpResponseBadRequest(content="Error")
+        if (type_ := ds.get("type")) is not None:
+            response = HttpResponse(type_, content_type=ds.get("content-type", None))
+            response["Content-Disposition"] = f'attachment; filename="product_{hash}.{_type}"'
         return response
     
-    def hash(self, _s) -> str:
+    def hash(self) -> str:
+        _s = Faker().sentence(5).encode()
         return hashlib.md5(_s).hexdigest()
     
-    def export_data(self, request, queryset: T) -> Any:
+    def export_data(self, request, queryset: T | None = None) -> Any:
 
-        ds = ProductResource().export(queryset)
+        ds = ProductResource().export()
         return ds
     
-    def import_data(self, request, queryset: T) -> Any:
+    def import_data(self, request, form, queryset: T) -> Any:
         
         resource = ProductResource()
         user = request.user
-        form = ProductImportForm(files=request.FILES or None)
-        file = form.cleaned_data["file"]
         ds = Dataset()
-        _file_data = ds.load(file.read().encode())
-        import_data = resource.import_data(_file_data, user=user, dry_run=True)
-        if not import_data.has_errors():
-            import_data = resource.import_data(_file_data, dry_run=False, user=user)
-        return
+
+        if form.is_valid():
+            file = form.cleaned_data["file"]
+            _file_data = ds.load(file.read().decode())
+            import_data = resource.import_data(_file_data, user=user, dry_run=True)
+            for row in import_data:
+                for error in row.errors:
+                    print(error)
+            if not import_data.has_errors():
+                import_data = resource.import_data(_file_data, dry_run=False, user=user)
+        return HttpResponseRedirect(request.META["HTTP_REFERER"])
 
     def get_queryset(self):
         return Product.objects.select_related("user")
@@ -365,10 +377,27 @@ class ExportProductView(View):
     def post(self, request, *args, **kwargs):
         
         queryset = self.get_queryset()
-        form = ExportTypeForm(data=request.POST or None, files=request.FILES or None) # noqa
+        
+        form = ProductImportForm(data=request.POST or None, files=request.FILES or None)
+        
+        response = HttpResponseRedirect(request.META["HTTP_REFERER"])
+
+        if not form.is_valid():
+            messages.error(request, "An Error orcured.")
+            return response
+        format = form.cleaned_data["format"]
+
+        file = form.cleaned_data["file"]
+        if not file.name.endswith(f".{format}"):
+            messages.error(request, "Invalid Format.")
+            return response
+
         with transaction.atomic():
-            self.import_data(request, queryset)
-        return HttpResponseRedirect(request.Meta["HTTP_REFERER"])
+            messages.success(request, "Data Saved.")
+            result = self.import_data(request, form, queryset)
+            if isinstance(result, HttpResponseBase):
+                return result
+        return response
 
 
 export_import_product_view = ExportProductView.as_view()

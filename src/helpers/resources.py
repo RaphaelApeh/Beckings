@@ -38,7 +38,7 @@ class ProductResource(ModelResource):
 class OrderResource(ModelResource):
 
     product = Field(
-        column_name="prodcut",
+        column_name="product",
         attribute="product",
         widget=ForeignKeyWidget(Product, field="product_name")
     )

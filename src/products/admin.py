@@ -3,7 +3,10 @@ from typing import Any, List
 from django.contrib import admin
 from django.http import HttpRequest
 from django.db.models import QuerySet
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import (
+    ImportExportModelAdmin,
+    ExportMixin
+    )
 
 from helpers import resources
 from .actions import (
@@ -56,7 +59,7 @@ class ProductAdmin(ImportExportModelAdmin):
 
 
 @admin.register(OrderProxy)
-class OrderAdmin(ReadOnlyMixin, admin.ModelAdmin):
+class OrderAdmin(ReadOnlyMixin, ExportMixin, admin.ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
     readonly_fields: List[str] = ["timestamp"]
@@ -70,6 +73,7 @@ class OrderAdmin(ReadOnlyMixin, admin.ModelAdmin):
         user_order_pending_action,
         user_order_cancelled_action
     )
+    resource_classes = (resources.OrderResource,)
 
     def get_queryset(self, request) -> QuerySet:
         return super().get_queryset(request).select_related("user", "product").\
