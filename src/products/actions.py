@@ -2,14 +2,16 @@ from typing import Any
 
 from django.contrib.admin import action
 
-from .order_utils import OrderStatusOptions
+from helpers.enum import OrderStatusOptions
 
 
-class ReadOnlyMixin:
+class ReadOnlyMixin(object):
 
     def has_change_permission(self, request: Any, obj: Any | None = None) -> bool:
         return False
 
+    def has_add_permission(self, request, obj=None) -> bool:
+        return False
 
 
 @action(description="User Order Delivered")

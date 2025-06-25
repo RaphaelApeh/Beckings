@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum
 from typing import Any
 
 from django import forms
@@ -8,17 +7,27 @@ from django.forms.utils import pretty_name
 
 from .models import Product
 from .order_utils import AddOrder
-from helpers.decorators import classproperty
+from helpers.enum import ExportType
 
 
-class ExportType(Enum):
-    JSON = "json", "Json"
-    CSV = "csv", "Csv"
-    YAML = "yaml", "Yaml"
 
-    @classproperty
-    def choices(cls) -> list[str, tuple[str, ...]]:
-        return [x.value for x in cls]
+BORDER = (
+    "w-full",
+    "border",
+    "border-gray-200",
+    "shadow-xs",
+)
+
+FORM_TEXT = (
+    "text-black",
+    "rounded-md",
+)
+
+PADDING = (
+    "p-2",
+    "mb-2",
+    "mt-2"
+)
 
 class TextField(forms.CharField):
     
@@ -129,6 +138,12 @@ class AddOrderForm(forms.Form):
 
 
 class ProductImportForm(forms.Form):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        css_class = {*BORDER, *PADDING, *FORM_TEXT, "focus:ring-gray-800"}
+        for field in self.fields:
+            self.fields[field].widget.attrs["class"] = " ".join(list(css_class))
 
     file = forms.FileField()
     format = forms.ChoiceField(choices=ExportType.choices)

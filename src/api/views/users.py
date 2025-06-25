@@ -48,22 +48,23 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
 
     def get_permissions(self):
         
-        if self.action == "create":
-            return [permissions.AllowAny()]
-        
-        if self.action == "list":
-            return [permissions.IsAdminUser()]
+        match self.action:
+            case "list":
+                self.permission_classes = (permissions.IsAdminUser,)
+            case "create":
+                self.permission_classes = (permissions.AllowAny,)
     
         return super().get_permissions()
 
 
-    def get_serializer_class[T](self) -> type[T]:
+    def get_serializer_class(self):
 
-        if self.action == "create":
-            return UserCreationSerializer
+        match self.action:
+            case "create":
+                return UserCreationSerializer
+            case "update":
+                return UserUpdateSerializer
         
-        if self.action == "update":
-            return UserUpdateSerializer
         return super().get_serializer_class()
 
 

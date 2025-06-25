@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import enum
 from typing import Optional, Any, \
                     TypeVar
 from dataclasses import dataclass
@@ -10,16 +9,10 @@ from django.db import transaction
 
 from .models import Product, Order
 from helpers._typing import Bit
+from helpers.enum import OrderStatusOptions
 
 
 U = TypeVar("U")
-
-
-class OrderStatusOptions(enum.Enum):
-
-    DELIVERED = "delivered"
-    PENDING = "pending"
-    CANCELLED = "cancelled"
 
 
 @dataclass(frozen=True, slots=True)

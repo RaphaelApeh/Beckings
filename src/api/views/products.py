@@ -34,15 +34,19 @@ class ProductListCreateView(GenericAPIView):
 
     def get_serializer_class(self):
 
-        if self.request.method == "POST":
-            return ProductCreateSerializer
-        return self.serializer_class
-
+        match self.request.method:
+            case "POST":
+                return ProductCreateSerializer
+            case _:
+                return self.serializer_class
 
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAdminUser()]
-        return super().get_permissions()
+        
+        match self.request.method:
+            case "POST":
+                self.permission_classes = (permissions.IsAdminUser,)
+            case _:
+                return super().get_permissions()
 
     @extend_schema(
         parameters=[

@@ -33,7 +33,7 @@ except ImportError:
             self.fget = func
 
 
-def paginate[T](pagination_class: T, **kwargs: dict[str, Any]) -> Any:
+def paginate[T](pagination_class: T, **kwargs: dict[str, Any] | Any) -> Any:
     
     """
     Decorator for paginating a function base view. \n
