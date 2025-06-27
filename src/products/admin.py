@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Any, List
 
 from django.contrib import admin
-from django.http import HttpRequest
+from django.http import HttpRequest, \
+                        HttpResponse
 from django.db.models import QuerySet
 from import_export.admin import (
     ImportExportModelAdmin,
@@ -11,6 +13,7 @@ from import_export.admin import (
 from helpers import resources
 from .actions import (
     ReadOnlyMixin,
+    export_quertyset_filter,
     user_order_delivered_action,
     user_order_cancelled_action,
     user_order_pending_action
@@ -18,6 +21,9 @@ from .actions import (
 from .models import (
     Product,
     OrderProxy
+)
+from .forms import (
+    ExportForm
 )
 
 
@@ -35,6 +41,9 @@ class ProductAdmin(ImportExportModelAdmin):
         ("Quantity", {"fields": (
             "quantity",
         )})
+    )
+    actions = (
+        export_quertyset_filter,
     )
     resource_classes = (resources.ProductResource, )
 
@@ -55,6 +64,16 @@ class ProductAdmin(ImportExportModelAdmin):
         if hasattr(obj, "image"):
             obj.image.delete()
         return super().delete_model(request, obj)
+    
+    def export_queryset(self, request, queryset):
+        resource = self.resource_classes[0]
+        form = ExportForm(request.POST, resource=resource, queryset=queryset)
+        data = form.export()
+        format = form.cleaned_data["format"]
+        time_str = datetime.now().strftime("%d/%m/%Y")
+        response = HttpResponse(data)
+        response["Content-Disposition"] = 'attachment; filename="product_{}.{}"'.format(time_str, format)
+        return response
 
 
 
@@ -73,9 +92,11 @@ class OrderAdmin(ReadOnlyMixin, ExportMixin, admin.ModelAdmin):
         user_order_pending_action,
         user_order_cancelled_action
     )
+    exclude_fields = ("status",)
     resource_classes = (resources.OrderResource,)
 
     def get_queryset(self, request) -> QuerySet:
         return super().get_queryset(request).select_related("user", "product").\
         order_by("-timestamp")
+
 

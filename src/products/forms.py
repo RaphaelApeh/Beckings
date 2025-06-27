@@ -4,6 +4,7 @@ from typing import Any
 
 from django import forms
 from django.forms.utils import pretty_name
+from django.core.exceptions import ImproperlyConfigured
 
 from .models import Product
 from .order_utils import AddOrder
@@ -149,6 +150,49 @@ class ProductImportForm(forms.Form):
     format = forms.ChoiceField(choices=ExportType.choices)
 
 
-class ExportTypeForm(forms.Form):
+class ExportForm(forms.Form):
 
     format = forms.ChoiceField(choices=ExportType.choices)
+
+    def __init__(self, *args, **kwargs) -> None:
+        
+        queryset = kwargs.pop("queryset", None)
+        resource = kwargs.pop("resource", None)
+
+        super().__init__(*args, **kwargs)
+        self.resource = resource
+        self.queryset = queryset
+    
+    def _export_type(self, export, format):
+
+        return {
+            "json": export.json,
+            "csv": export.csv,
+            "yaml": export.yaml,
+            "html": export.html
+        }.get(format, "json")
+    
+    def export(self, queryset=None, **kwargs):
+
+        self.full_clean()
+        
+        if queryset is None:
+            queryset = self.queryset
+
+        if (resource := self.resource) is not None:
+            format = self.cleaned_data["format"]
+        
+            if hasattr(resource, "export_data"):
+                ds = resource.export_data(queryset, **kwargs)
+        
+                return self._export_type(ds, format)
+        
+            kw = {**kwargs, **(self.resource_kwargs() or {})}
+            ds = resource(**kw).export(queryset)
+        
+            return self._export_type(ds, format)
+
+        raise ImproperlyConfigured("Can't use `export` method when resource is None")
+
+    def resource_kwargs(self, **kwargs):
+        return kwargs

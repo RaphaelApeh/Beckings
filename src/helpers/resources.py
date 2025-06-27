@@ -1,3 +1,6 @@
+from typing import Any
+
+from tablib import Dataset
 from django.contrib.auth import get_user_model
 from import_export.fields import Field
 from import_export.resources import ModelResource
@@ -27,6 +30,12 @@ class ProductResource(ModelResource):
             "active",
             "quantity"
         )
+    
+    @classmethod
+    def export_data(cls, queryset=None, **kwargs: Any) -> Dataset:
+        export_fields = kwargs.pop("export_fields", None)  
+        self = cls(**kwargs)
+        return self.export(queryset, export_fields=export_fields)
     
     def after_init_instance(self, instance, new, row, **kwargs):
         assert "user" in kwargs, "Forgot to pass in `user` argument"

@@ -44,7 +44,7 @@ from .models import Product, \
 from .forms import AddOrderForm, \
                     ProductForm, \
                     ProductImportForm, \
-                    ExportTypeForm
+                    ExportForm
 
 
 T = TypeVar("T", bound=QuerySet)
@@ -187,7 +187,7 @@ class ProductDetailView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs = {**self.permissions, **kwargs}
-        kwargs["export_form"] = ExportTypeForm()
+        kwargs["export_form"] = ExportForm()
         return super().get_context_data(**kwargs)
 
     def perms(self, model_class: Any) -> dict[str, str]:
@@ -320,37 +320,45 @@ class ProductCreateView(FormRequestMixin,
 product_create_view = ProductCreateView.as_view()
 
 
-class ExportProductView(View):
+class ProductExportImportView(View):
 
 
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs) -> HttpResponse:
+
         export = self.export_data(request)
         mapping = {
             "json": {"type": export.json, "content-type": "application/json"},
             "csv": {"type": export.csv, "content-type": "text/csv"},
             "yaml": {"type": export.yaml, "content-type": "text/yaml"}
         }
-        form = ExportTypeForm(request.GET or None)
+        
+        form = ExportForm(request.GET or None)
         _type = None
+        
         if form.is_valid():
             _type = form.cleaned_data["format"]
         ds = mapping.get(_type)
 
         hash = self.hash()
         response = HttpResponseBadRequest(content="Error")
+        
         if (type_ := ds.get("type")) is not None:
             response = HttpResponse(type_, content_type=ds.get("content-type", None))
+        
             response["Content-Disposition"] = f'attachment; filename="product_{hash}.{_type}"'
+        
         return response
     
     def hash(self) -> str:
+        
         _s = Faker().sentence(5).encode()
+        
         return hashlib.md5(_s).hexdigest()
     
     def export_data(self, request, queryset: T | None = None) -> Any:
 
-        ds = ProductResource().export()
+        ds = ProductResource.export_data(queryset)
         return ds
     
     def import_data(self, request, form, queryset: T) -> Any:
@@ -400,4 +408,4 @@ class ExportProductView(View):
         return response
 
 
-export_import_product_view = ExportProductView.as_view()
+export_import_product_view = ProductExportImportView.as_view()

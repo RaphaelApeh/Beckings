@@ -14,6 +14,7 @@ class ExportType(EnumChoiceMixin, Enum):
     JSON = "json", "Json"
     CSV = "csv", "Csv"
     YAML = "yaml", "Yaml"
+    HTML = "html", "HTML"
 
 
 class OrderStatusOptions(Enum):
