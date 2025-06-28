@@ -322,31 +322,46 @@ product_create_view = ProductCreateView.as_view()
 
 class ProductExportImportView(View):
 
+    mapping = {
+            "json": {
+                "type": lambda x: x.json, 
+                "content-type": "application/json"
+            },
+            "csv": {
+                "type": lambda x: x.csv, 
+                "content-type": "text/csv"
+            },
+            "yaml": {
+                "type": lambda x: x.yaml, 
+                "content-type": "text/yaml"
+            },
+            "html": {
+                "type": lambda x: x.html,
+                "content-type": "text/html",
+            }
+    }
 
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs) -> HttpResponse:
 
-        export = self.export_data(request)
-        mapping = {
-            "json": {"type": export.json, "content-type": "application/json"},
-            "csv": {"type": export.csv, "content-type": "text/csv"},
-            "yaml": {"type": export.yaml, "content-type": "text/yaml"}
-        }
-        
+        mapping = self.mapping
+        ids = request.GET.getlist("id")
+        queryset = self.get_queryset().filter(pk__in=ids)
         form = ExportForm(request.GET or None)
-        _type = None
+
+        export = self.export_data(request, queryset)
         
         if form.is_valid():
-            _type = form.cleaned_data["format"]
-        ds = mapping.get(_type)
+            format = form.cleaned_data["format"]
+        ds = mapping.get(format)
 
         hash = self.hash()
         response = HttpResponseBadRequest(content="Error")
         
         if (type_ := ds.get("type")) is not None:
-            response = HttpResponse(type_, content_type=ds.get("content-type", None))
+            response = HttpResponse(type_(export), content_type=ds.get("content-type", None))
         
-            response["Content-Disposition"] = f'attachment; filename="product_{hash}.{_type}"'
+            response["Content-Disposition"] = f'attachment; filename="product_{hash}.{format}"'
         
         return response
     
@@ -357,7 +372,8 @@ class ProductExportImportView(View):
         return hashlib.md5(_s).hexdigest()
     
     def export_data(self, request, queryset: T | None = None) -> Any:
-
+        if not len(list(queryset)):
+            queryset = None
         ds = ProductResource.export_data(queryset)
         return ds
     

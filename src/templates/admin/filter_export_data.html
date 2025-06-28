@@ -19,12 +19,13 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post">
-      {% csrf_token %}
+    <form method="get" action="{% url 'export_import_product' %}">
     <div>
       {{ form.as_div }}
-    <input type="hidden" name="_post" value="yes">
     
+    {% for object in object_list %}
+      <input type="hidden" name="id" value="{{ object.pk }}">
+    {% endfor %}
     <input type="submit" value="{% translate 'Export' %}">
     </div>
     </form>

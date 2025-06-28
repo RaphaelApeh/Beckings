@@ -37,11 +37,11 @@ def export_quertyset_filter(model_admin, request, queryset):
     context.update(
         {
             "opts": model_admin.opts,
-            "form": form
+            "form": form,
+            "object_list": queryset
         }
     )
-    if "_post" in request.POST:
-        return model_admin.export_queryset(request, queryset)
+    request.current_app = model_admin.admin_site.name
     return TemplateResponse(
         request,
         "admin/filter_export_data.html",
