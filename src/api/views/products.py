@@ -45,8 +45,7 @@ class ProductListCreateView(GenericAPIView):
         match self.request.method:
             case "POST":
                 self.permission_classes = (permissions.IsAdminUser,)
-            case _:
-                return super().get_permissions()
+        return super().get_permissions()
 
     @extend_schema(
         parameters=[

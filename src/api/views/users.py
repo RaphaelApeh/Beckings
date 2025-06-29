@@ -4,7 +4,6 @@ from rest_framework import permissions, status, serializers
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework.request import Request
-from rest_framework.generics import GenericAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
@@ -18,19 +17,6 @@ from helpers.serializers.users import ChangePasswordSerializer, \
 User = get_user_model()
 
 S = TypeVar("S", serializers.Serializer, serializers.ModelSerializer)
-
-
-class ChangePasswordAPIView(GenericAPIView):
-
-    serializer_class = ChangePasswordSerializer
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-
-        serializer = self.get_serializer(data=request.data)
-        
-        serializer.is_valid(raise_exception=True)
-
-        return Response({"success": "Password set Successfully."}, status=status.HTTP_200_OK)
 
 
 class UserAPIView(SerializerFactoryMixin, ModelViewSet):
@@ -64,6 +50,8 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
                 return UserCreationSerializer
             case "update":
                 return UserUpdateSerializer
+            case "change_password":
+                return ChangePasswordSerializer
         
         return super().get_serializer_class()
 
@@ -108,4 +96,16 @@ class UserAPIView(SerializerFactoryMixin, ModelViewSet):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(
+        ["POST"],
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def change_password(self, request, *args, **kwargs) -> Response:
+
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+    
+        return Response({"success": "Password set Successfully."}, status=status.HTTP_200_OK)
 

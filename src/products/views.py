@@ -404,7 +404,8 @@ class ProductExportImportView(View):
         
         form = ProductImportForm(data=request.POST or None, files=request.FILES or None)
         
-        response = HttpResponseRedirect(request.META["HTTP_REFERER"])
+        next_url = request.META.get("HTTP_REFERER") or reverse("products")
+        response = HttpResponseRedirect(next_url)
 
         if not form.is_valid():
             messages.error(request, "An Error orcured.")

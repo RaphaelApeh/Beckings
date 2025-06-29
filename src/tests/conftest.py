@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from django.contrib.auth import get_user_model
@@ -34,6 +36,11 @@ def products(db):
 
     return Product.objects.all()
 
+@pytest.fixture
+def product(db):
+
+    from products.models import Product
+    return Product
 
 @pytest.fixture(autouse=True)
 def user(db):
@@ -58,3 +65,9 @@ def authenticated_client(api_client, user):
     api_client.force_authenticate(user=user)
     return api_client
 
+
+@pytest.fixture
+def products_factory(db):
+    from helpers.factories import ProductFactory
+    
+    return ProductFactory.create_batch(random.randint(1, 10))
