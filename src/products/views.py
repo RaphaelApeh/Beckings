@@ -30,6 +30,7 @@ from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
+from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
 
 from django_htmx.http import HttpResponseClientRedirect
@@ -320,6 +321,7 @@ class ProductCreateView(FormRequestMixin,
 product_create_view = ProductCreateView.as_view()
 
 
+@method_decorator(never_cache, name="dispatch")
 class ProductExportImportView(View):
 
     mapping = {
@@ -392,7 +394,8 @@ class ProductExportImportView(View):
                     print(error)
             if not import_data.has_errors():
                 import_data = resource.import_data(_file_data, dry_run=False, user=user)
-        return HttpResponseRedirect(request.META["HTTP_REFERER"])
+        next_url = request.META.get("HTTP_REFERER") or reverse("products")
+        return HttpResponseRedirect(next_url)
 
     def get_queryset(self):
         return Product.objects.select_related("user")
