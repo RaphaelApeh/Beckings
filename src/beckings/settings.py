@@ -29,7 +29,18 @@ CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = not DEBUG
 
 # Application definition
+
+UNFOLD_APPS = (
+    "unfold",
+    "unfold.contrib.forms",
+    "unfold.contrib.filters",
+    "unfold.contrib.import_export",
+)
+
 DJANGO_APPS = [
+    
+    *UNFOLD_APPS,
+    
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -67,8 +78,8 @@ INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_AP
 
 TAILWIND_APP_NAME = "theme"
 
-if DEBUG:
-    INSTALLED_APPS.insert(0, "whitenoise.runserver_nostatic")
+# if DEBUG:
+#     INSTALLED_APPS.insert(len(UNFOLD_APPS), "whitenoise.runserver_nostatic")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -270,3 +281,7 @@ if REDIS_URL:
     }
 
 
+UNFOLD = {
+    "SITE_HEADER": "Beckings",
+    "SITE_TITLE": "Becking inc."
+}

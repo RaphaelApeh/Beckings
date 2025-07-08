@@ -5,15 +5,22 @@ from django.contrib import admin
 from django.http import HttpRequest, \
                         HttpResponse
 from django.db.models import QuerySet
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import (
+    UserAdmin as BaseUserAdmin,
+    GroupAdmin as BaseGroupAdmin
+)
 from import_export.admin import (
-    ImportExportModelAdmin,
-    ExportMixin
+    ImportExportMixin,
+    ExportMixin,
+    ExportActionMixin,
     )
+from unfold.admin import ModelAdmin
 
 from helpers import resources
 from .actions import (
     ReadOnlyMixin,
-    export_quertyset_filter,
     user_order_delivered_action,
     user_order_cancelled_action,
     user_order_pending_action
@@ -27,8 +34,26 @@ from .forms import (
 )
 
 
+User = get_user_model()
+
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin, ModelAdmin):...
+
+
+@admin.register(Group)
+class GroupAdmin(BaseGroupAdmin, ModelAdmin):...
+
+
 @admin.register(Product)
-class ProductAdmin(ImportExportModelAdmin):
+class ProductAdmin(
+                ImportExportMixin,
+                ExportActionMixin, 
+                ModelAdmin
+                ):
     
     list_display = ["user__username", "product_name", "product_slug", "active"]
     search_fields = ["user__username", "product_name", "product_description"]
@@ -42,8 +67,9 @@ class ProductAdmin(ImportExportModelAdmin):
             "quantity",
         )})
     )
-    actions = (
-        export_quertyset_filter,
+    list_filter = (
+        "price",
+        "active",
     )
     resource_classes = (resources.ProductResource, )
 
@@ -78,7 +104,7 @@ class ProductAdmin(ImportExportModelAdmin):
 
 
 @admin.register(OrderProxy)
-class OrderAdmin(ReadOnlyMixin, ExportMixin, admin.ModelAdmin):
+class OrderAdmin(ReadOnlyMixin, ExportMixin, ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
     readonly_fields: List[str] = ["timestamp"]

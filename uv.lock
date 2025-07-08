@@ -47,8 +47,9 @@ dependencies = [
     { name = "django-import-export" },
     { name = "django-redis" },
     { name = "django-tailwind" },
-    { name = "django-template-partials" },
+    { name = "django-unfold" },
     { name = "djangorestframework" },
+    { name = "djhtml" },
     { name = "drf-spectacular", extra = ["sidecar"] },
     { name = "factory-boy" },
     { name = "gunicorn" },
@@ -63,7 +64,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "black" },
-    { name = "django-debug-toolbar" },
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "time-machine" },
@@ -81,8 +81,9 @@ requires-dist = [
     { name = "django-import-export", specifier = ">=4.3.7" },
     { name = "django-redis", specifier = ">=5.4.0" },
     { name = "django-tailwind", specifier = ">=4.0.1" },
-    { name = "django-template-partials", specifier = ">=24.4" },
+    { name = "django-unfold", specifier = ">=0.62.0" },
     { name = "djangorestframework", specifier = ">=3.16.0" },
+    { name = "djhtml", specifier = ">=3.0.8" },
     { name = "drf-spectacular", extras = ["sidecar"], specifier = ">=0.28.0" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "gunicorn", specifier = ">=23.0.0" },
@@ -97,7 +98,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "black", specifier = ">=25.1.0" },
-    { name = "django-debug-toolbar", specifier = ">=5.1.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "time-machine", specifier = ">=2.16.0" },
@@ -307,19 +307,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-debug-toolbar"
-version = "5.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "sqlparse" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5b/6b/41281bf3f9939713010f24f46a033a74cf90599f52f09aaa8b0b118692b7/django_debug_toolbar-5.1.0.tar.gz", hash = "sha256:8a3b9da4aeab8d384a366e20304bd939a451f0242523c5b7b402248ad474eed2", size = 294567 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/ce/39831ce0a946979fdf19c32e6dcd1754a70e3280815aa7a377f61d5e021c/django_debug_toolbar-5.1.0-py3-none-any.whl", hash = "sha256:c0591e338ee9603bdfce5aebf8d18ca7341fdbb69595e2b0b34869be5857180e", size = 261531 },
-]
-
-[[package]]
 name = "django-filter"
 version = "25.1"
 source = { registry = "https://pypi.org/simple" }
@@ -384,15 +371,15 @@ wheels = [
 ]
 
 [[package]]
-name = "django-template-partials"
-version = "24.4"
+name = "django-unfold"
+version = "0.62.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/ff/2a7ddae12ca8e5fea1a41af05924c04f1bb4aec7157b04a88b829dd93d4a/django_template_partials-24.4.tar.gz", hash = "sha256:25b67301470fc274ecc419e5e5fd4686a5020b1c038fd241a70eb087809034b6", size = 14538 }
+sdist = { url = "https://files.pythonhosted.org/packages/23/cd/a50fe52cd1cad37dec0c437ed179c218bc7534fece9c1da266bcc62118c6/django_unfold-0.62.0.tar.gz", hash = "sha256:fa931018b5c3f501b589d1785c430964a5b37ab1259ecb3ccb516efe075311bc", size = 1064095 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/72/d8eea70683b25230e0d2647b5cf6f2db4a7e7d35cb6170506d9618196374/django_template_partials-24.4-py2.py3-none-any.whl", hash = "sha256:ee59d3839385d7f648907c3fa8d5923fcd66cd8090f141fe2a1c338b917984e2", size = 8439 },
+    { url = "https://files.pythonhosted.org/packages/8f/e4/d88e06cdacb883d329f01757133858a5527ae0be4913525f77883ddf1b8b/django_unfold-0.62.0-py3-none-any.whl", hash = "sha256:58889ba0069cd272a471458a48b4c86b5e5580649fe50a8b21543bf2d82f18fd", size = 1170897 },
 ]
 
 [[package]]
@@ -406,6 +393,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/7d/97/112c5a72e6917949b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/3e/2448e93f4f87fc9a9f35e73e3c05669e0edd0c2526834686e949bb1fd303/djangorestframework-3.16.0-py3-none-any.whl", hash = "sha256:bea7e9f6b96a8584c5224bfb2e4348dfb3f8b5e34edbecb98da258e892089361", size = 1067305 },
 ]
+
+[[package]]
+name = "djhtml"
+version = "3.0.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/e8/c2d12facfc47fec732633ea3c2d820298e0e314331fc43bcf694099abcb5/djhtml-3.0.8.tar.gz", hash = "sha256:ec3b4cf25f0959474c7793da1becba654ca9587689ce143955bcbc2638eeabce", size = 27886 }
 
 [[package]]
 name = "drf-spectacular"

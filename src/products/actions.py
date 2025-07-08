@@ -1,12 +1,8 @@
 from typing import Any
 
 from django.contrib.admin import action
-from django.template.response import TemplateResponse
 
 from helpers.enum import OrderStatusOptions
-from .forms import (
-    ExportForm
-)
 
 
 class ReadOnlyMixin:
@@ -25,31 +21,7 @@ class ReadOnlyMixin:
         return form
 
 
-@action(description="Export Filters")
-def export_quertyset_filter(model_admin, request, queryset):
-    
-    assert hasattr(model_admin, "resource_classes")
-
-    context = model_admin.admin_site.each_context(request)
-
-    form = ExportForm()
-
-    context.update(
-        {
-            "opts": model_admin.opts,
-            "form": form,
-            "object_list": queryset
-        }
-    )
-    request.current_app = model_admin.admin_site.name
-    return TemplateResponse(
-        request,
-        "admin/filter_export_data.html",
-        context
-    )
-
-
-@action(description="User Order Delivered")
+@action(description="%(verbose_name)s Delivered")
 def user_order_delivered_action(model_admin, request, queryset) -> None:
     
     queryset.update(status=OrderStatusOptions.DELIVERED.value)
