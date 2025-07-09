@@ -1,9 +1,7 @@
-from datetime import datetime
 from typing import Any, List
 
 from django.contrib import admin
-from django.http import HttpRequest, \
-                        HttpResponse
+from django.http import HttpRequest
 from django.db.models import QuerySet
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -28,9 +26,6 @@ from .actions import (
 from .models import (
     Product,
     OrderProxy
-)
-from .forms import (
-    ExportForm
 )
 
 
@@ -90,17 +85,6 @@ class ProductAdmin(
         if hasattr(obj, "image"):
             obj.image.delete()
         return super().delete_model(request, obj)
-    
-    def export_queryset(self, request, queryset):
-        resource = self.resource_classes[0]
-        form = ExportForm(request.POST, resource=resource, queryset=queryset)
-        data = form.export()
-        format = form.cleaned_data["format"]
-        time_str = datetime.now().strftime("%d/%m/%Y")
-        response = HttpResponse(data)
-        response["Content-Disposition"] = 'attachment; filename="product_{}.{}"'.format(time_str, format)
-        return response
-
 
 
 @admin.register(OrderProxy)

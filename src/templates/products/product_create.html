@@ -20,30 +20,30 @@
                         <form class="mt-4 space-y-4 lg:mt-5 md:space-y-5" action="#">
                             <p class="text-center">{{ form.non_field_errors }} </p>
                             {% for field in form %}
-                            <div>
-                                <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
-                                {{ field|form_class }}
-                                {% if field.errors %}
-                                <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>
-                                {% endif %}
-                            </div>
+                                <div>
+                                    <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
+                                    {{ field|form_class }}
+                                    {% if field.errors %}
+                                        <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>
+                                    {% endif %}
+                                </div>
                             {% endfor %}
                             <c-button />
                         </form>
                     </div>
                 </div>
-              </section>
+            </section>
         </form>
         <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
             <form class="max-w-sm mx-auto mt-12 mb-12 bg-white p-12 rounded-xl shadow-xl font-mono" method="post" {% if import_form.is_multipart %} enctype="multipart/form-data" {% endif %} action="{% url 'export_import_product' %}">
                 {% csrf_token %}
-              {{ import_form.as_p }}
-              <button type="submit" class="w-full mt-4 text-white bg-indigo-600
-              hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Upload</button>
+                {{ import_form.as_p }}
+                <button type="submit" class="w-full mt-4 text-white bg-indigo-600
+                                             hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Upload</button>
             </form>
         </div>
     </div>
-    
+
 {% endblock %}
 
 {% block extra_body %}

@@ -10,32 +10,32 @@
 
         <div class="inline-flex items-center ml-5 space-x-6 lg:justify-end">
             {% if request.user.is_anonymous %}
-            <a href="{% url 'login' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
-                Sign in
-            </a>
-            <a href="{% url 'register' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
-                Sign up
-            </a>
+                <a href="{% url 'login' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                    Sign in
+                </a>
+                <a href="{% url 'register' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
+                    Sign up
+                </a>
             {% elif user.is_staff %}
-            <a href="{% url 'product_create' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
-                Create
-            </a>
-            <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
-                Logout
-            </a>
-            {% else %}
-            {% if user.order_set.count > 0 %}
-                <a href="{% url 'user_orders' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
-                    Orders
+                <a href="{% url 'product_create' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                    Create
+                </a>
+                <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
+                    Logout
                 </a>
             {% else %}
-                <a href="{% url 'products' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
-                    Products
+                {% if user.order_set.count > 0 %}
+                    <a href="{% url 'user_orders' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                        Orders
+                    </a>
+                {% else %}
+                    <a href="{% url 'products' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                        Products
+                    </a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
+                    Logout
                 </a>
-            {% endif %}
-            <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
-                Logout
-            </a>
             {% endif %}
         </div>
     </div>

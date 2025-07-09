@@ -1,8 +1,8 @@
 {% load django_htmx %}
 {% htmx_script %}
 <form hx-post="{{  request.path }}"
-    hx-headers="{'x-csrftoken': '{{ csrf_token }}' }"
-    class="mt-4 space-y-4 lg:mt-5 md:space-y-5">
+      hx-headers="{'x-csrftoken': '{{ csrf_token }}' }"
+      class="mt-4 space-y-4 lg:mt-5 md:space-y-5">
     {% csrf_token %}
     {% if form.non_field_errors %}
         <p class="text-red-700 font-bold text-center">{{ form.non_field_errors }}</p>
