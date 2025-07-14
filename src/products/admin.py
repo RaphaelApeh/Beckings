@@ -92,11 +92,16 @@ class OrderAdmin(ReadOnlyMixin, ExportMixin, ModelAdmin):
 
     fields: List[str] = ["user", "product", "manifest", "status"]
     readonly_fields: List[str] = ["timestamp"]
-    list_display: tuple[str, ...] = (
+    list_display: tuple[str] = (
                     "user__username", 
                     "product__product_name",
                     "status",
                     "timestamp")
+    search_fields = (
+        "status",
+        "user__username",
+        "product__product_name"
+    )
     actions = (
         user_order_delivered_action,
         user_order_pending_action,

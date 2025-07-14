@@ -152,7 +152,8 @@ class ProductImportForm(forms.Form):
 
 class ExportForm(forms.Form):
 
-    format = forms.ChoiceField(choices=ExportType.choices)
+    format = forms.ChoiceField(choices=ExportType.choices,
+                               widget=forms.RadioSelect)
 
     def __init__(self, *args, **kwargs) -> None:
         

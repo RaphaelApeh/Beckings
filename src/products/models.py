@@ -30,6 +30,19 @@ class Product(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    out_of_stock = (
+        models.GeneratedField(
+            expression=models.Case(
+                models.When(
+                    quantity__lte=0, then=True
+                ),
+                default=False,
+                output_field=models.BooleanField()
+            ),
+            output_field=models.BooleanField(),
+            db_persist=True
+        )
+    )
 
     SEARCH_FIELDS = ("product_name", "product_description", "price")
 
