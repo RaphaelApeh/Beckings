@@ -3,9 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from django import forms
-from django.forms.utils import pretty_name
+from django.forms.models import construct_instance
 from django.core.exceptions import ImproperlyConfigured
 
+
+from clients.models import Client
+from clients.models import PHONE_NUMBER_REGEX
 from .models import Product
 from .order_utils import AddOrder
 from helpers.enum import ExportType
@@ -24,10 +27,36 @@ FORM_TEXT = (
     "rounded-md",
 )
 
+TEXT = (
+    "font-medium",
+    "text-gray-900"
+)
+
 PADDING = (
     "p-2",
     "mb-2",
     "mt-2"
+)
+
+FOCUS = (
+    "focus:z-10",
+    "focus:ring-4",
+    "focus:ring-gray-200",
+    "focus:outline-none"
+)
+
+SELECT = (
+    *BORDER,
+    *PADDING,
+    "md:w-auto",
+    "flex",
+    "items-center",
+    "hover:bg-gray-100",
+    "rounded-lg",
+    "bg-white",
+    *FOCUS,
+    *TEXT
+
 )
 
 class TextField(forms.CharField):
@@ -82,6 +111,31 @@ class ProductForm(forms.ModelForm):
 
 class AddOrderForm(forms.Form):
 
+    client_fields = ("address", "phone_number")
+
+    address = TextField(
+        label="Address"
+    )
+    
+    phone_number = forms.RegexField(
+        label="Phone Number",
+        regex=PHONE_NUMBER_REGEX
+    )
+    
+    number_of_items = forms.IntegerField(
+        label="Quantity",
+        widget=forms.NumberInput(
+            attrs={
+                "min": 0
+            }
+        )
+    )
+    
+    field_order = (
+        "address",
+        "phone_number",
+        "number_of_items"
+    )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
 
@@ -95,14 +149,32 @@ class AddOrderForm(forms.Form):
         
         self.request = request
         self.view = view
+        self.user = user = request.user
+        self.instance = Client._default_manager.get(user=user)
+        self._init_client(user)
+    
 
-        for field in self.fields:
-            self.fields[field].widget.attrs.setdefault("placeholder", pretty_name(field))
-        self.fields["number_of_items"].widget.attrs.update({"min": 0})        
+    def _init_client(self, user):
+        
+        try:
+            client = user.client
+        except Exception as e:
+            raise AttributeError(f"{user} does not has ") from e
+        for field in self.client_fields:
+            value = getattr(client, field)
+            form_field = self.fields[field]
+            if value:
+                form_field.required = False
+                form_field.widget = forms.HiddenInput()       
 
+    @property
+    def user(self):
+        self._user
 
-    manifest = TextField(required=False)
-    number_of_items = forms.IntegerField()
+    @user.setter
+    def user(self, value):
+        assert value is not None
+        self._user = value
 
     def clean(self):
 
@@ -120,7 +192,10 @@ class AddOrderForm(forms.Form):
                 self.add_error(None, "Not enough quantity to order.")
             case _:
                 pass
+        if Client.objects.filter(phone_number__iexact=data["phone_number"]):
+            self.add_error("phone_number", "Error")
         return data
+    
     
     @property
     def product(self):
@@ -130,11 +205,12 @@ class AddOrderForm(forms.Form):
     
 
     def save(self, user, **kwargs: Any) -> None:
-       data = self.cleaned_data
-       
+       cleaned_data = self.cleaned_data
+       instance = construct_instance(self, self.instance, self.client_fields)
+       instance.save()
        AddOrder(
            product_instance=self.product
-       ).create(user, data)
+       ).create(user, cleaned_data)
 
 
 
@@ -197,3 +273,22 @@ class ExportForm(forms.Form):
 
     def resource_kwargs(self, **kwargs):
         return kwargs
+    
+
+class OrderActionForm(forms.Form):
+
+    action = forms.ChoiceField(
+        widget=forms.Select(attrs={
+            "class": " ".join(set(SELECT))
+        })
+        )
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop("choices", [])
+        super().__init__(*args, **kwargs)
+        action_field = self.fields["action"]
+        action_choices = action_field.choices
+        action_choices = choices
+        if isinstance(action_field.widget, forms.Select):
+            action_choices.insert(0, ("", "------"))
+

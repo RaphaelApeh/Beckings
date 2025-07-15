@@ -1,4 +1,5 @@
 import sys
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -64,6 +65,7 @@ THIRD_PARTY_APPS = [
     "tailwind",
     "import_export",
     "django_filters",
+    "phonenumber_field",
 ]
 
 INTERNAL_APPS = [
@@ -285,3 +287,7 @@ UNFOLD = {
     "SITE_HEADER": "Beckings",
     "SITE_TITLE": "Becking inc."
 }
+
+# https://docs.djangoproject.com/en/stable/ref/django-admin/#envvar-DJANGO_RUNSERVER_HIDE_WARNNING
+if DEBUG:
+    os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"

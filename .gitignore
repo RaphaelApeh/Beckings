@@ -21,6 +21,7 @@ wheels/
 # DJANGO
 staticfiles/
 *.sqlite3
+*.sql 
 
 # Node
 node_modules/

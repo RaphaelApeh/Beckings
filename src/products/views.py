@@ -19,6 +19,7 @@ from django.views.generic import (
     CreateView
     )
 from django.http import (
+                        Http404,
                         HttpRequest,
                         HttpResponse,
                         HttpResponseBadRequest,
@@ -45,7 +46,8 @@ from .models import Product, \
 from .forms import AddOrderForm, \
                     ProductForm, \
                     ProductImportForm, \
-                    ExportForm
+                    ExportForm, \
+                    OrderActionForm
 
 
 T = TypeVar("T", bound=QuerySet)
@@ -251,6 +253,19 @@ class UserOrderView(ListView):
     def get_queryset(self) -> T:
         user = self.request.user
         return super().get_queryset().filter(user=user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "order_form": OrderActionForm()
+            }
+        )
+        return context
+    
+
+    def get_order_action_choices(self, request):
+        return None
 
 user_orders_view = UserOrderView.as_view()
 

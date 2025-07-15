@@ -43,8 +43,10 @@ dependencies = [
     { name = "django" },
     { name = "django-cotton" },
     { name = "django-crispy-forms" },
+    { name = "django-filter" },
     { name = "django-htmx" },
     { name = "django-import-export" },
+    { name = "django-phonenumber-field" },
     { name = "django-redis" },
     { name = "django-tailwind" },
     { name = "django-unfold" },
@@ -53,7 +55,7 @@ dependencies = [
     { name = "drf-spectacular", extra = ["sidecar"] },
     { name = "factory-boy" },
     { name = "gunicorn" },
-    { name = "neapolitan" },
+    { name = "phonenumbers" },
     { name = "psycopg", extra = ["binary"] },
     { name = "psycopg2" },
     { name = "python-decouple" },
@@ -77,8 +79,10 @@ requires-dist = [
     { name = "django", specifier = ">=5.2" },
     { name = "django-cotton", specifier = ">=2.0.3" },
     { name = "django-crispy-forms", specifier = ">=2.4" },
+    { name = "django-filter", specifier = ">=25.1" },
     { name = "django-htmx", specifier = ">=1.23.0" },
     { name = "django-import-export", specifier = ">=4.3.7" },
+    { name = "django-phonenumber-field", specifier = ">=8.1.0" },
     { name = "django-redis", specifier = ">=5.4.0" },
     { name = "django-tailwind", specifier = ">=4.0.1" },
     { name = "django-unfold", specifier = ">=0.62.0" },
@@ -87,7 +91,7 @@ requires-dist = [
     { name = "drf-spectacular", extras = ["sidecar"], specifier = ">=0.28.0" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "neapolitan", specifier = ">=24.8" },
+    { name = "phonenumbers", specifier = ">=9.0.9" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.7" },
     { name = "psycopg2", extras = ["binary"], specifier = ">=2.9.10" },
     { name = "python-decouple", specifier = ">=3.8" },
@@ -343,6 +347,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/57/ae/52275e8a49a963468f9f807c24df17416fad0220169a8e5d7bfd4778f17f/django_import_export-4.3.7.tar.gz", hash = "sha256:bd3fe0aa15a2bce9de4be1a2f882e2c4539fdbfdfa16f2052c98dd7aec0f085c", size = 2222150 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9d/ad/b1f4aef18fd4ab86ce68f3f0fff0e9c14e5fd2c866c47f0b1cfb9ccd85c8/django_import_export-4.3.7-py3-none-any.whl", hash = "sha256:5514d09636e84e823a42cd5e79292f70f20d6d2feed117a145f5b64a5b44f168", size = 142815 },
+]
+
+[[package]]
+name = "django-phonenumber-field"
+version = "8.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/4b/edec2f3e4b8f8048540d7d1844bc576a0bdb711e1f6a4cde364c505c865d/django_phonenumber_field-8.1.0.tar.gz", hash = "sha256:f19450625574ad3a2de047c409527d0e57699496849e71e53b53e8679ff67b27", size = 43854 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/98/0413e47d7d1fab0e5a81eda6caacdcba69d50f74f64b65febf943cbd1f1e/django_phonenumber_field-8.1.0-py3-none-any.whl", hash = "sha256:9ba66873bf47401b13fc57797fbf85e785864a6bfdc8b9daa3a9012886567045", size = 65208 },
 ]
 
 [[package]]
@@ -614,19 +630,6 @@ wheels = [
 ]
 
 [[package]]
-name = "neapolitan"
-version = "24.8"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "django-filter" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/3f/b5/153b05d6893794d423df655f1c0ddab332eb2f81643741881c231e34678f/neapolitan-24.8.tar.gz", hash = "sha256:ae45b2133bb15dfc48edbfb35f625b4c37d77d6586857cc51e45dd3932d88a01", size = 24291 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/da/3875acc031778cd5249621f390667b724c30b2d1d111ed17f8e23882c483/neapolitan-24.8-py2.py3-none-any.whl", hash = "sha256:8551e5e6d00f81920a248f1b1267ef5caaa46d14a67e7bb4ae1856a260787e7b", size = 14029 },
-]
-
-[[package]]
 name = "packaging"
 version = "25.0"
 source = { registry = "https://pypi.org/simple" }
@@ -642,6 +645,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ca/bc/f35b8446f4531a7cb215605d100cd88b7ac6f44ab3fc94870c120ab3adbf/pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712", size = 51043 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/20/ff623b09d963f88bfde16306a54e12ee5ea43e9b597108672ff3a408aad6/pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08", size = 31191 },
+]
+
+[[package]]
+name = "phonenumbers"
+version = "9.0.9"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/0b/37acb7b16763991bdb675bef59bc75c6e34dbebf2c3e6bde3b0aca6bae1a/phonenumbers-9.0.9.tar.gz", hash = "sha256:c640545019a07e68b0bea57a5fede6eef45c7391165d28935f45615f9a567a5b", size = 2297605 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/09/1a07ff1a2f1366d445cc68ab53b2d5f1a83e4d9cee1161f5a76c470d400f/phonenumbers-9.0.9-py2.py3-none-any.whl", hash = "sha256:13b91aa153f87675902829b38a556bad54824f9c121b89588bbb5fa8550d97ef", size = 2583343 },
 ]
 
 [[package]]
