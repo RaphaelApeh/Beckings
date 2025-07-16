@@ -192,8 +192,6 @@ class AddOrderForm(forms.Form):
                 self.add_error(None, "Not enough quantity to order.")
             case _:
                 pass
-        if Client.objects.filter(phone_number__iexact=data["phone_number"]):
-            self.add_error("phone_number", "Error")
         return data
     
     
@@ -206,7 +204,11 @@ class AddOrderForm(forms.Form):
 
     def save(self, user, **kwargs: Any) -> None:
        cleaned_data = self.cleaned_data
-       instance = construct_instance(self, self.instance, self.client_fields)
+       instance = construct_instance(
+           self, 
+           self.instance, 
+           fields=self.client_fields,
+           exclude=["phone_number"])
        instance.save()
        AddOrder(
            product_instance=self.product
@@ -291,3 +293,27 @@ class OrderActionForm(forms.Form):
         if isinstance(action_field.widget, forms.Select):
             action_choices.insert(0, ("", "------"))
 
+
+class CommentForm(forms.Form):
+
+    message = forms.CharField(
+        label="Your Comment",
+        widget=forms.Textarea
+    )
+    product_id = forms.IntegerField(
+        widget=forms.HiddenInput
+    )
+
+
+class Reply(forms.Form):
+
+    message = forms.CharField(
+        label="Message",
+        widget=forms.Textarea
+    )
+    comment = forms.IntegerField(
+        widget=forms.MultipleHiddenInput
+    )
+    redirect_url = forms.CharField(
+        widget=forms.HiddenInput
+    )
