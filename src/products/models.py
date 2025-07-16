@@ -8,6 +8,11 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey,
+    GenericRelation
+)
 
 from cloudinary import CloudinaryImage #noqa
 
@@ -43,6 +48,7 @@ class Product(models.Model):
             db_persist=True
         )
     )
+    comments = GenericRelation("comment")
 
     SEARCH_FIELDS = ("product_name", "product_description", "price")
 
@@ -132,3 +138,47 @@ class OrderProxy(Order):
         return self.status == "cancelled"
 
     cancelled.short_description = _("Cancelled")
+
+
+class Comment(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        related_name="comments",
+        on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
+    
+    class Meta:
+        db_table = "comments"
+        indexes = (
+            models.Index(fields=("message",)),
+        )
+    
+
+class Reply(models.Model):
+
+    comment = models.ForeignKey(
+        Comment,
+        related_name="replies",
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
+    
+    class Meta:
+        indexes = (
+            models.Index(fields=("message",)),
+        )
+        verbose_name_plural = _("Replies")
+

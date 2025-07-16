@@ -14,7 +14,7 @@ from import_export.admin import (
     ExportMixin,
     ExportActionMixin,
     )
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, GenericStackedInline
 
 from helpers import resources
 from .actions import (
@@ -25,7 +25,9 @@ from .actions import (
 )
 from .models import (
     Product,
-    OrderProxy
+    OrderProxy,
+    Comment,
+    Reply
 )
 
 
@@ -42,6 +44,32 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):...
 @admin.register(Group)
 class GroupAdmin(BaseGroupAdmin, ModelAdmin):...
 
+
+class CommentInline(GenericStackedInline):
+
+    model = Comment
+    extra = 1
+
+
+@admin.register(Comment)
+class CommentAdmin(ModelAdmin):
+
+    list_display = (
+        "user__username",
+        "message",
+        "timestamp"
+    )
+    list_filter = (
+        "user",
+    )
+
+@admin.register(Reply)
+class ReplyAdmin(ModelAdmin):
+
+    list_display = (
+        "user__username",
+        "message"
+    )
 
 @admin.register(Product)
 class ProductAdmin(
@@ -67,6 +95,9 @@ class ProductAdmin(
         "active",
     )
     resource_classes = (resources.ProductResource, )
+    inlines = (
+        CommentInline,
+    )
 
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         return super().get_queryset(request).select_related("user")

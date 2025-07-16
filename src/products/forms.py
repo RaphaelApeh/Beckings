@@ -278,9 +278,8 @@ class ExportForm(forms.Form):
 class OrderActionForm(forms.Form):
 
     action = forms.ChoiceField(
-        widget=forms.Select(attrs={
-            "class": " ".join(set(SELECT))
-        })
+        choices=(),
+        widget=forms.Select
         )
 
     def __init__(self, *args, **kwargs):
