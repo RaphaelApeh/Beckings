@@ -19,7 +19,6 @@ from django.views.generic import (
     CreateView
     )
 from django.http import (
-                        Http404,
                         HttpRequest,
                         HttpResponse,
                         HttpResponseBadRequest,
@@ -42,13 +41,17 @@ from helpers.resources import ProductResource
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
-                    Order
+                    Order, Comment, Reply #noqa
 from .forms import AddOrderForm, \
                     ProductForm, \
                     ProductImportForm, \
                     ExportForm, \
-                    OrderActionForm
+                    OrderActionForm, \
+                    CommentForm
 
+
+login_required_m = method_decorator(login_required, name="dispatch")
+require_htmx_m = method_decorator(require_htmx, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
 
@@ -191,6 +194,9 @@ class ProductDetailView(FormRequestMixin,
     def get_context_data(self, **kwargs):
         kwargs = {**self.permissions, **kwargs}
         kwargs["export_form"] = ExportForm()
+        kwargs["comment_form"] = (
+            CommentForm(**self.get_comment_form_initial_kwargs(self.request))
+        )
         return super().get_context_data(**kwargs)
 
     def perms(self, model_class: Any) -> dict[str, str]:
@@ -200,6 +206,13 @@ class ProductDetailView(FormRequestMixin,
             "model_name": opts.verbose_name
         }
         return {k: v.format(**kwargs) for (k, v) in self.permission_map.items()}
+
+    def get_comment_form_initial_kwargs(self, request, **kwargs):
+        
+        kwargs.setdefault("initial", {
+            "product_id": self.get_object().pk
+        })
+        return kwargs
 
     def permission_denied(self):
         
@@ -289,6 +302,7 @@ class AddOrderView(FormRequestMixin, FormView):
 
     def get_form_kwargs(self) -> dict[str, Any]:
         kw = super().get_form_kwargs()
+        kw.update({"auto_id": False})
         kw.setdefault("view", self)
         return kw
 
@@ -444,3 +458,38 @@ class ProductExportImportView(View):
 
 
 export_import_product_view = ProductExportImportView.as_view()
+
+# Comments
+
+@require_htmx_m
+@login_required_m
+class CommentCreateView(FormView):
+
+    model = Product
+    form_class = (
+        CommentForm
+    )
+    template_name = "helpers/comments/object.html"
+
+
+    def get_object(self):
+
+        queryset = self.model._default_manager.all()
+        pk = self.kwargs.get("pk")
+        if pk:
+            return queryset.get(pk=pk)
+        return queryset.get(**self.kwargs)
+
+    def form_valid(self, form):
+        
+        kwargs = {}
+        data = form.cleaned_data
+        object = Comment.objects.create(
+            user=self.request.user,
+            content_object=self.get_object(),
+            message=data.get("message")
+        )
+        kwargs["comment"] = object
+        return self.render_to_response(self.get_context_data(**kwargs))
+    
+    

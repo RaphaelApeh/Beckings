@@ -160,6 +160,7 @@ class Comment(models.Model):
         indexes = (
             models.Index(fields=("message",)),
         )
+        ordering = ("-timestamp",)
     
 
 class Reply(models.Model):

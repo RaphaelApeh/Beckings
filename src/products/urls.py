@@ -7,6 +7,7 @@ from .views import (ProductListView,
                     product_create_view,
                     user_orders_view,
                     export_import_product_view,
+                    CommentCreateView,
                     )
 
 
@@ -31,5 +32,11 @@ urlpatterns = [
 
     path("orders/add/<int:product_id>/", 
         AddOrderView.as_view(), 
-        name="add_user_order")
+        name="add_user_order"),
+
+    path(
+        "comment/add/<int:pk>/", 
+        CommentCreateView.as_view(),
+        name="add_comment"
+        )
 ]

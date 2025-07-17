@@ -9,5 +9,20 @@
 {% block content %}
     <c-base-header />
     <c-product-detail />
+        <section class="bg-white dark:bg-gray-900 py-8 lg:py-16 antialiased">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">Discussion ({{ object.comments.count }})</h2>
+            </div>
+            {% if request.user.is_authenticated %}
+                {% include "helpers/comments/form.html" with object=object %}
+            {% endif %}
+            <div id="messages">
+                {% for comment in object.comments.all %}
+                    {% include "helpers/comments/object.html" %}
+                {% endfor %}
+            </div>
+            </div>
+        </section>
     <c-footer />
 {% endblock %}
