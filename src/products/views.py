@@ -272,11 +272,27 @@ class UserOrderView(ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "order_form": OrderActionForm(),
-                "can_delete": ["pending"]
+                "order_form": OrderActionForm()
             }
         )
         return context
+    
+    def get(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        if request.htmx:
+            form = OrderActionForm(request.GET or None)
+            if not form.is_valid():
+                qs = qs.all()
+                return render(
+                    request, 
+                    "helpers/orders/object_list.html",
+                    {"object_list": qs}) 
+            qs = qs.filter(status=form.cleaned_data.get("action"))
+            return render(
+                request, 
+                "helpers/orders/object_list.html", 
+                {"object_list": qs})
+        return super().get(request, *args, **kwargs)
     
 
     def get_order_action_choices(self, request):

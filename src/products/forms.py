@@ -9,7 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from clients.models import Client
 from clients.models import PHONE_NUMBER_REGEX
-from .models import Product
+from .models import Product, ORDER_CHOICES
 from .order_utils import AddOrder
 from helpers.enum import ExportType
 
@@ -280,18 +280,9 @@ class ExportForm(forms.Form):
 class OrderActionForm(forms.Form):
 
     action = forms.ChoiceField(
-        choices=(),
+        choices={"": "------", **ORDER_CHOICES},
         widget=forms.Select
         )
-
-    def __init__(self, *args, **kwargs):
-        choices = kwargs.pop("choices", [])
-        super().__init__(*args, **kwargs)
-        action_field = self.fields["action"]
-        action_choices = action_field.choices
-        action_choices = choices
-        if isinstance(action_field.widget, forms.Select):
-            action_choices.insert(0, ("", "------"))
 
 
 class CommentForm(forms.Form):

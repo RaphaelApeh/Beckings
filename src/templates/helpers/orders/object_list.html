@@ -1,0 +1,7 @@
+<div class="divide-y divide-gray-200 dark:divide-gray-700">
+    {% for object in object_list %}
+      {% include "helpers/orders/object.html" %}
+    {% empty %}
+        <div class="text-indigo-600 text-center text-3xl mt-4 font-bold">No Orders</div>
+    {% endfor %}
+</div>

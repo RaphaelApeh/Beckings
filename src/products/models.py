@@ -124,6 +124,8 @@ class Order(models.Model):
 
         return "{id} - {name}".format(id=self.order_id, name=self.__class__.__name__)
 
+    def can_delete(self):
+        return ("pending",)
 
 
 class OrderProxy(Order):
