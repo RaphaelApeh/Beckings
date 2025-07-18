@@ -256,7 +256,7 @@ class ProductSearchView(View):
 product_search_view = ProductSearchView.as_view()
 
 
-@method_decorator(login_required, name="dispatch")
+@login_required_m
 class UserOrderView(ListView):
 
     queryset = Order.objects.select_related("user", "product")   
@@ -265,13 +265,15 @@ class UserOrderView(ListView):
 
     def get_queryset(self) -> T:
         user = self.request.user
-        return super().get_queryset().filter(user=user)
+        qs = super().get_queryset()
+        return qs.filter(user=user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "order_form": OrderActionForm()
+                "order_form": OrderActionForm(),
+                "can_delete": ["pending"]
             }
         )
         return context

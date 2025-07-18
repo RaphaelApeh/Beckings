@@ -5,6 +5,7 @@
     hx-trigger="submit" 
     hx-target="#messages"
     hx-swap="afterbegin"
+    hx-on:htmx:after-request="this.reset()"
     >
 
     {% csrf_token %}
@@ -20,7 +21,7 @@
     <div class="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200">
         <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
             {{ field.error }}
-            {{ field|form_class:"px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none" }}
+            {% render_field field class="px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none" %}
     </div>
     {% endfor %}
     
