@@ -1,4 +1,5 @@
 from typing import Any, final
+from collections import OrderedDict
 
 from django import template
 from django.template.base import (
@@ -25,16 +26,16 @@ def do_render_field(parser: Parser, token: Token):
             k, v = bit.split("=")
             v = parser.compile_filter(v)
             class_attr.append((k, v))
-    
-    return FieldRenderNode(form_field, class_attr)
+    attr = OrderedDict(class_attr)
+    return FieldRenderNode(form_field, attr)
 
 @final
 class FieldRenderNode(template.Node):
 
-    def __init__(self, form_field, class_attr: list[tuple[Any]]):
+    def __init__(self, form_field, attr: dict[Any]):
         
         self.form_field = form_field
-        self.class_attr = class_attr
+        self.attr = attr
 
     def render(self, context):
         
@@ -46,8 +47,8 @@ class FieldRenderNode(template.Node):
     
     def _parse_class_attr(self, context) -> dict[Any]:
         kwargs = {}
-        if class_attr := self.class_attr:
-            for k, v in class_attr:
+        if attr := self.attr:
+            for k, v in attr.items():
                 kwargs[k] = v.resolve(context)
         return kwargs
 
