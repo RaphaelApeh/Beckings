@@ -296,14 +296,13 @@ class CommentForm(forms.Form):
     )
 
 
-class Reply(forms.Form):
+class ReplyForm(forms.Form):
 
     message = forms.CharField(
-        label="Message",
-        widget=forms.Textarea
+        label="Message"
     )
-    comment = forms.IntegerField(
-        widget=forms.MultipleHiddenInput
+    comment_id = forms.IntegerField(
+        widget=forms.HiddenInput
     )
     redirect_url = forms.CharField(
         widget=forms.HiddenInput

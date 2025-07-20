@@ -8,6 +8,7 @@ from .views import (ProductListView,
                     user_orders_view,
                     export_import_product_view,
                     CommentCreateView,
+                    ReplyView
                     )
 
 
@@ -38,5 +39,11 @@ urlpatterns = [
         "comment/add/<int:pk>/", 
         CommentCreateView.as_view(),
         name="add_comment"
-        )
+        ),
+    
+    path(
+        "replies/<int:comment_id>/",
+        ReplyView.as_view(),
+        name="reply"
+    )
 ]

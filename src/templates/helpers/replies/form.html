@@ -1,0 +1,22 @@
+<form 
+    class="mb-6"
+    hx-post="{{ request.path }}"
+    hx-trigger="submit"
+    hx-target="replies"
+    hx-swap="afterbegin"
+    >
+    {% csrf_token %}
+    {% for field in form.hidden_fields %}
+        {{ field.errors }}
+        {{ field }}
+    {% endfor %}
+
+    {% for field in form.visible_fields %}
+        <div class="py-2 px-6 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200">
+            {% render_field field placeholder="Reply" class="px-0 w-full text-sm text-gray-900 border-0 bofocus:ring-0 focus:outline-none" %}
+        </div>
+    {% endfor %}
+    <button class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-500 hover:bg-indigo-800">
+        Reply
+    </button>
+</form>

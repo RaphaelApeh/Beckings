@@ -27,6 +27,7 @@ from django.http import (
 from django.http.response import HttpResponseBase
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin
+from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
@@ -47,7 +48,8 @@ from .forms import AddOrderForm, \
                     ProductImportForm, \
                     ExportForm, \
                     OrderActionForm, \
-                    CommentForm
+                    CommentForm, \
+                    ReplyForm
 
 
 login_required_m = method_decorator(login_required, name="dispatch")
@@ -481,7 +483,7 @@ export_import_product_view = ProductExportImportView.as_view()
 
 @require_htmx_m
 @login_required_m
-class CommentCreateView(FormView):
+class CommentCreateView(SingleObjectMixin, FormView):
 
     model = Product
     form_class = (
@@ -489,15 +491,10 @@ class CommentCreateView(FormView):
     )
     template_name = "helpers/comments/object.html"
 
-
-    def get_object(self):
-
-        queryset = self.model._default_manager.all()
-        pk = self.kwargs.get("pk")
-        if pk:
-            return queryset.get(pk=pk)
-        return queryset.get(**self.kwargs)
-
+    def dispatch(self, request, *args, **kwargs):
+        self.object = None
+        return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         
         kwargs = {}
@@ -511,3 +508,50 @@ class CommentCreateView(FormView):
         return self.render_to_response(self.get_context_data(**kwargs))
     
     
+@login_required_m
+@require_htmx_m
+class ReplyView(SingleObjectMixin, FormView):
+
+    model = Comment
+    template_name = "helpers/replies/form.html"
+    pk_url_kwarg = "comment_id"
+    form_class = ReplyForm
+    object = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        obj = self.get_object()
+        kwargs.update(
+            {
+                "initial": self.get_form_initial(self.request, obj)
+            }
+        )
+        return kwargs
+    
+    def get_form_initial(self, request, obj):
+        kwargs = {}
+        kwargs["comment_id"] = obj.pk 
+        kwargs["redirect_url"] = request.META["HTTP_REFERER"]
+        return kwargs
+
+    def form_valid(self, form):
+        
+        obj = self.get_object()
+        
+        self.object = self._create_reply(
+            self.request, form, obj
+        )
+        return render(
+            self.request,
+            "helpers/replies/object.html",
+            self.get_context_data()
+        )
+    
+    def _create_reply(self, request, form, obj):
+
+        Reply.objects.create(
+            user=request.user,
+            comment=obj,
+            message=form.cleaned_data["message"]
+        )
+        return obj
