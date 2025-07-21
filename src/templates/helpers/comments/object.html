@@ -1,5 +1,5 @@
 {% load humanize %}
-<article class="p-6 text-base bg-white rounded-lg dark:bg-gray-900">
+<article id="comment-{{ comment.id }}" class="p-6 text-base bg-white rounded-lg dark:bg-gray-900">
     <footer class="flex justify-between items-center mb-2">
         <div class="flex items-center">
             <p class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold"> <!--<img
@@ -24,16 +24,23 @@
             <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
                 aria-labelledby="dropdownMenuIconHorizontalButton">
                 <li>
-                    <a href="#"
+                    <a 
+                        hx-get="{% url 'update_comment' comment.pk %}"
+                        hx-target="#replyBtn{{comment.pk}}"
+                        hx-trigger="click"
+                        hx-swap="outerHTML"
                         class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
                 </li>
                 <li>
-                    <a href="#"
-                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
-                </li>
-                <li>
-                    <a href="#"
-                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Report</a>
+                    <form hx-post="{% url 'delete_comment' comment.pk %}"
+                    hx-target="#comment-{{ comment.id }}"
+                    hx-trigger="click"
+                    hx-swap="delete">
+                        {% csrf_token %}
+                        <a
+                            role="button"
+                            class="block py-2 px-4 hover:bg-gray-100">Remove</a>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -41,7 +48,7 @@
     </footer>
     <p class="text-gray-500 dark:text-gray-400">{{ comment.message }}</p>
     <div class="flex items-center mt-4 space-x-4">
-        <button type="button"
+        <button id="replyBtn{{comment.pk}}" type="button"
             hx-get="{% url 'reply' comment_id=comment.pk %}"
             hx-trigger="click"
             hx-swap="outerHTML"

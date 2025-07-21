@@ -2,8 +2,6 @@
     class="mb-6"
     hx-post="{{ request.path }}"
     hx-trigger="submit"
-    hx-target="replies"
-    hx-swap="afterbegin"
     >
     {% csrf_token %}
     {% for field in form.hidden_fields %}

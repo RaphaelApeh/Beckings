@@ -7,7 +7,9 @@ from .views import (ProductListView,
                     product_create_view,
                     user_orders_view,
                     export_import_product_view,
+                    CommentDeleteView,
                     CommentCreateView,
+                    CommentUpdateView,
                     ReplyView
                     )
 
@@ -42,8 +44,19 @@ urlpatterns = [
         ),
     
     path(
+        "comment/delete/<int:comment_id>/",
+        CommentDeleteView.as_view(),
+        name="delete_comment"
+    ),
+    path(
+        "comment/update/<int:comment_id>/",
+        CommentUpdateView.as_view(),
+        name="update_comment"
+    ),
+
+    path(
         "replies/<int:comment_id>/",
         ReplyView.as_view(),
         name="reply"
-    )
+    ),
 ]
