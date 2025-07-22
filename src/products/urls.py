@@ -10,7 +10,8 @@ from .views import (ProductListView,
                     CommentDeleteView,
                     CommentCreateView,
                     CommentUpdateView,
-                    ReplyView
+                    ReplyView,
+                    ReplyDeleteView
                     )
 
 
@@ -58,5 +59,11 @@ urlpatterns = [
         "replies/<int:comment_id>/",
         ReplyView.as_view(),
         name="reply"
+    ),
+
+    path(
+        "replies/<int:reply_id>",
+        ReplyDeleteView.as_view(),
+        name="reply_delete"
     ),
 ]

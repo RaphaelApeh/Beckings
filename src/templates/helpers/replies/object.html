@@ -25,12 +25,14 @@
                         class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
                 </li>
                 <li>
-                    <a href="#"
-                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
-                </li>
-                <li>
-                    <a href="#"
-                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Report</a>
+                    <form 
+                    hx-post="{% url 'reply_delete' object.pk %}"
+                    hx-trigger="submit"
+                    >
+                        {% csrf_token %}
+                        <a role="button"
+                            class="block py-2 px-4 hover:bg-gray-100">Remove</a>
+                    </form>
                 </li>
             </ul>
         </div>

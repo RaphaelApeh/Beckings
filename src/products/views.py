@@ -639,3 +639,68 @@ class ReplyView(
             message=form.cleaned_data["message"]
         )
         return obj
+
+
+@login_required_m
+@require_htmx_m
+class ReplyDeleteView(
+    DeletionMixin,
+    SingleObjectMixin,
+    ObjectUserCheckMixin,
+    View
+):
+    model = Reply
+    pk_url_kwarg = "reply_id"
+
+    def get_success_url(self):
+        return self.request.META["HTTP_REFERER"]
+
+
+@login_required_m
+@require_htmx_m
+class ReplyUpdateView(
+    SingleObjectMixin,
+    ObjectUserCheckMixin,
+    FormView
+):
+
+    form_class = ReplyForm
+    model = Reply
+    template_name = "helpers/replies/form.html"
+
+    def form_valid(self, form):
+        
+        with transaction.atomic():
+            self._save_reply_object(self.request, self.get_object(), form)
+        
+        return HttpResponseClientRedirect(
+            self.get_success_url()
+        )
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(
+            {
+                "initial": self.get_form_initial(self.request, self.get_object())
+            }
+        )
+        return kwargs
+
+    def get_form_initial(self, request, obj):
+
+        return {
+            "comment_id": obj.comment_id,
+            "redirect_url": self.get_success_url(),
+            "message": obj.message
+        }
+
+    def get_success_url(self):
+        return self.request.META["HTTP_REFERER"]
+
+    def _save_reply_object(self, request, obj, form):
+
+        message = form.cleaned_data["message"]
+        obj.message = message
+        obj.save()
+        return obj
+
