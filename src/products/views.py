@@ -48,9 +48,11 @@ from .forms import AddOrderForm, \
                     ProductForm, \
                     ProductImportForm, \
                     ExportForm, \
-                    OrderActionForm, \
                     CommentForm, \
                     ReplyForm
+from .filters import (
+    OrderFilter
+)
 
 
 login_required_m = method_decorator(login_required, name="dispatch")
@@ -265,6 +267,7 @@ class UserOrderView(ListView):
     queryset = Order.objects.select_related("user", "product")   
     template_name = "orders/order_list.html"
     allow_empty = False
+    filter_class = OrderFilter
 
     def get_queryset(self) -> T:
         user = self.request.user
@@ -275,22 +278,39 @@ class UserOrderView(ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "order_form": OrderActionForm()
+                "order_form": OrderFilter().form
             }
         )
         return context
     
+    def get_filter_class(self, request):
+
+        return self.filter_class
+    
+    
+    def get_filter_instance(self, data, request, queryset):
+
+        _filter = self.get_filter_class(request)
+        return _filter(data, queryset, request=request)
+    
+
+    def filter(self, data, request, queryset):
+        
+        self._filter = self.get_filter_instance(data, request, queryset)
+        return self._filter
+
+
     def get(self, request, *args, **kwargs):
         qs = self.get_queryset()
         if request.htmx:
-            form = OrderActionForm(request.GET or None)
+            form = self.filter(request.GET or None, request, qs)
             if not form.is_valid():
                 qs = qs.all()
                 return render(
                     request, 
                     "helpers/orders/object_list.html",
                     {"object_list": qs}) 
-            qs = qs.filter(status=form.cleaned_data.get("action"))
+            qs = form.qs
             return render(
                 request, 
                 "helpers/orders/object_list.html", 
@@ -667,11 +687,12 @@ class ReplyUpdateView(
     form_class = ReplyForm
     model = Reply
     template_name = "helpers/replies/form.html"
+    object = None
 
     def form_valid(self, form):
         
         with transaction.atomic():
-            self._save_reply_object(self.request, self.get_object(), form)
+            self.object = self._save_reply_object(self.request, self.get_object(), form)
         
         return HttpResponseClientRedirect(
             self.get_success_url()
