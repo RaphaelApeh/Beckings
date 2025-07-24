@@ -301,22 +301,24 @@ class UserOrderView(ListView):
 
 
     def get(self, request, *args, **kwargs):
-        qs = self.get_queryset()
         if request.htmx:
-            form = self.filter(request.GET or None, request, qs)
-            if not form.is_valid():
-                qs = qs.all()
-                return render(
-                    request, 
-                    "helpers/orders/object_list.html",
-                    {"object_list": qs}) 
-            qs = form.qs
-            return render(
-                request, 
-                "helpers/orders/object_list.html", 
-                {"object_list": qs})
+            return self.htmx_get(request, *args, **kwargs)
         return super().get(request, *args, **kwargs)
     
+    def htmx_get(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        form = self.filter(request.GET or None, request, qs)
+        if not form.is_valid():
+            qs = qs.all()
+            return render(
+                request, 
+                "helpers/orders/object_list.html",
+                {"object_list": qs}) 
+        qs = form.qs
+        return render(
+            request, 
+            "helpers/orders/object_list.html", 
+            {"object_list": qs})
 
     def get_order_action_choices(self, request):
         return None

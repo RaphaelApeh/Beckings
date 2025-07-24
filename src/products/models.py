@@ -119,6 +119,9 @@ class Order(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="pending")
 
+    class Meta:
+        ordering = ("-timestamp",)
+
 
     def __str__(self) -> str:
 

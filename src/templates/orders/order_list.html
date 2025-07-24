@@ -14,17 +14,15 @@
                   <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">My orders</h2>
           
                   <div class="mt-6 gap-4 space-y-4 sm:mt-0 sm:flex sm:items-center sm:justify-end sm:space-y-0">
+                    {% for boundfield in order_form %}
                     <div>
-                      <label for="{{ order_form.action.id_for_label }}" class="sr-only mb-2 block text-sm font-medium text-gray-900">{{ order_form.label }}</label>
-                      {% render_field order_form.status hx-get="." hx-trigger="change" hx-target="#orderList" hx-swap="innerHTML" class="block w-full min-w-[8rem] rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500" %}
+                      <label for="{{ boundfield.id_for_label }}" class="sr-only mb-2 block text-sm font-medium text-gray-900">{{ boundfield.label }}</label>
+                      {% render_field boundfield hx-get="." hx-trigger="change" hx-target="#orderList" hx-swap="innerHTML" class="block w-full min-w-[8rem] rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500" %}
                     </div>
-          
-                    <span class="inline-block text-gray-500 dark:text-gray-400"> from </span>
-          
-                    <div>
-                      <label for="duration" class="sr-only mb-2 block text-sm font-medium text-gray-900 dark:text-white">Select duration</label>
-                      {% render_field order_form.timestamp hx-get="." class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500" %}
-                    </div>
+                      {% if forloop.first %}
+                          <span class="inline-block text-gray-500"> from </span>
+                      {% endif %}
+                    {% endfor %}
                   </div>
                 </div>
           
