@@ -66,7 +66,14 @@ class ProductListView(ListView):
     queryset = Product.objects.select_related("user").filter(active=True)
     template_name = "products/product_list.html"
     context_object_name = "queryset"
+    paginate_by = 10
 
+    def get_template_names(self):
+        if self.request.htmx:
+            return (
+                "helpers/products/object_list.html",
+            )
+        return super().get_template_names()
 
 class ProductDetailView(FormRequestMixin, 
                         ModelFormMixin, 
