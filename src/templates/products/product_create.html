@@ -8,42 +8,39 @@
 
 {% block content %}
     <c-base-header />
-    <div>
-        <form method="post">
+    <section class="bg-white dark:bg-gray-900">
+    <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
+        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Add a new product</h2>
+        <form hx-post="{% url 'product_create' %}" hx-trigger="submit">
             {% csrf_token %}
-            <section class="bg-gray-50">
-                <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 lg:mt-12 lg:p-6">
-                    <div class="w-full p-6 bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md sm:p-8">
-                        <h2 class="mb-1 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
-                            {{ title|title }}
-                        </h2>
-                        <form class="mt-4 space-y-4 lg:mt-5 md:space-y-5" action="#">
-                            <p class="text-center">{{ form.non_field_errors }} </p>
-                            {% for field in form %}
-                                <div>
-                                    <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
-                                    {{ field|form_class }}
-                                    {% if field.errors %}
-                                        <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                            <c-button />
-                        </form>
-                    </div>
+            <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                <div class="sm:col-span-2">
+                    <label for="{{ form.product_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_name.label }}</label>
+                    {% render_field form.product_name class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
                 </div>
-            </section>
+                <div class="w-full">
+                    <label for="{{ form.quantity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.quantity.label }}</label>
+                    {% render_field form.quantity class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+                </div>
+                <div class="w-full">
+                    <label for="{{ form.price.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ form.price.label }}</label>
+                    {% render_field form.price class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+                </div> 
+                <div class="sm:col-span-2">
+                    <label for="{{ form.product_description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_description.label }}</label>
+                    {% render_field form.product_description class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500" %}
+                </div>
+                <div class="sm:col-span-2">
+                <label for="{{ form.active.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.active.label }}</label>
+                    {% render_field form.active class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-indigo-500" %}
+            </div>
+            </div>
+            <button type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-200 hover:bg-indigo-800">
+                Add product
+            </button>
         </form>
-        <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-            <form class="max-w-sm mx-auto mt-12 mb-12 bg-white p-12 rounded-xl shadow-xl font-mono" method="post" {% if import_form.is_multipart %} enctype="multipart/form-data" {% endif %} action="{% url 'export_import_product' %}">
-                {% csrf_token %}
-                {{ import_form.as_p }}
-                <button type="submit" class="w-full mt-4 text-white bg-indigo-600
-                                             hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-2xl">Upload</button>
-            </form>
-        </div>
     </div>
-
+</section>
 {% endblock %}
 
 {% block extra_body %}

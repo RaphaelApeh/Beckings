@@ -387,7 +387,7 @@ class ProductCreateView(FormRequestMixin,
     def form_valid(self, form):
         self.object = instance = form.save()
         messages.success(self.request, "%s created success" % instance)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseClientRedirect(self.get_success_url())
 
 
 product_create_view = ProductCreateView.as_view()
