@@ -1,0 +1,5 @@
+<div id="searchResult" class="mt-6 mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
+    {% with object_list as page_obj  %}
+        {% include "helpers/products/object_list.html" %}
+    {% endwith %}
+</div>

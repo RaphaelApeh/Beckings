@@ -248,9 +248,9 @@ class ProductSearchView(View):
         if query:
             queryset = self.filter_queryset(request, queryset).order_by("-timestamp")
         
-        context["queryset"] = queryset
+        context["object_list"] = queryset
 
-        return render(request, "products/partials/product_list.html", context)
+        return render(request, "helpers/products/search.html", context)
     
 
     def filter_queryset(self, request, queryset: T) -> T:
