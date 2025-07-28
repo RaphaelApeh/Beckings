@@ -39,6 +39,7 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers.resources import ProductResource
+from helpers._typing import HTMXHttpRequest
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
@@ -63,6 +64,15 @@ require_htmx_m = method_decorator(require_htmx, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
 QUERY_SEACRH = "search"
+
+
+class ObjectUserCheckMixin:
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().user != request.user:
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
 
 class ProductListView(ListView):
 
@@ -374,6 +384,37 @@ class AddOrderView(FormRequestMixin, FormView):
         return HttpResponseClientRedirect(self.product.get_absolute_url())
 
 
+@login_required_m
+@require_htmx_m
+class UserOrderDeleteView(
+    SingleObjectMixin,
+    ObjectUserCheckMixin,
+    View
+):
+    queryset = (
+        Order.objects.select_related("user", "product")
+    )
+    pk_url_kwarg = "order_id"
+
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(user=self.request.user)
+        )
+    
+    def delete(self, request: HTMXHttpRequest, *args, **kwargs):
+
+        user = request.user
+        prompt = request.htmx.prompt
+        self.object = obj = self.get_object()
+        if user.check_password(prompt):
+            obj.delete()
+            return HttpResponse(status=204)
+        raise Http404
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+
 @method_decorator(staff_member_required(login_url="login"), name="dispatch")
 class ProductCreateView(FormRequestMixin,
                         PermissionRequiredMixin,
@@ -520,13 +561,6 @@ class ProductExportImportView(View):
 export_import_product_view = ProductExportImportView.as_view()
 
 # Comments
-
-class ObjectUserCheckMixin:
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_object().user != request.user:
-            raise Http404
-        return super().dispatch(request, *args, **kwargs)
 
 @require_htmx_m
 @login_required_m

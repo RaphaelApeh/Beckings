@@ -4,6 +4,7 @@ from .views import (ProductListView,
                     ProductDetailView,
                     product_search_view,
                     AddOrderView,
+                    UserOrderDeleteView,
                     product_create_view,
                     user_orders_view,
                     export_import_product_view,
@@ -19,13 +20,19 @@ urlpatterns = [
 
     path("", ProductListView.as_view(), name="products"),
 
-    path("<int:pk>/<slug:slug>/", ProductDetailView.as_view(), name="product-detail"),
+    path(
+        "<int:pk>/<slug:slug>/", 
+        ProductDetailView.as_view(), 
+        name="product-detail"
+    ),
 
     path("search/", product_search_view, name="product_search"),
 
-    path("delete/<int:pk>/<slug:product_slug>/",
-         ProductDetailView.product_delete_view,
-         name="product_delete"),
+    path(
+        "delete/<int:pk>/<slug:product_slug>/",
+        ProductDetailView.product_delete_view,
+        name="product_delete"
+    ),
 
     path("create/", product_create_view, name="product_create"),
 
@@ -34,9 +41,17 @@ urlpatterns = [
     # Orders Path
     path("orders/", user_orders_view, name="user_orders"),
 
-    path("orders/add/<int:product_id>/", 
+    path(
+        "orders/add/<int:product_id>/", 
         AddOrderView.as_view(), 
-        name="add_user_order"),
+        name="add_user_order"
+    ),
+
+    path(
+        "orders/delete/<int:order_id>/",
+        UserOrderDeleteView.as_view(),
+        name="order_delete"
+    ),
 
     path(
         "comment/add/<int:pk>/", 
