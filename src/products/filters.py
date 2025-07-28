@@ -24,16 +24,12 @@ TIMESTAMP_CHOICES = (
 
 class ProductFilter(django_filters.FilterSet):
 
-    price = django_filters.RangeFilter("price")
-
     class Meta:
         model = Product 
-        fields = (
-            "product_name",
-            "product_description",
-            "price",
-            "quantity"
-        )
+        fields = {
+            "product_name": ["icontains"],
+            "product_description": ["icontains"]
+        }
 
 
 class OrderFilter(django_filters.FilterSet):

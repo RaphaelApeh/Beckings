@@ -34,23 +34,26 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
-
+from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
-from helpers.filters import ModelSearchFilterBackend
 from helpers.resources import ProductResource
 from clients.views import \
         FormRequestMixin
 from .models import Product, \
                     Order, Comment, Reply #noqa
-from .forms import AddOrderForm, \
-                    ProductForm, \
-                    ProductImportForm, \
-                    ExportForm, \
-                    CommentForm, \
-                    ReplyForm
+from .forms import (
+    AddOrderForm, 
+    ProductForm, 
+    ProductImportForm,
+    ExportForm,
+    CommentForm,
+    ReplyForm,
+    SearchForm
+)
 from .filters import (
+    ProductFilter,
     OrderFilter
 )
 
@@ -59,7 +62,7 @@ login_required_m = method_decorator(login_required, name="dispatch")
 require_htmx_m = method_decorator(require_htmx, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
-
+QUERY_SEACRH = "search"
 
 class ProductListView(ListView):
 
@@ -75,6 +78,13 @@ class ProductListView(ListView):
             )
         return super().get_template_names()
 
+    def get_context_data(self, **kwargs):
+        kwargs.update({
+            "search_form": SearchForm()
+        })
+        return super().get_context_data(**kwargs)
+
+
 class ProductDetailView(FormRequestMixin, 
                         ModelFormMixin, 
                         DetailView):
@@ -84,7 +94,12 @@ class ProductDetailView(FormRequestMixin,
         "put",
         "delete"
     )
-    model = Product
+    queryset = (
+        Product.objects.prefetch_related(
+            "comments", 
+            "comments__replies"
+        ).select_related("user")
+    )
     template_name = "products/product-detail.html"
     query_pk_and_slug = True
     form_class = ProductForm
@@ -154,7 +169,7 @@ class ProductDetailView(FormRequestMixin,
     def delete_object(self, instance) -> None:
         instance.delete()
 
-    def form_valid(self, request, form):
+    def form_valid(self, request: HttpRequest, form):
         form.save()
         self.object.refresh_from_db()
         messages.success(request, "Object Save")
@@ -176,7 +191,7 @@ class ProductDetailView(FormRequestMixin,
     def permissions(self):
         kw = {}
         user = self.request.user
-        model = self.model
+        model = self.get_queryset().model
         method_map = self.method_map
         for key, perm in self.perms(model).items():
             method = method_map.get(key.lower())
@@ -232,37 +247,32 @@ class ProductDetailView(FormRequestMixin,
 
 
 @method_decorator(require_htmx, name="dispatch")
-class ProductSearchView(View):
+class ProductSearchView(FilterView):
 
-    filter_backends = [ModelSearchFilterBackend]
-
-    def get_query_param(self, request) -> str:
-        
-        return getattr(self, "search_query", "q")
-
-    def get(self, request: HttpRequest) -> HttpResponse:
-
-        context = {}
-        query = self.get_query_param(request)
-        queryset = Product.objects.all()
-        if query:
-            queryset = self.filter_queryset(request, queryset).order_by("-timestamp")
-        
-        context["object_list"] = queryset
-
-        return render(request, "helpers/products/search.html", context)
+    ordering =  ("-timestamp",)
+    template_name = (
+        "helpers/products/search.html"
+    )
+    filterset_class = ProductFilter
     
+    def get_filterset_data(self, request: HttpRequest, filter_class) -> dict:
 
-    def filter_queryset(self, request, queryset: T) -> T:
+        data = dict.fromkeys(
+            (filter_class.base_filters.keys()),
+            request.GET[QUERY_SEACRH]
+        )
         
-        for filter in self._filters:
-            queryset = filter.filter_queryset(request, queryset, self)
-        return queryset
-
-    @property
-    def _filters(self):
-
-        return [x() for x in self.filter_backends]
+        return data
+    
+    def get_filterset_kwargs(self, filterset_class):
+        
+        kwargs = super().get_filterset_kwargs(filterset_class)
+        kwargs.update(
+            {
+                "data": self.get_filterset_data(self.request, filterset_class)
+            }
+        )
+        return kwargs
 
 
 product_search_view = ProductSearchView.as_view()

@@ -307,3 +307,10 @@ class ReplyForm(forms.Form):
     redirect_url = forms.CharField(
         widget=forms.HiddenInput
     )
+
+class SearchForm(forms.Form):
+
+    search = forms.CharField(
+        widget=forms.SearchInput # 5.2
+    )
+
