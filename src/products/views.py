@@ -346,11 +346,32 @@ class UserOrderView(ListView):
             request, 
             "helpers/orders/object_list.html", 
             {"object_list": qs})
-
+    
     def get_order_action_choices(self, request):
         return None
 
 user_orders_view = UserOrderView.as_view()
+
+
+@login_required_m
+class UserOrderDetailView(DetailView):
+
+    pk_url_kwarg = "order_id"
+
+    def post(self, request, *args, **kwargs):
+        if request.htmx:
+            obj = self.get_object()
+            with transaction.atomic():
+                return self._cancel_user_order(request, obj)
+        return HttpResponse(status=204) # NO CONENT
+
+    def _cancel_user_order(self, request, obj):
+        obj.status = "cancelled"
+        obj.save()
+        self.object = obj
+        return self.render_to_response(
+            self.get_context_data(object=self.object)
+        )
 
 
 @method_decorator((login_required, require_htmx), name="dispatch")

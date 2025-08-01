@@ -5,6 +5,7 @@ from .views import (ProductListView,
                     product_search_view,
                     AddOrderView,
                     UserOrderDeleteView,
+                    UserOrderDetailView,
                     product_create_view,
                     user_orders_view,
                     export_import_product_view,
@@ -51,6 +52,12 @@ urlpatterns = [
         "orders/delete/<int:order_id>/",
         UserOrderDeleteView.as_view(),
         name="order_delete"
+    ),
+
+    path(
+        "orders/detail/<int:order_id>/",
+        UserOrderDetailView.as_view(),
+        name="order_detail"
     ),
 
     path(
