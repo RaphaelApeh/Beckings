@@ -15,3 +15,8 @@ psycopg-binary==3.2.7 # version 3
 dj-database-url>=2.3.0
 drf-spectacular[sidecar]>=0.28.0
 django-redis>=5.4.0
+django-unfold>=0.62.0
+django-crispy-forms>=2.4
+django-import-export>=4.3.7
+cookiecutter>=2.6.0
+django-filter>=25.1

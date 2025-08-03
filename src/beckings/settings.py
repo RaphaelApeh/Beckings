@@ -64,8 +64,7 @@ THIRD_PARTY_APPS = [
     "django_htmx",
     "tailwind",
     "import_export",
-    "django_filters",
-    "phonenumber_field",
+    "django_filters"
 ]
 
 INTERNAL_APPS = [

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Optional, TypeVar, NoReturn
+from typing import Any, TypeVar, NoReturn
 
 from faker import Faker
 from tablib import Dataset
@@ -356,28 +356,31 @@ user_orders_view = UserOrderView.as_view()
 @login_required_m
 class UserOrderDetailView(DetailView):
 
+    model = Order
     pk_url_kwarg = "order_id"
+    template_name = "helpers/orders/object.html"
 
     def post(self, request, *args, **kwargs):
         if request.htmx:
+            import time
+            time.sleep(10)
             obj = self.get_object()
             with transaction.atomic():
-                return self._cancel_user_order(request, obj)
+                obj = self._cancel_user_order(request, obj)
+            return self.render_to_response(context=self.get_context_data(object=obj))
         return HttpResponse(status=204) # NO CONENT
 
     def _cancel_user_order(self, request, obj):
         obj.status = "cancelled"
         obj.save()
         self.object = obj
-        return self.render_to_response(
-            self.get_context_data(object=self.object)
-        )
+        return obj
 
 
 @method_decorator((login_required, require_htmx), name="dispatch")
 class AddOrderView(FormRequestMixin, FormView):
 
-    template_name: Optional[str] = "orders/add_order.html"
+    template_name = "orders/add_order.html"
     form_class = AddOrderForm
 
 

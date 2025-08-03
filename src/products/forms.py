@@ -111,8 +111,6 @@ class ProductForm(forms.ModelForm):
 
 class AddOrderForm(forms.Form):
 
-    client_fields = ("address", "phone_number")
-
     address = TextField(
         label="Address"
     )
@@ -159,9 +157,10 @@ class AddOrderForm(forms.Form):
         try:
             client = user.client
         except Exception as e:
-            raise AttributeError(f"{user} does not has ") from e
-        for field in self.client_fields:
-            value = getattr(client, field)
+            raise AttributeError(f"{user} does not has a client model.") from e
+        for field in self.fields:
+            value = getattr(client, field, None)
+            print(value)
             form_field = self.fields[field]
             if value:
                 form_field.required = False

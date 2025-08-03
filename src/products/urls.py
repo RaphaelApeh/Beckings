@@ -55,9 +55,9 @@ urlpatterns = [
     ),
 
     path(
-        "orders/detail/<int:order_id>/",
+        "orders/detail/<uuid:order_id>/",
         UserOrderDetailView.as_view(),
-        name="order_detail"
+        name="order_user_detail"
     ),
 
     path(
