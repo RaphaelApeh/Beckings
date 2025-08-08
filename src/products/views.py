@@ -362,8 +362,6 @@ class UserOrderDetailView(DetailView):
 
     def post(self, request, *args, **kwargs):
         if request.htmx:
-            import time
-            time.sleep(10)
             obj = self.get_object()
             with transaction.atomic():
                 obj = self._cancel_user_order(request, obj)
@@ -383,29 +381,14 @@ class AddOrderView(FormRequestMixin, FormView):
     template_name = "orders/add_order.html"
     form_class = AddOrderForm
 
-
-    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        
-        kw = {
-            "pk": kwargs.get("product_id")
-        }
-        product = get_object_or_404(Product, **kw)
-        self.product = product
-        return super().dispatch(request, *args, **kwargs)
-
-
     def get_form_kwargs(self) -> dict[str, Any]:
         kw = super().get_form_kwargs()
-        kw.update({"auto_id": False})
         kw.setdefault("view", self)
         return kw
 
     def form_valid(self, form) -> HttpResponse:
-        kwargs = {
-            "user": self.request.user
-        } # empty for now
-        form.save(**kwargs)
-        return HttpResponseClientRedirect(self.product.get_absolute_url())
+        self.object = obj = form.save()
+        return HttpResponseClientRedirect(obj.product.get_absolute_url())
 
 
 @login_required_m

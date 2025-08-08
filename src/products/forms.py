@@ -3,13 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from django import forms
-from django.forms.models import construct_instance
 from django.core.exceptions import ImproperlyConfigured
 
 
-from clients.models import Client
 from clients.models import PHONE_NUMBER_REGEX
-from .models import Product, ORDER_CHOICES
+from .models import Product, Order, ORDER_CHOICES
 from .order_utils import AddOrder
 from helpers.enum import ExportType
 
@@ -109,17 +107,21 @@ class ProductForm(forms.ModelForm):
         return instance
     
 
-class AddOrderForm(forms.Form):
-
-    address = TextField(
-        label="Address"
-    )
+class AddOrderForm(forms.ModelForm):
     
+    product = forms.ModelChoiceField(
+        Product.objects.none(),
+        widget=forms.HiddenInput
+    )
+    address = forms.CharField(
+        widget=forms.Textarea
+    )
     phone_number = forms.RegexField(
-        label="Phone Number",
-        regex=PHONE_NUMBER_REGEX
+        regex=PHONE_NUMBER_REGEX,
+        widget=forms.TelInput({
+            "pattern": PHONE_NUMBER_REGEX
+        })
     )
-    
     number_of_items = forms.IntegerField(
         label="Quantity",
         widget=forms.NumberInput(
@@ -128,6 +130,10 @@ class AddOrderForm(forms.Form):
             }
         )
     )
+
+    class Meta:
+        model = Order
+        fields = ("number_of_items", )
     
     field_order = (
         "address",
@@ -147,39 +153,18 @@ class AddOrderForm(forms.Form):
         
         self.request = request
         self.view = view
-        self.user = user = request.user
-        self.instance = Client._default_manager.get(user=user)
-        self._init_client(user)
-    
-
-    def _init_client(self, user):
-        
-        try:
-            client = user.client
-        except Exception as e:
-            raise AttributeError(f"{user} does not has a client model.") from e
-        for field in self.fields:
-            value = getattr(client, field, None)
-            print(value)
-            form_field = self.fields[field]
-            if value:
-                form_field.required = False
-                form_field.widget = forms.HiddenInput()       
 
     @property
     def user(self):
-        self._user
+        if not hasattr(self, "_user"):
+            self._user = self.request.user
+        return self._user
 
-    @user.setter
-    def user(self, value):
-        assert value is not None
-        self._user = value
-
-    def clean(self):
+    def clean(self) -> dict:
 
         data = self.cleaned_data
         
-        product_instance = self.product
+        product_instance = data["product"]
         number_of_items = data.get("number_of_items", 0)
 
         match number_of_items:
@@ -192,27 +177,16 @@ class AddOrderForm(forms.Form):
             case _:
                 pass
         return data
-    
-    
-    @property
-    def product(self):
-        if not hasattr(self, "_product"):
-            self._product = getattr(self.view, "product")
-        return self._product
-    
 
-    def save(self, user, **kwargs: Any) -> None:
+    def save(self, commit=True) -> Any:
+       instance = super().save(commit=False)
        cleaned_data = self.cleaned_data
-       instance = construct_instance(
-           self, 
-           self.instance, 
-           fields=self.client_fields,
-           exclude=["phone_number"])
-       instance.save()
+       # Do not call instance.save()
        AddOrder(
-           product_instance=self.product
-       ).create(user, cleaned_data)
+           product_instance=cleaned_data["product"]
+       ).create(self.user, cleaned_data) # This will save the order
 
+       return instance
 
 
 class ProductImportForm(forms.Form):
