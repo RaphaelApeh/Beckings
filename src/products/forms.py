@@ -110,7 +110,7 @@ class ProductForm(forms.ModelForm):
 class AddOrderForm(forms.ModelForm):
     
     product = forms.ModelChoiceField(
-        Product.objects.none(),
+        Product.objects.filter(active=True),
         widget=forms.HiddenInput
     )
     address = forms.CharField(
@@ -150,9 +150,18 @@ class AddOrderForm(forms.ModelForm):
                 view is not None
 
         super().__init__(*args, **kwargs)
-        
+        self._init_fields()
         self.request = request
         self.view = view
+
+    def _init_fields(self):
+        client = self.user.client
+        for name in self.fields:
+            if not getattr(client, name, None):
+                continue
+            value = getattr(client, name, None)
+            if value is not None:
+                self.fields.pop(name)
 
     @property
     def user(self):
@@ -163,7 +172,7 @@ class AddOrderForm(forms.ModelForm):
     def clean(self) -> dict:
 
         data = self.cleaned_data
-        
+
         product_instance = data["product"]
         number_of_items = data.get("number_of_items", 0)
 
@@ -177,16 +186,34 @@ class AddOrderForm(forms.ModelForm):
             case _:
                 pass
         return data
+    
+
+    def _save_client_data(self, user, data):
+
+        from django.core.exceptions import FieldDoesNotExist
+
+        client = user.client
+        opts = client._meta
+        for name in self.fields:
+            if name not in opts.concrete_fields:
+                continue
+            try:
+                field = opts.get_field(name)
+                field.save_form_data(client, data[name])
+            except (ValueError, FieldDoesNotExist):
+                continue
+        
+        client.save()
+
 
     def save(self, commit=True) -> Any:
-       instance = super().save(commit=False)
+       instance = super().save(commit=False) #noqa
        cleaned_data = self.cleaned_data
        # Do not call instance.save()
-       AddOrder(
+       self._save_client_data(self.user, cleaned_data)
+       return AddOrder(
            product_instance=cleaned_data["product"]
-       ).create(self.user, cleaned_data) # This will save the order
-
-       return instance
+       ).create(self.user, cleaned_data) # This will save the order and return the order
 
 
 class ProductImportForm(forms.Form):

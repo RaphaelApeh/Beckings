@@ -47,5 +47,5 @@ class AddOrder:
                                 manifest=manifest)
             order.status = OrderStatusOptions.PENDING.value
             order.save()
-        return self
+        return order
 

@@ -376,18 +376,33 @@ class UserOrderDetailView(DetailView):
 
 
 @method_decorator((login_required, require_htmx), name="dispatch")
-class AddOrderView(FormRequestMixin, FormView):
+class AddOrderView(
+    SingleObjectMixin,
+    FormRequestMixin, 
+    FormView
+    ):
 
     template_name = "orders/add_order.html"
     form_class = AddOrderForm
+    model = Product # for form field
+    object = None
+    pk_url_kwarg = "product_id"
 
     def get_form_kwargs(self) -> dict[str, Any]:
         kw = super().get_form_kwargs()
         kw.setdefault("view", self)
+        kw["initial"] = self.get_form_initial(self.request, None, None)
         return kw
+    
+    def get_form_initial(self, request, obj, form):
+        kwargs = {}
+        kwargs["product"] = self.get_object()
+    
+        return kwargs
 
     def form_valid(self, form) -> HttpResponse:
-        self.object = obj = form.save()
+        obj = form.save()
+        self.object = obj.product
         return HttpResponseClientRedirect(obj.product.get_absolute_url())
 
 
