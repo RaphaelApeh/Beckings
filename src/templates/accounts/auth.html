@@ -12,15 +12,30 @@
                     <h2 class="mb-1 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
                         {{ title|title }}
                     </h2>
-                    <form class="mt-4 space-y-4 lg:mt-5 md:space-y-5" action="#">
-                        <p class="text-center">{{ form.non_field_errors }} </p>
-                        {% for field in form %}
+                    <form class="mt-4 space-y-4 lg:mt-5 md:space-y-5">
+                        {% if form.non_field_errors %}
+                        <p class="text-center">{{ form.non_field_errors }}</p>
+                        {% endif %}
+                        {% for field in form.hidden_fields %}
+                            {% if field.errors %}
+                                <p class="text-red-500 text-bold p-2">
+                                    {{ field.errors }}
+                                </p>
+                            {% endif %}
+                            {{ field }}
+                        {% endfor %}
+
+                        {% for field in form.visible_fields %}
                             <div>
-                                <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
-                                {{ field|form_class }}
+                                <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                    {{ field.label }}
+                                </label>
                                 {% if field.errors %}
-                                    <p class="text-red-500 text-bold p-2">{{ field.errors }}</p>
+                                    <p class="text-red-500 text-bold p-2">
+                                        {{ field.errors }}
+                                    </p>
                                 {% endif %}
+                                {{ field|form_class }}
                             </div>
                         {% endfor %}
                         {% if "login" in request.path %}

@@ -1,7 +1,15 @@
+from functools import partial
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm
+
+from .models import (
+    PHONE_NUMBER_REGEX,
+    NIGERIA_PHONE_NUMBER,
+    Client
+)
 
 User = get_user_model()
 
@@ -51,6 +59,14 @@ class LoginForm(forms.Form):
 
 class RegisterForm(UserCreationForm):
 
+    phone_number = forms.RegexField(
+        regex=PHONE_NUMBER_REGEX,
+        widget=forms.TelInput({
+            "pattern": PHONE_NUMBER_REGEX,
+            "title": "Enter a valid phone number e.g(+2348139582053)"
+        })
+    )
+        
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
@@ -70,3 +86,25 @@ class RegisterForm(UserCreationForm):
             self.add_error("email", "Email already exists.")
         return super().clean()
     
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get("phone_number")
+        add_error = partial(self.add_error, "phone_number")
+        if not phone_number:
+            add_error("Phone Number must not be empty.")
+        if not bool(NIGERIA_PHONE_NUMBER.match(phone_number)):
+            add_error("Phone Number not match.")
+        if Client.objects.filter(phone_number__iexact=phone_number).exists():
+            add_error("Something Went Wrong.")
+        return phone_number
+
+
+    def save(self, commit = True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        phone_number = self.cleaned_data["phone_number"]
+        try:
+            instance.client.phone_number = phone_number
+        except AttributeError:
+            pass
+        return instance

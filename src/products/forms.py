@@ -5,8 +5,6 @@ from typing import Any
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
 
-
-from clients.models import PHONE_NUMBER_REGEX
 from .models import Product, Order, ORDER_CHOICES
 from .order_utils import AddOrder
 from helpers.enum import ExportType
@@ -116,12 +114,6 @@ class AddOrderForm(forms.ModelForm):
     address = forms.CharField(
         widget=forms.Textarea
     )
-    phone_number = forms.RegexField(
-        regex=PHONE_NUMBER_REGEX,
-        widget=forms.TelInput({
-            "pattern": PHONE_NUMBER_REGEX
-        })
-    )
     number_of_items = forms.IntegerField(
         label="Quantity",
         widget=forms.NumberInput(
@@ -141,26 +133,25 @@ class AddOrderForm(forms.ModelForm):
         "number_of_items"
     )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, request=None, **kwargs: Any) -> None:
 
-        request = kwargs.pop("request", None)
         view = kwargs.pop("view", None)
 
         assert request is not None and \
                 view is not None
 
         super().__init__(*args, **kwargs)
-        self._init_fields()
         self.request = request
         self.view = view
+        self._init_fields()
 
     def _init_fields(self):
         client = self.user.client
-        for name in self.fields:
+        for name in self.fields.copy():
             if not getattr(client, name, None):
                 continue
-            value = getattr(client, name, None)
-            if value is not None:
+            value = getattr(client, name)
+            if value:
                 self.fields.pop(name)
 
     @property
@@ -195,8 +186,6 @@ class AddOrderForm(forms.ModelForm):
         client = user.client
         opts = client._meta
         for name in self.fields:
-            if name not in opts.concrete_fields:
-                continue
             try:
                 field = opts.get_field(name)
                 field.save_form_data(client, data[name])
