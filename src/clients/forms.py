@@ -1,9 +1,13 @@
 from functools import partial
 
 from django import forms
+from django.core import mail
+from django.conf import settings
+from django.template.loader import get_template
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.utils.translation import gettext_lazy as _
 
 from .models import (
     PHONE_NUMBER_REGEX,
@@ -107,4 +111,35 @@ class RegisterForm(UserCreationForm):
             instance.client.phone_number = phone_number
         except AttributeError:
             pass
+        instance.is_active = False # Prevent user to login
         return instance
+    
+    def send_email(self, request, subject="", body=None):
+        
+        if request.user.is_authenticated:
+            return
+        if not subject:
+            subject = _("Account Activation")
+        if body is None:
+            body = self.email_body(request)
+        mail.EmailMessage(
+            subject,
+            body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[self.cleaned_data["email"]]
+        ).send(settings.DEBUG)
+
+    
+    def email_body(self, request):
+        return (
+            get_template("email-body.txt").\
+                render(context=self.get_email_body_context(request))
+        )
+
+    def get_email_body_context(self, request):
+        kwargs = {}
+        url = request.build_absolute_uri()
+        kwargs["url"] = url
+        kwargs["name"] = self.cleaned_data["username"]
+        return kwargs
+

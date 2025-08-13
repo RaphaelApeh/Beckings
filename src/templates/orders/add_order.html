@@ -8,8 +8,8 @@
         </p>
     {% endif %}
     {% for field in form.hidden_fields %}
-            {{ fieid.errors }}
-            {{ field }}
+        {{ fieid.errors }}
+        {{ field }}
     {% endfor %}
     {% for field in form.visible_fields %}
         {{ field.errors }}

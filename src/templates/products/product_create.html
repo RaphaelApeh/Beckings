@@ -9,38 +9,38 @@
 {% block content %}
     <c-base-header />
     <section class="bg-white dark:bg-gray-900">
-    <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
-        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Add a new product</h2>
-        <form hx-post="{% url 'product_create' %}" hx-trigger="submit">
-            {% csrf_token %}
-            <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
-                <div class="sm:col-span-2">
-                    <label for="{{ form.product_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_name.label }}</label>
-                    {% render_field form.product_name class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+        <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
+            <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Add a new product</h2>
+            <form hx-post="{% url 'product_create' %}" hx-trigger="submit">
+                {% csrf_token %}
+                <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                    <div class="sm:col-span-2">
+                        <label for="{{ form.product_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_name.label }}</label>
+                        {% render_field form.product_name class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+                    </div>
+                    <div class="w-full">
+                        <label for="{{ form.quantity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.quantity.label }}</label>
+                        {% render_field form.quantity class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+                    </div>
+                    <div class="w-full">
+                        <label for="{{ form.price.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ form.price.label }}</label>
+                        {% render_field form.price class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="{{ form.product_description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_description.label }}</label>
+                        {% render_field form.product_description class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500" %}
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="{{ form.active.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.active.label }}</label>
+                        {% render_field form.active class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-indigo-500" %}
+                    </div>
                 </div>
-                <div class="w-full">
-                    <label for="{{ form.quantity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.quantity.label }}</label>
-                    {% render_field form.quantity class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
-                </div>
-                <div class="w-full">
-                    <label for="{{ form.price.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ form.price.label }}</label>
-                    {% render_field form.price class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}
-                </div> 
-                <div class="sm:col-span-2">
-                    <label for="{{ form.product_description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.product_description.label }}</label>
-                    {% render_field form.product_description class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500" %}
-                </div>
-                <div class="sm:col-span-2">
-                <label for="{{ form.active.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ form.active.label }}</label>
-                    {% render_field form.active class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-indigo-500" %}
-            </div>
-            </div>
-            <button type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-200 hover:bg-indigo-800">
-                Add product
-            </button>
-        </form>
-    </div>
-</section>
+                <button type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-200 hover:bg-indigo-800">
+                    Add product
+                </button>
+            </form>
+        </div>
+    </section>
 {% endblock %}
 
 {% block extra_body %}

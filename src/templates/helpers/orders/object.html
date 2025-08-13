@@ -1,45 +1,45 @@
 {% load humanize %}
 <div id="order{{ object.pk }}" class="flex flex-wrap items-center gap-y-4 py-6">
-    <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-      <dt class="text-base font-medium text-gray-500">Order ID:</dt>
-      <dd class="mt-1.5 text-base font-semibold text-gray-900">
-        <a href="#" class="hover:underline">#{{ object.pk|truncatechars:7 }}</a>
-      </dd>
-    </dl>
+  <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
+    <dt class="text-base font-medium text-gray-500">Order ID:</dt>
+    <dd class="mt-1.5 text-base font-semibold text-gray-900">
+      <a href="#" class="hover:underline">#{{ object.pk|truncatechars:7 }}</a>
+    </dd>
+  </dl>
      {# Object URL #}
-    {% url 'order_user_detail' order_id=object.pk as object_url %}
-    
-    <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-      <dt class="text-base font-medium text-gray-500">Date:</dt>
-      <dd class="mt-1.5 text-base font-semibold text-gray-900">{{ object.timestamp|naturalday }}</dd>
-    </dl>
+  {% url 'order_user_detail' order_id=object.pk as object_url %}
 
-    <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-      <dt class="text-base font-medium text-gray-500">Price:</dt>
-      <dd class="mt-1.5 text-base font-semibold text-gray-900">$ {{ object.product.price }}</dd>
-    </dl>
+  <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
+    <dt class="text-base font-medium text-gray-500">Date:</dt>
+    <dd class="mt-1.5 text-base font-semibold text-gray-900">{{ object.timestamp|naturalday }}</dd>
+  </dl>
 
-    <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-      <dt class="text-base font-medium text-gray-500">Status:</dt>
-      {% include "helpers/orders/status.html" with status=object.status %}
-    </dl>
+  <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
+    <dt class="text-base font-medium text-gray-500">Price:</dt>
+    <dd class="mt-1.5 text-base font-semibold text-gray-900">$ {{ object.product.price }}</dd>
+  </dl>
 
-    <div class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
-      {% if object.status in object.can_delete %}
-      <form 
-      hx-post="{{ object_url }}" 
-      hx-target="#order{{ object.pk }}"
-      hx-indicator="#spinner" 
-      hx-trigger="submit" 
-      hx-confirm="Are you sure want to cancel your order ?" 
-      hx-swap="outerHTML">
+  <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
+    <dt class="text-base font-medium text-gray-500">Status:</dt>
+    {% include "helpers/orders/status.html" with status=object.status %}
+  </dl>
+
+  <div class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
+    {% if object.status in object.can_delete %}
+      <form
+        hx-post="{{ object_url }}"
+        hx-target="#order{{ object.pk }}"
+        hx-indicator="#spinner"
+        hx-trigger="submit"
+        hx-confirm="Are you sure want to cancel your order ?"
+        hx-swap="outerHTML">
         {% csrf_token %}
         <button type="submit" class="w-full rounded-lg border border-red-700 px-3 py-2 text-center text-sm font-medium text-red-700 hover:bg-red-700 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-300 lg:w-auto">Cancel order</button>
       </form>
       <div id="spinner" class="htmx-indicator">
         <c-spinner />
       </div>
-      {% endif %}
-      <a href="{{ object_url }}" class="w-full inline-flex justify-center rounded-lg  border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 lg:w-auto">View details</a>
-    </div>
+    {% endif %}
+    <a href="{{ object_url }}" class="w-full inline-flex justify-center rounded-lg  border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 lg:w-auto">View details</a>
   </div>
+</div>

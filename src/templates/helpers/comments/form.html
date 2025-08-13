@@ -1,32 +1,32 @@
-<form 
+<form
     id="submitForm"
     class="mb-6"
     hx-post="{% url 'add_comment' object.pk %}"
-    hx-trigger="submit" 
+    hx-trigger="submit"
     hx-target="#messages"
     hx-swap="afterbegin"
     hx-on:htmx:after-request="this.reset()"
-    >
+>
 
     {% csrf_token %}
-    
+
     {{ comment_form.non_field_errors }}
-    
+
     {% for field in comment_form.hidden_fields %}
         {{ field.errors }}
         {{ field }}
     {% endfor %}
-    
+
     {% for field in comment_form.visible_fields %}
-    <div class="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200">
-        <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
+        <div class="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200">
+            <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
             {{ field.error }}
             {% render_field field class="px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none" %}
-    </div>
+        </div>
     {% endfor %}
-    
+
     <button id="submitBtn" type="submit"
-        class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-500 hover:bg-indigo-800">
+            class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-500 hover:bg-indigo-800">
         Post comment
     </button>
 </form>

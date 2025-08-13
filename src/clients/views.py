@@ -4,16 +4,17 @@ from django.contrib import messages
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect, render
-from django.views.generic import View, FormView
+from django.shortcuts import redirect
+from django.views.generic import TemplateView, FormView
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_variables
-from django.contrib.auth import logout, login, authenticate, REDIRECT_FIELD_NAME
+from django.views.decorators.cache import never_cache
+from django.contrib.auth import logout, login, REDIRECT_FIELD_NAME
 
 from .forms import (LoginForm, RegisterForm)
 
 
+never_cache_m = method_decorator(never_cache, name="dispatch")
 
 class FormRequestMixin:
 
@@ -23,6 +24,7 @@ class FormRequestMixin:
         return kwargs
 
 
+@never_cache_m
 class LoginView(FormRequestMixin, FormView):
 
     template_name = "accounts/auth.html"
@@ -73,43 +75,43 @@ class RegisterView(FormView):
             return redirect("/products/")
         return super().dispatch(request, *args, **kwargs)
     
+
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Sign Up"
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+
+        template_name = response_kwargs.pop("template_name", None)
+        if template_name is not None:
+            self.template_name = template_name
+        
+        assert self.template_name is not None
+        return super().render_to_response(context, **response_kwargs)
+
+
     @method_decorator(sensitive_variables(["username", "password", "password1"]))
-    def form_valid(self, form: RegisterForm) -> HttpResponseRedirect:
-        data = form.cleaned_data
+    def form_valid(self, form: RegisterForm) -> HttpResponse:
         form.save()
-        username = data["username"]
-        password = data["password1"]
-        if not all([username, password]):
-            return HttpResponseBadRequest()
-        user = authenticate(self.request, username=username, password=password)
-        if user is None:
-            messages.error(self.request, "Something went Wrong.")
-            return redirect("login") # return to the login page
-        messages.success(self.request, "Account created Successfully.")
-        login(self.request, user)
-        return redirect("products")
+        form.send_email(self.request)
+        template_name = "accounts/check-email.html"
+        return (
+            self.render_to_response(self.get_context_data(), template_name=template_name)
+        )
 
-
-class LogoutView(View):
+class LogoutView(TemplateView):
 
     """
     Logout page
     """
+    template_name: str = "accounts/logout.html"
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if request.user.is_anonymous:
             messages.warning(request, "Something went wrong :(")
             return redirect("login")
         return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request: HttpRequest) -> HttpResponse:
-
-        return render(request, "accounts/logout.html")
     
     def post(self, request: HttpRequest) -> HttpResponseRedirect:
 
