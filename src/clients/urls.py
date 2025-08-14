@@ -12,7 +12,13 @@ urlpatterns = [
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path("register/", views.RegisterView.as_view(), name="register"),
     
-    path("change-password/", auth_views.PasswordChangeView.as_view(template_name="accounts/auth.html", success_url=reverse_lazy("change_password_done"))),
+    path("change-password/", 
+         auth_views.PasswordChangeView.as_view(
+             template_name="accounts/auth.html", 
+             success_url=reverse_lazy("change_password_done")
+        ),
+        name="change_password"
+    ),
     
     path("change-password/done/",
         auth_views.PasswordChangeDoneView.as_view(),
@@ -35,5 +41,11 @@ urlpatterns = [
         "reset/done/",
         auth_views.PasswordResetCompleteView.as_view(template_name="accounts/reset-password-complete.html"),
         name="password_reset_complete",
+    ),
+
+    path(
+        "activate/<int:user_id>/<str:token>/",
+        views.AccountActivationView.as_view(),
+        name="account_activation"
     ),
 ]

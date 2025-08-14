@@ -3,9 +3,11 @@ from functools import partial
 from django import forms
 from django.core import mail
 from django.conf import settings
+from django.urls import reverse
 from django.template.loader import get_template
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
@@ -104,41 +106,49 @@ class RegisterForm(UserCreationForm):
 
     def save(self, commit = True):
         instance = super().save(commit=False)
+        if getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True):
+            instance.is_active = False # Prevent user to login
         if commit:
             instance.save()
         phone_number = self.cleaned_data["phone_number"]
         try:
             instance.client.phone_number = phone_number
+            instance.client.save()
         except AttributeError:
             pass
-        instance.is_active = False # Prevent user to login
         return instance
     
-    def send_email(self, request, subject="", body=None):
+    def send_email(self, request, user, subject="", body=None):
         
         if request.user.is_authenticated:
             return
+        if user.is_active:
+            return
         if not subject:
             subject = _("Account Activation")
+        token_generator = default_token_generator
+        token = token_generator.make_token(user)
         if body is None:
-            body = self.email_body(request)
+            body = self.email_body(request, user_id=user.pk, token=token)
         mail.EmailMessage(
             subject,
             body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[self.cleaned_data["email"]]
-        ).send(settings.DEBUG)
+        ).send(not settings.DEBUG)
 
     
-    def email_body(self, request):
+    def email_body(self, request, user_id, token=""):
         return (
             get_template("email-body.txt").\
-                render(context=self.get_email_body_context(request))
+                render(context=self.get_email_body_context(request, user_id, token))
         )
 
-    def get_email_body_context(self, request):
+    def get_email_body_context(self, request, user_id, token):
         kwargs = {}
-        url = request.build_absolute_uri()
+        
+        url = reverse("account_activation", kwargs={"token": token, "user_id": user_id})
+        url = request.build_absolute_uri(url)
         kwargs["url"] = url
         kwargs["name"] = self.cleaned_data["username"]
         return kwargs

@@ -37,4 +37,6 @@ class Client(models.Model):
 def create_user_client(signal, sender, instance, **kwargs):
     created = kwargs.get("created", False)
     if instance and created:
+        if Client.objects.filter(user=instance).exists():
+            return
         Client._default_manager.create(user=instance)

@@ -38,7 +38,9 @@ admin.site.unregister(Group)
 
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin, ModelAdmin):...
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+
+    list_display = (*BaseUserAdmin.list_display, "is_active")
 
 
 @admin.register(Group)

@@ -18,7 +18,7 @@
                         {% endif %}
                         {% for field in form.hidden_fields %}
                             {% if field.errors %}
-                                <p class="text-red-500 text-bold p-2">
+                                <p class="mb-4 text-red-500 text-bold p-2">
                                     {{ field.errors }}
                                 </p>
                             {% endif %}
@@ -31,7 +31,7 @@
                                     {{ field.label }}
                                 </label>
                                 {% if field.errors %}
-                                    <p class="text-red-500 text-bold p-2">
+                                    <p class="mb-4 text-red-500 text-lg p-2">
                                         {{ field.errors }}
                                     </p>
                                 {% endif %}

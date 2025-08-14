@@ -1,4 +1,4 @@
 Thank You {{ name }}, For Signing in Beckings.
-Activate your through this link:
+Activate your account through this link:
 {{ url }}
 

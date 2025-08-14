@@ -3,16 +3,26 @@ from typing import Any
 from django.contrib import messages
 from django.http import HttpRequest
 from django.http import HttpResponse
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
-from django.views.generic import TemplateView, FormView
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import redirect, resolve_url
+from django.core.exceptions import ValidationError
+from django.views.generic import (
+    TemplateView, 
+    FormView
+)
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_variables
 from django.views.decorators.cache import never_cache
 from django.contrib.auth import logout, login, REDIRECT_FIELD_NAME
+from django.utils.translation import gettext_lazy as _
 
 from .forms import (LoginForm, RegisterForm)
 
+
+User = get_user_model()
 
 never_cache_m = method_decorator(never_cache, name="dispatch")
 
@@ -93,25 +103,71 @@ class RegisterView(FormView):
 
     @method_decorator(sensitive_variables(["username", "password", "password1"]))
     def form_valid(self, form: RegisterForm) -> HttpResponse:
-        form.save()
-        form.send_email(self.request)
+        self.object = obj = form.save()
+        form.send_email(self.request, obj)
         template_name = "accounts/check-email.html"
         return (
             self.render_to_response(self.get_context_data(), template_name=template_name)
         )
 
-class LogoutView(TemplateView):
+class AccountActivationView(TemplateView):
+
+    def dispatch(self, request, *args, **kwargs):
+        
+        user_id = kwargs.get("user_id")
+        
+        token = kwargs.get("token")
+
+        if not all([user_id, token]):
+            return self.handle_invalid_response()
+        
+        if self.check_token(request, user_id, token):
+            user = self.get_user(user_id)
+            redirect_url = resolve_url("login")
+            if user.is_active:
+                messages.info(request, _("Account already activated."))
+                return HttpResponseRedirect(redirect_url)
+            self.set_user_active_state(request, user)
+            messages.success(request, _("Account Acctivated Successfully"))
+            return HttpResponseRedirect(redirect_url)
+        
+        return self.handle_invalid_response()
+
+    def check_token(self, request, user_id, token) -> bool:
+
+        user = self.get_user(user_id)
+        if user is None:
+            return False
+        return default_token_generator.check_token(user, token)
+
+    def set_user_active_state(self, request, user) -> None:
+        
+        if request.user.is_authenticated:
+            return
+        user.is_active = True
+        user.save()
+
+    def get_user(self, user_id):
+
+        try:
+            pk = User._meta.pk.to_python(user_id)
+            user = User.objects.get(pk=pk)
+        except (User.DoesNotExist, ValidationError, ValueError, TypeError):
+            user = None
+        else:
+            user = user
+        return user
+
+    def handle_invalid_response(self):
+        raise Http404
+
+
+class LogoutView(LoginRequiredMixin, TemplateView):
 
     """
     Logout page
     """
     template_name: str = "accounts/logout.html"
-
-    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        if request.user.is_anonymous:
-            messages.warning(request, "Something went wrong :(")
-            return redirect("login")
-        return super().dispatch(request, *args, **kwargs)
     
     def post(self, request: HttpRequest) -> HttpResponseRedirect:
 
