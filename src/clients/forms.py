@@ -120,9 +120,10 @@ class RegisterForm(UserCreationForm):
     
     def send_email(self, request, user, subject="", body=None):
         
-        if request.user.is_authenticated:
-            return
-        if user.is_active:
+        if (
+            request.user.is_authenticated or user.is_active and \
+            not getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True)
+        ):
             return
         if not subject:
             subject = _("Account Activation")

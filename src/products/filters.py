@@ -1,6 +1,7 @@
 from typing import Union, Any
 from typing import Optional
-from datetime import datetime, timedelta #noqa
+from functools import partial
+from datetime import datetime, timedelta
 
 import django_filters
 from django.utils import timezone
@@ -56,16 +57,16 @@ class OrderFilter(django_filters.FilterSet):
         ) -> QuerySet:
         self.filter_timestamp = name
         today = timezone.now().date()
+        parse_filter = partial(self._parse_timestamp_filter, queryset)
         match value:
             case "today":
                 return (
-                    self._parse_timestamp_filter(queryset, "date", today)
+                    parse_filter("date", today)
                     )
             case "yesterday":
                 yesterday = today - timezone.timedelta(days=1)
                 return (
-                    self._parse_timestamp_filter(
-                        queryset,
+                    parse_filter(
                         lookup="date",
                         value=yesterday
                     )
@@ -73,8 +74,7 @@ class OrderFilter(django_filters.FilterSet):
             case "last_week":
                 last_week = today - timedelta(weeks=1)
                 return (
-                    self._parse_timestamp_filter(
-                        queryset,
+                    parse_filter(
                         "lte",
                         last_week
                     )
@@ -82,8 +82,7 @@ class OrderFilter(django_filters.FilterSet):
             case "this_month":
                 
                 return (
-                    self._parse_timestamp_filter(
-                        queryset,
+                    parse_filter(
                         "month",
                         today.month,
                         **{f"{name}__year": today.year}
@@ -92,15 +91,14 @@ class OrderFilter(django_filters.FilterSet):
             case "three_months":
                 three_months = today - timezone.timedelta(days=90)
                 return (
-                    self._parse_timestamp_filter(
-                        queryset,
+                    parse_filter(
                         "date",
                         three_months
                     )
                 )
             case "this_year":
                 return (
-                    self._parse_timestamp_filter(
+                    parse_filter(
                         queryset,
                         "year",
                         today.year

@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -81,8 +82,8 @@ class RegisterView(FormView):
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if request.user.is_authenticated:
-            messages.error(request, "Authenticated User can register.")
-            return redirect("/products/")
+            messages.error(request, _("Authenticated User can register."))
+            return HttpResponseRedirect(resolve_url("products"))
         return super().dispatch(request, *args, **kwargs)
     
 
@@ -104,11 +105,18 @@ class RegisterView(FormView):
     @method_decorator(sensitive_variables(["username", "password", "password1"]))
     def form_valid(self, form: RegisterForm) -> HttpResponse:
         self.object = obj = form.save()
-        form.send_email(self.request, obj)
-        template_name = "accounts/check-email.html"
-        return (
-            self.render_to_response(self.get_context_data(), template_name=template_name)
+        if getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True):
+            form.send_email(self.request, obj)
+            template_name = "accounts/check-email.html"
+            return (
+                self.render_to_response(self.get_context_data(), template_name=template_name)
+            )
+        messages.success(
+            self.request,
+            _("Account Created Sucessfully.")
         )
+        return HttpResponseRedirect(resolve_url("login"))
+
 
 class AccountActivationView(TemplateView):
 
@@ -124,9 +132,12 @@ class AccountActivationView(TemplateView):
         if self.check_token(request, user_id, token):
             user = self.get_user(user_id)
             redirect_url = resolve_url("login")
+            
             if user.is_active:
+
                 messages.info(request, _("Account already activated."))
                 return HttpResponseRedirect(redirect_url)
+            
             self.set_user_active_state(request, user)
             messages.success(request, _("Account Acctivated Successfully"))
             return HttpResponseRedirect(redirect_url)
@@ -144,6 +155,8 @@ class AccountActivationView(TemplateView):
         
         if request.user.is_authenticated:
             return
+        assert not user.is_active
+
         user.is_active = True
         user.save()
 
@@ -172,6 +185,7 @@ class LogoutView(LoginRequiredMixin, TemplateView):
     def post(self, request: HttpRequest) -> HttpResponseRedirect:
 
         logout(request)
+
         messages.warning(request, "Loggedout Successfully.")
         return redirect("/accounts/login/")
     
