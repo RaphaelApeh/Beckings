@@ -17,7 +17,9 @@ from rest_framework import serializers
 from rest_framework.validators import qs_exists
 from rest_framework.exceptions import APIException
 
+from clients.models import Client
 from helpers._typing import AuthUser
+from helpers.validators import PhoneNumberValidator
 from .token import PasswordField
 
 
@@ -40,6 +42,18 @@ def validate_user_field(instance: UserType, field: Union[str, None] = None,
     if qs_exists(qs):
         raise serializers.ValidationError("%(value)s already exists." %
                                            {"value": value})
+
+
+class PhoneNumberField(serializers.CharField):
+    
+    """
+    Serializer Field for Internal Phone Number
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        validator = PhoneNumberValidator()
+        self.validators.append(validator)
 
 
 class UsernameField(serializers.CharField):
@@ -99,14 +113,32 @@ class UserCreationSerializer(serializers.Serializer):
 
     username = UsernameField()
     email = serializers.EmailField()
+    phone_number = PhoneNumberField()
     password1 = PasswordField()
     password2 = PasswordField()
 
+
+    def validate_phone_number(self, value) -> str:
+        match value:
+            case v if v is None:
+                raise serializers.ValidationError(
+                    "phone_number field can't be null"
+                )
+            case _:
+                if not Client.objects.filter(phone_number__iexact=value).exists():
+                    raise serializers.ValidationError(
+                        "Something went wrong :("
+                    )
+        # re-validate the value
+        validator = PhoneNumberValidator()
+        validator(value)
+        return value
     
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         
         username = attrs.pop("username")
         email = attrs.pop("email")
+        phone_number = attrs.pop("phone_number")
         password1 = attrs.pop("password1")
         password2 = attrs.pop("password2")
 
@@ -133,6 +165,13 @@ class UserCreationSerializer(serializers.Serializer):
             "email": obj.email
             }
         }
+        try:
+            obj.client.phone_number = phone_number
+            obj.client.save()
+        except AttributeError:
+            pass
+        else:
+            data["user"]["phone_number"] = phone_number
 
         return data
 

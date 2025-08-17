@@ -7,11 +7,12 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import (
     IsAuthenticated,
 )
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.mixins import DestroyModelMixin
 
-from products.models import OrderProxy
+from products.models import Order
 from api.permissions import IsUser
 from helpers.serializers.order import UserOrderSerializer
 
@@ -21,17 +22,26 @@ class BaseGenericAPIView(GenericAPIView):
     permission_classes = (
         IsAuthenticated,
     )
+    queryset = Order.objects.select_related("user", "product")
     
     def get_queryset(self) -> QuerySet:
 
-        qs = self.request.user.order_set.select_related("user", "product")
+        qs = super().get_queryset()
+        qs = (
+            qs.filter(user=self.request.user)
+        )
         return qs
 
 
 class UserOrderListAPIView(BaseGenericAPIView):
 
     serializer_class = UserOrderSerializer
-
+    filter_backends = (SearchFilter, )
+    search_fields = (
+        "timestamp",
+        "status",
+        "order_id"
+    )
 
     def get(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
         
@@ -51,20 +61,20 @@ class UserOrderRetrieveAPIView(DestroyModelMixin, BaseGenericAPIView):
         IsUser
     )
 
-    def get_object(self) -> OrderProxy:
+    def get_object(self):
 
         kwargs = {
             "order_id": self.kwargs["order_id"]
         }
-
+        model = self.get_queryset().model
         try:
-            obj = OrderProxy.objects.get(**kwargs)
-        except OrderProxy.DoesNotExist:
+            obj = model.objects.get(**kwargs)
+        except model.DoesNotExist:
             raise NotFound("object does not exists.")
-        else:
-            self.check_object_permissions(self.request, obj)
-            self.object = obj
-            return obj
+        
+        self.check_object_permissions(self.request, obj)
+        self.object = obj
+        return obj
 
 
     def get(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
@@ -79,6 +89,4 @@ class UserOrderRetrieveAPIView(DestroyModelMixin, BaseGenericAPIView):
     def delete(self, request, *args: list[Any], **kwargs: dict[str, Any]) -> Response:
         
         return self.destroy(request, *args, **kwargs)
-
-
 

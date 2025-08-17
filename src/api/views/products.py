@@ -27,6 +27,9 @@ class ProductListCreateView(GenericAPIView):
 
 
     serializer_class = ProductListSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
     queryset = Product.objects.select_related("user")
     filter_backends = (
         ModelSearchFilterBackend,
@@ -38,9 +41,12 @@ class ProductListCreateView(GenericAPIView):
             case "POST":
                 return ProductCreateSerializer
             case _:
+                
+                assert self.serializer_class
+                
                 return self.serializer_class
 
-    def get_permissions(self):
+    def get_permissions(self) -> list:
         
         match self.request.method:
             case "POST":

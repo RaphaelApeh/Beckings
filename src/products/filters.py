@@ -10,7 +10,7 @@ from django.db.models import QuerySet
 from .models import (
     Product,
     Order,
-    ORDER_CHOICES
+    OrderStatusChoices
 )
 
 
@@ -36,7 +36,7 @@ class ProductFilter(django_filters.FilterSet):
 class OrderFilter(django_filters.FilterSet):
 
     status = django_filters.ChoiceFilter(
-        choices=ORDER_CHOICES,
+        choices=OrderStatusChoices.choices,
         label="Status"
     )
     timestamp = django_filters.ChoiceFilter(
@@ -99,7 +99,6 @@ class OrderFilter(django_filters.FilterSet):
             case "this_year":
                 return (
                     parse_filter(
-                        queryset,
                         "year",
                         today.year
                     )

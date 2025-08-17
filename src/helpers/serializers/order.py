@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 
 from products.order_utils import AddOrder
 from products.models import OrderProxy, Product
+from products.models import OrderStatusChoices
 from helpers.serializers import serializer_factory
 
 from .products import ProductListSerializer
@@ -38,6 +39,7 @@ class UserOrderSerializer(serializers.ModelSerializer):
             "product",
             "user",
             "manifest",
+            "status",
             "number_of_items"
         )
 
@@ -47,6 +49,11 @@ class UserOrderCreateSerializer(serializers.Serializer):
     default_error_messages = {
         'required': _('{field} is required.'),
     }
+
+    status = serializers.ChoiceField(
+        choices=OrderStatusChoices.choices,
+        default="pending"
+    )
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
         
@@ -72,16 +79,24 @@ class UserOrderCreateSerializer(serializers.Serializer):
         if (number_of_items := attrs.get("number_of_items")) is not None:
             kwargs["number_of_items"] = number_of_items
             data["number_of_items"] = number_of_items
+        
         if manifest := attrs.get("manifest"):
             kwargs["manifest"] = manifest
             data["manifest"] = manifest
-
+        
+        if status := data.get("status"):
+            kwargs["status"] = status
+            data["status"] = status
+          
         self.validate_item(product, data.get("number_of_items"))
         self.save_order(product, data)
         qs = user.order_set.all()
+        
         kwargs["message"] = _("Added Item")
         kwargs["item_count"] = qs.count()
+        
         kwargs["total_sum"] = qs.aggregate(total_sum=Sum("product__price"))["total_sum"]
+        
         kwargs["user"] = {
             "username": user.username,
             "email": user.email

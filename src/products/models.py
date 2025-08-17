@@ -94,6 +94,14 @@ ORDER_CHOICES = {
 }
 
 
+class OrderStatusChoices(models.TextChoices):
+    
+    delivered = "delivered", _("Delivered")
+    pending = "pending", _("Pending")
+    cancelled = "cancelled",  _("Cancelled")
+    in_transit = "in_transit", _("In Transit")
+
+
 class Order(models.Model):
 
     order_id = models.UUIDField(primary_key=True,
@@ -117,7 +125,7 @@ class Order(models.Model):
     
     number_of_items = models.PositiveSmallIntegerField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=ORDER_CHOICES, default="pending")
+    status = models.CharField(max_length=20, choices=OrderStatusChoices.choices, default="pending")
 
     class Meta:
         ordering = ("-timestamp",)

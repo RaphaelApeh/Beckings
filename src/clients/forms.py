@@ -120,11 +120,11 @@ class RegisterForm(UserCreationForm):
     
     def send_email(self, request, user, subject="", body=None):
         
-        if (
+        assert (
             (request.user.is_authenticated or user.is_active) or \
             not getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True)
-        ):
-            return
+        )
+        
         if not subject:
             subject = _("Account Activation")
         token_generator = default_token_generator
