@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import hashlib
 from typing import Any, TypeVar, NoReturn
 
-from faker import Faker
-from tablib import Dataset
 from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
@@ -18,14 +15,12 @@ from django.views.generic import (
     FormView,
     CreateView
     )
+from django.views.generic.edit import FormMixin
 from django.http import (
-                        Http404,
-                        HttpRequest,
-                        HttpResponse,
-                        HttpResponseBadRequest,
-                        HttpResponseRedirect,
-                        )
-from django.http.response import HttpResponseBase
+    Http404,
+    HttpRequest,
+    HttpResponse
+)
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin, DeletionMixin
 from django.views.generic.detail import SingleObjectMixin
@@ -34,20 +29,24 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
+
+from import_export.formats import base_formats
 from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
-from helpers.resources import ProductResource
 from helpers._typing import HTMXHttpRequest
-from clients.views import \
-        FormRequestMixin
-from .models import Product, \
-                    Order, Comment, Reply #noqa
+from helpers.resources import OrderResource
+from clients.views import FormRequestMixin
+from .models import (
+    Product,
+    Order, 
+    Comment, 
+    Reply
+)
 from .forms import (
     AddOrderForm, 
-    ProductForm, 
-    ProductImportForm,
+    ProductForm,
     ExportForm,
     CommentForm,
     ReplyForm,
@@ -61,6 +60,7 @@ from .filters import (
 
 login_required_m = method_decorator(login_required, name="dispatch")
 require_htmx_m = method_decorator(require_htmx, name="dispatch")
+never_cache_m = method_decorator(never_cache, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
 QUERY_SEACRH = "search"
@@ -74,6 +74,7 @@ class ObjectUserCheckMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+@never_cache_m
 class ProductListView(ListView):
 
     queryset = Product.objects.select_related("user").filter(active=True)
@@ -305,7 +306,8 @@ class UserOrderView(ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "order_form": OrderFilter().form
+                "order_form": OrderFilter().form,
+                "export_form": ExportForm(auto_id=False)
             }
         )
         return context
@@ -406,6 +408,75 @@ class AddOrderView(
         return HttpResponseClientRedirect(obj.product.get_absolute_url())
 
 
+@never_cache_m
+@login_required_m
+class OrderExportView(
+    FormMixin,
+    View
+    ):
+
+    form_class = ExportForm
+    queryset = Order.objects.select_related("user", "product")
+
+
+    def get_queryset(self) -> QuerySet:
+        if self.queryset:
+            return self.queryset.filter(user=self.request.user)
+        elif getattr(self, "model", None) is not None:
+            return self.model._default_manager.filter(user=self.request.user)
+        raise AttributeError(
+            "get_queryset() method required"
+            "queryset or model is None"
+        )
+
+    def get(self, request) -> HttpResponse:
+        if request.htmx:
+            return HttpResponseClientRedirect(
+                request.get_full_path()
+            )
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_invalid(self, form) -> HttpResponse:
+        format = self.request.GET.get("format")
+        return HttpResponse(f"Error:\n Invalid format, But got \"{format}\".")
+
+    def form_valid(self, form) -> HttpResponse:
+        _format = form.cleaned_data["format"]
+        model = self.get_queryset().model
+        object_name = model._meta.object_name
+        dataset = OrderResource().export(self.get_queryset())
+        format = self.get_format_class(_format)
+        export_data = format.export_data(dataset)
+        response = HttpResponse(export_data, content_type=format.get_content_type())
+        response["Content-Disposition"] = 'attachment; filename="{}"'.\
+                                            format(
+                                            form.date_format(format, object_name)
+                                            )
+        return response
+    
+    def get_format_class(self, format: str) -> base_formats.Format:
+        for _format in base_formats.DEFAULT_FORMATS:
+            if format.lower() == _format.__name__.lower():
+                return _format()
+            continue
+    
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        if self.request.method == "GET":
+            kwargs.update(
+                {
+                    "data": self.request.GET or None
+                }
+            )
+        return kwargs
+
+
+export_order_view = OrderExportView.as_view()
+
+
 @login_required_m
 @require_htmx_m
 class UserOrderDeleteView(
@@ -461,7 +532,6 @@ class ProductCreateView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"
-        kwargs["import_form"] = ProductImportForm(initial={"format": "csv"})
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
@@ -472,115 +542,6 @@ class ProductCreateView(FormRequestMixin,
 
 product_create_view = ProductCreateView.as_view()
 
-
-@method_decorator(never_cache, name="dispatch")
-class ProductExportImportView(View):
-
-    mapping = {
-            "json": {
-                "type": lambda x: x.json, 
-                "content-type": "application/json"
-            },
-            "csv": {
-                "type": lambda x: x.csv, 
-                "content-type": "text/csv"
-            },
-            "yaml": {
-                "type": lambda x: x.yaml, 
-                "content-type": "text/yaml"
-            },
-            "html": {
-                "type": lambda x: x.html,
-                "content-type": "text/html",
-            }
-    }
-
-    @method_decorator(login_required)
-    def get(self, request, *args, **kwargs) -> HttpResponse:
-
-        mapping = self.mapping
-        ids = request.GET.getlist("id")
-        queryset = self.get_queryset().filter(pk__in=ids)
-        form = ExportForm(request.GET or None)
-
-        export = self.export_data(request, queryset)
-        
-        if form.is_valid():
-            format = form.cleaned_data["format"]
-        ds = mapping.get(format)
-
-        hash = self.hash()
-        response = HttpResponseBadRequest(content="Error")
-        
-        if (type_ := ds.get("type")) is not None:
-            response = HttpResponse(type_(export), content_type=ds.get("content-type", None))
-        
-            response["Content-Disposition"] = f'attachment; filename="product_{hash}.{format}"'
-        
-        return response
-    
-    def hash(self) -> str:
-        
-        _s = Faker().sentence(5).encode()
-        
-        return hashlib.md5(_s).hexdigest()
-    
-    def export_data(self, request, queryset: T | None = None) -> Any:
-        if not len(list(queryset)):
-            queryset = None
-        ds = ProductResource.export_data(queryset)
-        return ds
-    
-    def import_data(self, request, form, queryset: T) -> Any:
-        
-        resource = ProductResource()
-        user = request.user
-        ds = Dataset()
-
-        if form.is_valid():
-            file = form.cleaned_data["file"]
-            _file_data = ds.load(file.read().decode())
-            import_data = resource.import_data(_file_data, user=user, dry_run=True)
-            for row in import_data:
-                for error in row.errors:
-                    print(error)
-            if not import_data.has_errors():
-                import_data = resource.import_data(_file_data, dry_run=False, user=user)
-        next_url = request.META.get("HTTP_REFERER") or reverse("products")
-        return HttpResponseRedirect(next_url)
-
-    def get_queryset(self):
-        return Product.objects.select_related("user")
-
-    @method_decorator(staff_member_required(login_url="login"))
-    def post(self, request, *args, **kwargs):
-        
-        queryset = self.get_queryset()
-        
-        form = ProductImportForm(data=request.POST or None, files=request.FILES or None)
-        
-        next_url = request.META.get("HTTP_REFERER") or reverse("products")
-        response = HttpResponseRedirect(next_url)
-
-        if not form.is_valid():
-            messages.error(request, "An Error orcured.")
-            return response
-        format = form.cleaned_data["format"]
-
-        file = form.cleaned_data["file"]
-        if not file.name.endswith(f".{format}"):
-            messages.error(request, "Invalid Format.")
-            return response
-
-        with transaction.atomic():
-            messages.success(request, "Data Saved.")
-            result = self.import_data(request, form, queryset)
-            if isinstance(result, HttpResponseBase):
-                return result
-        return response
-
-
-export_import_product_view = ProductExportImportView.as_view()
 
 # Comments
 

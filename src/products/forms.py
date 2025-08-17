@@ -3,13 +3,16 @@ from __future__ import annotations
 from typing import Any
 
 from django import forms
-from django.core.exceptions import ImproperlyConfigured
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from import_export.formats import base_formats
 
-from .models import Product, Order, ORDER_CHOICES
+from .models import Product, Order
+from helpers.enum import OrderStatusChoices
 from .order_utils import AddOrder
-from helpers.enum import ExportType
 
 
+ORDER_CHOICES = OrderStatusChoices.choices
 
 BORDER = (
     "w-full",
@@ -125,7 +128,10 @@ class AddOrderForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = ("number_of_items", )
+        fields = ("number_of_items", "manifest")
+        labels = {
+            "manifest": _("Note (Optional)")
+        }
     
     field_order = (
         "address",
@@ -205,73 +211,47 @@ class AddOrderForm(forms.ModelForm):
        ).create(self.user, cleaned_data) # This will save the order and return the order
 
 
-class ProductImportForm(forms.Form):
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        css_class = {*BORDER, *PADDING, *FORM_TEXT, "focus:ring-gray-800"}
-        for field in self.fields:
-            self.fields[field].widget.attrs["class"] = " ".join(list(css_class))
-
-    file = forms.FileField()
-    format = forms.ChoiceField(choices=ExportType.choices)
-
-
 class ExportForm(forms.Form):
 
-    format = forms.ChoiceField(choices=ExportType.choices,
-                               widget=forms.RadioSelect)
+    format = forms.ChoiceField(
+        choices=(),
+        widget=forms.Select
+    )
 
     def __init__(self, *args, **kwargs) -> None:
-        
-        queryset = kwargs.pop("queryset", None)
-        resource = kwargs.pop("resource", None)
-
+    
         super().__init__(*args, **kwargs)
-        self.resource = resource
-        self.queryset = queryset
-    
-    def _export_type(self, export, format):
-
-        return {
-            "json": export.json,
-            "csv": export.csv,
-            "yaml": export.yaml,
-            "html": export.html
-        }.get(format, "json")
-    
-    def export(self, queryset=None, **kwargs):
-
-        self.full_clean()
         
-        if queryset is None:
-            queryset = self.queryset
+        format = self.fields["format"]
+        format.choices = (
+            (_format().get_title(), _format().get_title().upper())
+            for  _format in base_formats.DEFAULT_FORMATS
+        )
+        
+        if len(format.choices):
+            format.choices = (("", "-------"), *format.choices)
 
-        if (resource := self.resource) is not None:
-            format = self.cleaned_data["format"]
-        
-            if hasattr(resource, "export_data"):
-                ds = resource.export_data(queryset, **kwargs)
-        
-                return self._export_type(ds, format)
-        
-            kw = {**kwargs, **(self.resource_kwargs() or {})}
-            ds = resource(**kw).export(queryset)
-        
-            return self._export_type(ds, format)
+    def date_format(self, format, object_name: str)-> str:
+        date_str = timezone.now().strftime("%d-%m-%Y")
+        return "{}-{}.{}".format(
+            date_str, 
+            object_name.lower(), 
+            format.get_extension()
+        )
 
-        raise ImproperlyConfigured("Can't use `export` method when resource is None")
-
-    def resource_kwargs(self, **kwargs):
-        return kwargs
-    
 
 class OrderActionForm(forms.Form):
 
     action = forms.ChoiceField(
-        choices={"": "------", **ORDER_CHOICES},
+        choices=ORDER_CHOICES,
         widget=forms.Select
         )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        action = self.fields["action"]
+        if isinstance(action.choices, (list, tuple)):
+            action.choices = ("", "----") + action.choices
 
 
 class CommentForm(forms.Form):

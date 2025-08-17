@@ -2,7 +2,7 @@ from typing import Any
 
 from django.contrib.admin import action
 
-from helpers.enum import OrderStatusOptions
+from helpers.enum import OrderStatusChoices
 
 
 class ReadOnlyMixin:
@@ -24,18 +24,26 @@ class ReadOnlyMixin:
 @action(description="%(verbose_name)s Delivered")
 def user_order_delivered_action(model_admin, request, queryset) -> None:
     
-    queryset.update(status=OrderStatusOptions.DELIVERED.value)
+    queryset.update(status=OrderStatusChoices.delivered.value)
     model_admin.message_user(request, "Updated user order")
     
-@action(description="User Order Pending")
+
+@action(description="%(verbose_name)s Pending")
 def user_order_pending_action(model_admin, request, queryset) -> None:
     
-    queryset.update(status=OrderStatusOptions.PENDING.value)
+    queryset.update(status=OrderStatusChoices.pending.value)
     model_admin.message_user(request, "Updated user order")
 
-@action(description="User Order Cancelled")
+
+@action(description="%(verbose_name)s Cancelled")
 def user_order_cancelled_action(model_admin, request, queryset) -> None:
     
-    queryset.update(status=OrderStatusOptions.CANCELLED.value)
+    queryset.update(status=OrderStatusChoices.cancelled.value)
     model_admin.message_user(request, "Updated user order")
+
+
+@action(description="%(verbose_name)s Trans-it")
+def user_order_in_transit_action(model_admin, request, queryset) -> None:
     
+    queryset.update(status=OrderStatusChoices.in_transit.value)
+    model_admin.message_user(request, "Updated user order")

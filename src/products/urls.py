@@ -1,20 +1,21 @@
 from django.urls import path
 
-from .views import (ProductListView, 
-                    ProductDetailView,
-                    product_search_view,
-                    AddOrderView,
-                    UserOrderDeleteView,
-                    UserOrderDetailView,
-                    product_create_view,
-                    user_orders_view,
-                    export_import_product_view,
-                    CommentDeleteView,
-                    CommentCreateView,
-                    CommentUpdateView,
-                    ReplyView,
-                    ReplyDeleteView
-                    )
+from .views import (
+    ProductListView, 
+    ProductDetailView,
+    product_search_view,
+    AddOrderView,
+    UserOrderDeleteView,
+    UserOrderDetailView,
+    product_create_view,
+    user_orders_view,
+    export_order_view,
+    CommentDeleteView,
+    CommentCreateView,
+    CommentUpdateView,
+    ReplyView,
+    ReplyDeleteView
+)
 
 
 urlpatterns = [
@@ -23,11 +24,15 @@ urlpatterns = [
 
     path(
         "<int:pk>/<slug:slug>/", 
-        ProductDetailView.as_view(), 
+        ProductDetailView.as_view(),
         name="product-detail"
     ),
 
-    path("search/", product_search_view, name="product_search"),
+    path(
+        "search/", 
+        product_search_view, 
+        name="product_search"
+    ),
 
     path(
         "delete/<int:pk>/<slug:product_slug>/",
@@ -35,9 +40,7 @@ urlpatterns = [
         name="product_delete"
     ),
 
-    path("create/", product_create_view, name="product_create"),
-
-    path("export/", export_import_product_view, name="export_import_product"),
+    path("add/", product_create_view, name="product_create"),
 
     # Orders Path
     path("orders/", user_orders_view, name="user_orders"),
@@ -58,6 +61,12 @@ urlpatterns = [
         "orders/detail/<uuid:order_id>/",
         UserOrderDetailView.as_view(),
         name="order_user_detail"
+    ),
+
+    path(
+        "orders/export/",
+        export_order_view,
+        name="export_order"
     ),
 
     path(

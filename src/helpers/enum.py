@@ -1,4 +1,5 @@
-from enum import Enum
+from django.db.models.enums import TextChoices
+from django.utils.translation import gettext_lazy as _
 
 from .decorators import classproperty
 
@@ -10,15 +11,10 @@ class EnumChoiceMixin:
         return [x.value for x in cls]
 
 
-class ExportType(EnumChoiceMixin, Enum):
-    JSON = "json", "Json"
-    CSV = "csv", "Csv"
-    YAML = "yaml", "Yaml"
-    HTML = "html", "HTML"
 
-
-class OrderStatusOptions(Enum):
-
-    DELIVERED = "delivered"
-    PENDING = "pending"
-    CANCELLED = "cancelled"
+class OrderStatusChoices(TextChoices):
+    
+    delivered = "delivered", _("Delivered")
+    pending = "pending", _("Pending")
+    cancelled = "cancelled",  _("Cancelled")
+    in_transit = "in_transit", _("In Transit")

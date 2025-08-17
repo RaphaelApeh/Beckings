@@ -52,17 +52,12 @@ class OrderResource(ModelResource):
         widget=ForeignKeyWidget(Product, field="product_name")
     )
 
-    user = Field(
-        column_name="user",
-        attribute="user",
-        widget=ForeignKeyWidget(User, field="username")
-    )
-
     class Meta:
         model = "products.Order"
         fields = (
+            "order_id",
             "product",
-            "user",
+            "product__price",
             "number_of_items",
             "status"
         )

@@ -9,6 +9,7 @@ dependencies = [
     "cookiecutter>=2.6.0",
     "dj-database-url>=2.3.0",
     "django>=5.2",
+    "django-autoslug>=1.9.9",
     "django-cotton>=2.0.3",
     "django-crispy-forms>=2.4",
     "django-filter>=25.1",

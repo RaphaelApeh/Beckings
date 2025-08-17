@@ -16,6 +16,7 @@ from django.contrib.contenttypes.fields import (
 
 from cloudinary import CloudinaryImage #noqa
 
+from helpers.enum import OrderStatusChoices
 from .manager import ProductManager
 
 
@@ -93,13 +94,6 @@ ORDER_CHOICES = {
     "cancelled": _("Cancelled")
 }
 
-
-class OrderStatusChoices(models.TextChoices):
-    
-    delivered = "delivered", _("Delivered")
-    pending = "pending", _("Pending")
-    cancelled = "cancelled",  _("Cancelled")
-    in_transit = "in_transit", _("In Transit")
 
 
 class Order(models.Model):

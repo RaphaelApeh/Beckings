@@ -9,8 +9,6 @@ from django.db import transaction
 
 from .models import Product, Order
 from helpers._typing import Bit
-from helpers.enum import OrderStatusOptions
-
 
 U = TypeVar("U")
 
@@ -45,7 +43,5 @@ class AddOrder:
                                 user=user,        
                                 number_of_items=number_of_items,
                                 manifest=manifest)
-            order.status = OrderStatusOptions.PENDING.value
-            order.save()
         return order
 
