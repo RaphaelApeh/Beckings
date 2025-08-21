@@ -64,7 +64,7 @@ THIRD_PARTY_APPS = [
     "django_htmx",
     "tailwind",
     "import_export",
-    "django_filters"
+    "django_filters",
 ]
 
 INTERNAL_APPS = [
@@ -290,3 +290,7 @@ UNFOLD = {
 # https://docs.djangoproject.com/en/stable/ref/django-admin/#envvar-DJANGO_RUNSERVER_HIDE_WARNNING
 if DEBUG:
     os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
+
+
+LOGIN_URL = "/accounts/"
+LOGIN_REDIRECT_URL = "/accounts/profile/"

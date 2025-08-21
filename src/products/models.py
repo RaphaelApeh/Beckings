@@ -26,9 +26,12 @@ User = get_user_model()
 class Product(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_products")
-    product_name = models.CharField(max_length=100)
+    product_name = models.CharField(
+        max_length=100, 
+        db_index=True
+    )
     product_description = models.TextField(null=True, blank=True)
-    product_slug = models.SlugField(max_length=100, blank=True, null=True)
+    product_slug = models.SlugField(blank=True, null=True, db_index=True)
     price = models.FloatField(default=1000.0)
     # image = CloudinaryImage("image")
     active = models.BooleanField(default=True)

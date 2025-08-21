@@ -12,7 +12,13 @@ urlpatterns = [
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path("register/", views.RegisterView.as_view(), name="register"),
     
-    path("change-password/", 
+    path(
+        "profile/",
+        views.UserAccountView.as_view(),
+        name="accounts_detail"
+    ),
+    path(
+        "change-password/", 
          auth_views.PasswordChangeView.as_view(
              template_name="accounts/auth.html", 
              success_url=reverse_lazy("change_password_done")
@@ -20,15 +26,18 @@ urlpatterns = [
         name="change_password"
     ),
     
-    path("change-password/done/",
+    path(
+        "change-password/done/",
         auth_views.PasswordChangeDoneView.as_view(),
         name="change_password_done"),
     
-    path("forgot-password/", 
+    path(
+        "forgot-password/", 
          auth_views.PasswordResetView.as_view(template_name="accounts/auth.html", success_url=reverse_lazy("password_reset_done")),
          name="password_reset"),
 
-    path("forgot-password/done/",
+    path(
+        "forgot-password/done/",
         auth_views.PasswordResetDoneView.as_view(template_name="accounts/password-reset.html"),
         name="password_reset_done"),
 

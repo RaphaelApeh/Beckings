@@ -190,3 +190,8 @@ class LogoutView(LoginRequiredMixin, TemplateView):
         return redirect("/accounts/login/")
     
 
+
+class UserAccountView(LoginRequiredMixin, TemplateView):
+
+    template_name = "accounts/overview.html"
+
