@@ -72,6 +72,8 @@ class RegisterForm(UserCreationForm):
             "title": "Enter a valid phone number e.g(+2348139582053)"
         })
     )
+
+    field_order = ("username", "email", "phone_number")
         
     class Meta:
         model = User

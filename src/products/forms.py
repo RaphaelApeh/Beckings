@@ -93,11 +93,6 @@ class ProductForm(forms.ModelForm):
     @user.setter
     def user(self, value) -> None:
         self._user = value
-    
-    def clean(self):
-        data = super().clean()
-       
-        return data
 
     def save(self, commit=True) -> Product:
         instance = super().save(commit=False)
@@ -170,9 +165,11 @@ class AddOrderForm(forms.ModelForm):
 
         data = self.cleaned_data
 
-        product_instance = data["product"]
+        product_instance = data.get("product")
         number_of_items = data.get("number_of_items", 0)
 
+        if product_instance is None:
+            raise self.add_error(None, "product can't be None")
         match number_of_items:
             case 0:
                 self.add_error(None, "Can not add an empty order.")

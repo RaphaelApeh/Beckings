@@ -39,10 +39,17 @@ class FormRequestMixin:
 class LoginView(FormRequestMixin, FormView):
 
     template_name = "accounts/auth.html"
-    success_url = "/products/"
+    success_url = settings.LOGIN_REDIRECT_URL or "/products/"
     form_class = LoginForm
 
-    
+    def get_initial(self):
+        email = self.request.GET.get("email", None)
+        kwargs = super().get_initial()
+        if not email:
+            return kwargs
+        kwargs = {"email": email, **(kwargs or {})}
+        return kwargs
+
     def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
