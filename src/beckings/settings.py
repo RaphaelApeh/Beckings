@@ -116,7 +116,7 @@ TEMPLATES = [
                 "django.templatetags.static",
                 "django.templatetags.i18n",
                 "tailwind.templatetags.tailwind_tags",
-                "helpers.templatetags.utils",
+                "helpers.templatetags.form_utils",
             ]
         },
     },

@@ -1,5 +1,7 @@
 <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
 
+    {{ errors }}
+    
     {% if form.non_field_errors %}
         <p class="mt-5 text-red-500">{{ form.non_field_errors }}</p>
     {% endif %}
@@ -9,7 +11,7 @@
         {{ field }}
     {% endfor %}
     
-    {% for error, field in fields %}
+    {% for field, error in fields %}
     {{ error }}
     <div class="sm:col-span-2">
         <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
