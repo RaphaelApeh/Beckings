@@ -5,8 +5,8 @@ from . import views
 from .feeds import ProductFeed
 
 urlpatterns = [
-    path("", views.homepage_view, name="home"),
     path("admin/", admin.site.urls),
+    path("", views.homepage_view, name="home"),
     path("robots.txt", views.robots_txt),
     path("products-rss/", ProductFeed()),
     path("accounts/", include("clients.urls")),
