@@ -9,6 +9,7 @@ from import_export.formats import base_formats
 
 from .models import Product, Order
 from helpers.enum import OrderStatusChoices
+from helpers.forms import FormatChoiceField
 from .order_utils import AddOrder
 
 
@@ -210,20 +211,13 @@ class AddOrderForm(forms.ModelForm):
 
 class ExportForm(forms.Form):
 
-    format = forms.ChoiceField(
-        choices=(),
-        widget=forms.Select
-    )
+    format = FormatChoiceField(formats=base_formats.DEFAULT_FORMATS)
 
     def __init__(self, *args, **kwargs) -> None:
     
         super().__init__(*args, **kwargs)
         
         format = self.fields["format"]
-        format.choices = (
-            (_format().get_title(), _format().get_title().upper())
-            for  _format in base_formats.DEFAULT_FORMATS
-        )
         
         if len(format.choices):
             format.choices = (("", "-------"), *format.choices)

@@ -1,51 +1,54 @@
 from collections import OrderedDict
+from typing import Any, Union, Generator
 
-from django.forms.widgets import Select
-from django.forms.fields import Field, ChoiceField
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+from django.forms.fields import ChoiceField
 
 from import_export.formats.base_formats import Format
 
 
+__all__ = [
+    "FormatChoiceField"
+]
 
 class FormatChoiceField(ChoiceField):
 
-    widget = Select
-    default_error_messages = {
-        "invalid_choice": _(
-            "Select a valid choice. %(value)s is not one of the available choices."
-        ),
-    }
 
     def __init__(self, formats=(), encoding=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.encoding = encoding
         self.formats = formats
 
-    def _get_fromats(self):
-        return tuple(self._formats)
+    def _get_fromats(self) -> Union[Any, None, OrderedDict[str, Any]]:
+        return self._formats
     
     def _set_formats(self, formats) -> None:
 
-        self.choices = (
-            self._build_formats_choice(
+        self.choices = self._formats_choices(formats, self.encoding)
+        
+        if formats is not None:
+            self._formats = self._build_formats(
                 formats,
                 encoding=self.encoding,
-                raise_asserts=False
+                as_dict=True
             )
-        )
-        formats = (
-            f(encoding=self.encoding)
-            for f in formats
-        ) if hasattr(formats, "__iter__") else ()
-        self._formats = formats
+            return
+        self._formats = {}
 
     formats = property(_get_fromats, _set_formats)
 
 
     @staticmethod
-    def _build_formats_choice(formats, *, encoding=None, raise_asserts=True, as_dict=False):
+    def _formats_choices(formats, encoding=None) -> Union[None, tuple[str, str]]:
+
+        if formats is None:
+            return
+        return (
+            (str(f(encoding).get_title()), f(encoding).get_title().upper())
+            for f in formats
+        )
+
+    @staticmethod
+    def _build_formats(formats, *, encoding=None, raise_asserts=True, as_dict=False) -> Generator[tuple[str, Any], None, None] | OrderedDict[str, Any]:
 
         assert formats is not None or not raise_asserts
         assert hasattr(formats, "__iter__") or not raise_asserts, \
@@ -55,40 +58,16 @@ class FormatChoiceField(ChoiceField):
         "formats needs to be a subclass of Format class."
 
         choices = (
-            (str(i), f(encoding=encoding).get_title())
-            for (i, f) in enumerate(formats)
+            (str(f(encoding).get_title()), f(encoding=encoding))
+            for f in formats
         )
         if not as_dict:
             return choices
         return OrderedDict(choices)
 
-    def to_python(self, value):
-        if value in self.empty_values:
-            return None
-        if isinstance(value, type) and issubclass(value, Format):
-            value = value(encoding=self.encoding)
-            if value in self.formats:
-                return value
-            raise ValidationError(self.error_messages["invalid_choice"], params={"value", value.get_title()})
-        if isinstance(value, Format):
-            if value in self.formats:
-                return value
-            raise ValidationError(self.error_messages["invalid_choice"], params={"value", value.get_title()})
-        try:
-            value = int(value)
-            for i, format in enumerate(self.formats):
-                if i == value:
-                    return format
-            raise ValidationError(
-                self.default_error_messages["invalid_choice"],
-                params={"value": str(value)}
-            )
-        except (ValueError, TypeError, IndexError):
-            raise ValidationError(
-                self.default_error_messages["invalid_choice"],
-                params={"value": str(value)}
-            )
+    def clean(self, value) -> Union[Any, None]:
+
+        value = super().clean(value)
+        return self.formats.get(value)
     
-    def validate(self, value):
-        Field.validate(self, value)
 

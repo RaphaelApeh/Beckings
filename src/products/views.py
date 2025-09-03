@@ -30,7 +30,6 @@ from django.contrib.auth.decorators import permission_required
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
 
-from import_export.formats import base_formats
 from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -426,7 +425,7 @@ class OrderExportView(
             return self.model._default_manager.filter(user=self.request.user)
         raise AttributeError(
             "get_queryset() method required"
-            "queryset or model is None"
+            "queryset or model attribute"
         )
 
     def get(self, request) -> HttpResponse:
@@ -444,31 +443,31 @@ class OrderExportView(
         return HttpResponse(f"Error:\n Invalid format, But got \"{format}\".")
 
     def form_valid(self, form) -> HttpResponse:
-        _format = form.cleaned_data["format"]
+        format = form.cleaned_data["format"]
         model = self.get_queryset().model
         object_name = model._meta.object_name
         dataset = OrderResource().export(self.get_queryset())
-        format = self.get_format_class(_format)
         export_data = format.export_data(dataset)
-        response = HttpResponse(export_data, content_type=format.get_content_type())
-        response["Content-Disposition"] = 'attachment; filename="{}"'.\
-                                            format(
-                                            form.date_format(format, object_name)
-                                            )
+        response = (
+            HttpResponse(
+                export_data, 
+                content_type=format.get_content_type()
+            )
+        )
+        response["Content-Disposition"] = (
+            'attachment; filename="{}"'.format(
+                form.date_format(format, object_name)
+                )
+        )
         return response
-    
-    def get_format_class(self, format: str) -> base_formats.Format:
-        for _format in base_formats.DEFAULT_FORMATS:
-            if format.lower() == _format.__name__.lower():
-                return _format()
-            continue
     
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         if self.request.method == "GET":
             kwargs.update(
                 {
-                    "data": self.request.GET or None
+                    "data": self.request.GET or None,
+                    "files": self.request.FILES or None
                 }
             )
         return kwargs
