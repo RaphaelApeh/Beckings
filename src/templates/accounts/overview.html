@@ -1,4 +1,5 @@
 {% extends "base_page.html" %}
+{% load humanize %}
 
 {% block extra_head %}
   {% tailwind_css %}
@@ -23,7 +24,7 @@
             <svg class="mx-1 h-4 w-4 text-gray-400 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
             </svg>
-            <a href="#" class="ms-1 text-sm font-medium text-gray-700 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white md:ms-2">My account</a>
+            <a href="{% url 'accounts_detail' %}" class="ms-1 text-sm font-medium text-gray-700 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white md:ms-2">My account</a>
           </div>
         </li>
         <li aria-current="page">
@@ -155,7 +156,7 @@
             <dd class="text-gray-500 dark:text-gray-400">{{ user.client.phone_number }}</dd>
           </dl>
           {% endif %}
-          <dl>
+          <dl class="hidden">
             <dt class="font-semibold text-gray-900 dark:text-white">Favorite pick-up point</dt>
             <dd class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <svg class="hidden h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500 lg:inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -169,6 +170,10 @@
               </svg>
               Herald Square, 2, New York, United States of America
             </dd>
+          </dl>
+          <dl>
+            <dt class="font-semibold text-gray-900 dark:text-white">Date Joined</dt>
+            <dd class="text-gray-500 dark:text-gray-400">{{ user.date_joined|naturaltime }}</dd>
           </dl>
         </div>
       </div>
@@ -255,40 +260,7 @@
     </div>
   </div>
   <!-- Account Information Modal -->
-  <div id="accountInformationModal2" tabindex="-1" aria-hidden="true" class="max-h-auto fixed left-0 right-0 top-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden antialiased md:inset-0">
-    <div class="max-h-auto relative max-h-full w-full max-w-lg p-4">
-      <!-- Modal content -->
-      <div class="relative rounded-lg bg-white shadow">
-        <!-- Modal header -->
-        <div class="flex items-center justify-between rounded-t border-b border-gray-200 p-4 md:p-5">
-          <h3 class="text-lg font-semibold text-gray-900">Account Information</h3>
-          <button type="button" class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="accountInformationModal2">
-            <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-            </svg>
-            <span class="sr-only">Close modal</span>
-          </button>
-        </div>
-        <!-- Modal body -->
-        <form class="p-4 md:p-5" hx-post=".">
-          {% csrf_token %}
-          <div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {% for field in form.visible_fields %}
-            <div class="col-span-2">
-              <label for="{{ filed.id_for_label }}" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"> {{ field.label }}* </label>
-              {% render_field field class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-indigo-500 dark:focus:ring-indigo-500" %}
-            </div>
-            {% endfor %}
-          </div>
-          <div class="border-t border-gray-200 pt-4 dark:border-gray-700 md:pt-5">
-            <button type="submit" class="me-2 inline-flex items-center rounded-lg bg-indigo-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-800 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Save information</button>
-            <a href="{% url 'change_password' %}" class="me-2 inline-flex items-center rounded-lg bg-indigo-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-800 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Change Password</a>
-            <button type="button" data-modal-toggle="accountInformationModal2" class="me-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  {% include "helpers/accounts/forms/modal.html" %}
 
   <div id="deleteOrderModal" tabindex="-1" aria-hidden="true" class="fixed left-0 right-0 top-0 z-50 hidden h-modal w-full items-center justify-center overflow-y-auto overflow-x-hidden md:inset-0 md:h-full">
       <div class="relative h-full w-full max-w-md p-4 md:h-auto">
@@ -314,5 +286,6 @@
       </div>
   </div>
 </section>
+<c-footer />
 <script src="{% static 'js/dict/flowbite.min.js' %}"></script>
 {% endblock %}

@@ -17,6 +17,7 @@ from .models import (
     NIGERIA_PHONE_NUMBER,
     Client
 )
+from helpers.forms.mixins import TailwindRenderFormMixin
 
 User = get_user_model()
 
@@ -157,7 +158,7 @@ class RegisterForm(UserCreationForm):
         return kwargs
 
 
-class AccountForm(forms.ModelForm):
+class AccountForm(TailwindRenderFormMixin, forms.ModelForm):
 
     field_order = (
         "username",
