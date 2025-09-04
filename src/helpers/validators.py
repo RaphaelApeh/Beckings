@@ -1,5 +1,6 @@
-from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 
 
 class PhoneNumberValidator(RegexValidator):
@@ -11,3 +12,19 @@ class PhoneNumberValidator(RegexValidator):
     
     regex = r"^(?:\+234|0)[789][01]\d{8}$"
     flags = 0
+
+
+def validate_phone_number(phone_number, user=None):
+    from clients.models import Client
+
+    PhoneNumberValidator()(phone_number)
+    if Client.objects.filter(phone_number__iexact=phone_number).exists():
+        raise ValidationError("Phone Number already exists.")
+    if user is None:
+        return
+    obj = user.client
+    if not obj.phone_number:
+        raise ValidationError("No Phone Number.")
+    if Client.objects.exclude(pk=obj.pk).filter(phone_number__iexact=phone_number).exists():
+        raise ValidationError("Phone Number already exists.")
+    

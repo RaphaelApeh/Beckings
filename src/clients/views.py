@@ -50,7 +50,7 @@ class LoginView(FormRequestMixin, FormView):
         kwargs = super().get_initial()
         if not email:
             return kwargs
-        kwargs = {"email": email, **(kwargs or {})}
+        kwargs = {"login": email, **(kwargs or {})}
         return kwargs
 
     def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:

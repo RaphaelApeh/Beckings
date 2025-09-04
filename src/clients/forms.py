@@ -18,6 +18,7 @@ from .models import (
     Client
 )
 from helpers.forms.mixins import TailwindRenderFormMixin
+from helpers.validators import validate_phone_number
 
 User = get_user_model()
 
@@ -25,6 +26,28 @@ User = get_user_model()
 class PasswordField(forms.CharField):
 
     widget = forms.PasswordInput
+
+
+class EmailCheckMixin:
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not User.objects.filter(email__iexact=email).exists():
+            return email
+        self.add_error("email", "Email already exists.")
+
+
+class PhoneNumberCheckMixin(EmailCheckMixin):
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get("phone_number")
+        add_error = partial(self.add_error, "phone_number")
+        if not phone_number:
+            add_error("Phone Number must not be empty.")
+        if not bool(NIGERIA_PHONE_NUMBER.match(phone_number)):
+            add_error("Phone Number not match.")
+        validate_phone_number(phone_number)
+        return phone_number
 
 
 class LoginForm(forms.Form):
@@ -65,7 +88,7 @@ class LoginForm(forms.Form):
         return super().clean()
 
 
-class RegisterForm(UserCreationForm):
+class RegisterForm(PhoneNumberCheckMixin, UserCreationForm):
 
     phone_number = forms.RegexField(
         regex=PHONE_NUMBER_REGEX,
@@ -88,24 +111,6 @@ class RegisterForm(UserCreationForm):
         for field in self.fields:
             self.fields[field].help_text = ""
             self.fields[field].widget.attrs.update({"class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"})
-
-    
-    def clean(self):
-        email = self.cleaned_data["email"]
-        if User.objects.filter(email__iexact=email).exists():
-            self.add_error("email", "Email already exists.")
-        return super().clean()
-    
-    def clean_phone_number(self):
-        phone_number = self.cleaned_data.get("phone_number")
-        add_error = partial(self.add_error, "phone_number")
-        if not phone_number:
-            add_error("Phone Number must not be empty.")
-        if not bool(NIGERIA_PHONE_NUMBER.match(phone_number)):
-            add_error("Phone Number not match.")
-        if Client.objects.filter(phone_number__iexact=phone_number).exists():
-            add_error("Something Went Wrong.")
-        return phone_number
 
 
     def save(self, commit = True):
@@ -158,7 +163,7 @@ class RegisterForm(UserCreationForm):
         return kwargs
 
 
-class AccountForm(TailwindRenderFormMixin, forms.ModelForm):
+class AccountForm(PhoneNumberCheckMixin, TailwindRenderFormMixin, forms.ModelForm):
 
     field_order = (
         "username",
