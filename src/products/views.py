@@ -35,7 +35,6 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers._typing import HTMXHttpRequest
-from helpers.resources import OrderResource
 from clients.views import FormRequestMixin
 from .models import (
     Product,
@@ -438,16 +437,12 @@ class OrderExportView(
             return self.form_valid(form)
         return self.form_invalid(form)
 
-    def form_invalid(self, form) -> HttpResponse:
-        format = self.request.GET.get("format")
-        return HttpResponse(f"Error:\n Invalid format, But got \"{format}\".")
 
     def form_valid(self, form) -> HttpResponse:
-        format = form.cleaned_data["format"]
-        model = self.get_queryset().model
+        qs = self.get_queryset()
+        model = qs.model
         object_name = model._meta.object_name
-        dataset = OrderResource().export(self.get_queryset())
-        export_data = format.export_data(dataset)
+        format, export_data = form.export_data(self.request, qs)
         response = (
             HttpResponse(
                 export_data, 

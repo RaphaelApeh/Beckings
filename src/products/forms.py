@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from import_export.formats import base_formats
 
 from .models import Product, Order
+from helpers.resources import OrderResource
 from helpers.enum import OrderStatusChoices
 from helpers.forms import FormatChoiceField
 from .order_utils import AddOrder
@@ -229,6 +230,12 @@ class ExportForm(forms.Form):
             object_name.lower(), 
             format.get_extension()
         )
+    
+    def export_data(self, request, queryset, **kwargs):
+
+        format = self.cleaned_data["format"]
+        dataset = OrderResource().export(queryset, **kwargs) # export fields
+        return format, format.export_data(dataset)
 
 
 class OrderActionForm(forms.Form):
