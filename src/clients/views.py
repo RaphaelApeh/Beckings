@@ -1,4 +1,5 @@
 from typing import Any
+from functools import partial
 
 from django.conf import settings
 from django.contrib import messages
@@ -20,7 +21,9 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth import logout, login, REDIRECT_FIELD_NAME
 from django.utils.translation import gettext_lazy as _
 
-from .forms import (LoginForm, RegisterForm)
+from django_htmx.http import HttpResponseClientRedirect
+
+from .forms import AccountForm, LoginForm, RegisterForm
 
 
 User = get_user_model()
@@ -198,7 +201,18 @@ class LogoutView(LoginRequiredMixin, TemplateView):
     
 
 
-class UserAccountView(LoginRequiredMixin, TemplateView):
+class UserAccountView(LoginRequiredMixin, FormView):
 
     template_name = "accounts/overview.html"
+    form_class = partial(AccountForm, prefix=False)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.request.user
+        return kwargs
+    
+    def form_valid(self, form):
+        form.save()
+        return HttpResponseClientRedirect(
+            redirect_to=self.request.get_full_path()
+        )

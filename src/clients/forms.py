@@ -4,6 +4,7 @@ from django import forms
 from django.core import mail
 from django.conf import settings
 from django.urls import reverse
+from django.forms.models import construct_instance
 from django.template.loader import get_template
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
@@ -122,10 +123,9 @@ class RegisterForm(UserCreationForm):
     
     def send_email(self, request, user, subject="", body=None):
         
-        assert (
-            (request.user.is_authenticated or user.is_active) or \
-            not getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True)
-        )
+        if request.user.is_authenticated or user.is_active or not \
+            getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True):
+            return
         
         if not subject:
             subject = _("Account Activation")
@@ -156,3 +156,64 @@ class RegisterForm(UserCreationForm):
         kwargs["name"] = self.cleaned_data["username"]
         return kwargs
 
+
+class AccountForm(forms.ModelForm):
+
+    field_order = (
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "address",
+        "phone_number"
+    )
+
+    address = forms.CharField(
+        widget=forms.Textarea,
+        required=False
+    )
+    phone_number = forms.RegexField(
+    regex=PHONE_NUMBER_REGEX,
+    widget=forms.TelInput({
+        "pattern": PHONE_NUMBER_REGEX,
+        "title": "Enter a valid phone number e.g(+2348139582053)"
+    })
+    )
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+
+        )
+        
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._init_client()
+
+    
+    def _init_client(self) -> None:
+
+        user = self.instance
+        try:
+            instance = Client.objects.get(user_id=user.pk)
+        except Client.DoesNotExist:
+            print("Error")
+            return
+        instance_dict = forms.model_to_dict(instance, exclude=["user"])
+        self.initial.update(instance_dict)
+
+    
+    def save(self, commit=True):
+        instance = super().save(commit)
+        obj = instance.client
+        obj = (
+            construct_instance(
+                self, obj, 
+                fields=["phone_number", "address"]
+            )
+        )
+        obj.save()        
+        return instance

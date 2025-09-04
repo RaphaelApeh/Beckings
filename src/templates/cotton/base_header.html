@@ -29,9 +29,16 @@
                         Orders
                     </a>
                 {% else %}
-                    <a href="{% url 'products' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
-                        Products
-                    </a>
+                    {% url 'accounts_detail' as profile %}
+                    {% if request.path == profile %}
+                        <a href="{% url 'products' %}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                            Product
+                        </a>
+                    {% else %}
+                        <a href="{{ profile }}" class="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-indigo-900">
+                            Profile
+                        </a>
+                    {% endif %}
                 {% endif %}
                 <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-black border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" data-rounded="rounded-md" data-primary="indigo-600">
                     Logout
