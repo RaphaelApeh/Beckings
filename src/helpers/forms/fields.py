@@ -1,7 +1,8 @@
 from collections import OrderedDict
-from typing import Any, Union, Generator
+from typing import Any, Union, Generator, TypeVar
 
-from django.forms.fields import ChoiceField
+from django.forms.fields import Field, ChoiceField
+from django.core.exceptions import ValidationError
 
 from import_export.formats.base_formats import Format
 
@@ -10,8 +11,11 @@ __all__ = [
     "FormatChoiceField"
 ]
 
-class FormatChoiceField(ChoiceField):
+T = TypeVar("T")
 
+
+class FormatChoiceField(ChoiceField):
+    """Form field for django-import-export Format class"""
 
     def __init__(self, formats=(), encoding=None, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -65,9 +69,14 @@ class FormatChoiceField(ChoiceField):
             return choices
         return OrderedDict(choices)
 
-    def clean(self, value) -> Union[Any, None]:
-
-        value = super().clean(value)
-        return self.formats.get(value)
+    def to_python(self, value) -> T:
+        if value in self.empty_values:
+            return None
+        format = self.formats.get(value)
+        if format is not None:
+            return format
+        raise ValidationError(self.error_messages["invalid"])
     
+    def validate(self, value):
+        Field.validate(self, value)
 
