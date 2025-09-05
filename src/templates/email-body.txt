@@ -1,4 +1,10 @@
-Thank You {{ name }}, For Signing in Beckings.
-Activate your account through this link:
+Hi {{ name }},
+
+Thank you for signing up for Beckings.
+To complete your account registration and activate your account, please use the verification link below:
+
 {{ url }}
 
+The link will expire in 24 hours.
+
+Thank You :).

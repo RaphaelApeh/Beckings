@@ -41,13 +41,12 @@ dependencies = [
     { name = "cookiecutter" },
     { name = "dj-database-url" },
     { name = "django" },
-    { name = "django-autoslug" },
     { name = "django-cotton" },
     { name = "django-crispy-forms" },
     { name = "django-filter" },
+    { name = "django-guardian" },
     { name = "django-htmx" },
     { name = "django-import-export" },
-    { name = "django-phonenumber-field" },
     { name = "django-redis" },
     { name = "django-tailwind" },
     { name = "django-unfold" },
@@ -78,13 +77,12 @@ requires-dist = [
     { name = "cookiecutter", specifier = ">=2.6.0" },
     { name = "dj-database-url", specifier = ">=2.3.0" },
     { name = "django", specifier = ">=5.2" },
-    { name = "django-autoslug", specifier = ">=1.9.9" },
     { name = "django-cotton", specifier = ">=2.0.3" },
     { name = "django-crispy-forms", specifier = ">=2.4" },
     { name = "django-filter", specifier = ">=25.1" },
+    { name = "django-guardian", specifier = ">=3.1.0" },
     { name = "django-htmx", specifier = ">=1.23.0" },
     { name = "django-import-export", specifier = ">=4.3.7" },
-    { name = "django-phonenumber-field", specifier = ">=8.1.0" },
     { name = "django-redis", specifier = ">=5.4.0" },
     { name = "django-tailwind", specifier = ">=4.0.1" },
     { name = "django-unfold", specifier = ">=0.62.0" },
@@ -289,15 +287,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-autoslug"
-version = "1.9.9"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6f/6e/6f454a5287127e03214dfd2df10fbd45df87674528ff73bf1fbb3536cdb4/django-autoslug-1.9.9.tar.gz", hash = "sha256:79f88e9433c1c88d8d3f2bec60d65ca98bffaff6c072b78aa5fd99d0e84a13dd", size = 25457 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/5c/37bed8c69ad42002a37ba161245342ca15f78a43c75b025ac465d696294c/django_autoslug-1.9.9-py2.py3-none-any.whl", hash = "sha256:81cb018944498f27f439d439687cf902212cafbdb8c74c8ca0307543a3d82907", size = 14392 },
-]
-
-[[package]]
 name = "django-cotton"
 version = "2.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -334,6 +323,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-guardian"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/75/39875736b3937e867444d7594a98db67a6c30ee7df819a17396e37be017a/django_guardian-3.1.0.tar.gz", hash = "sha256:5ada52485c2deeb8247980cf8090f7375508df12ddb1644ac0f8ffb373a57164", size = 92985 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/24/712831a5c80795bd849fc6ac7c6d3c464fd1bf184ef4617f9ba6f2d4cd99/django_guardian-3.1.0-py3-none-any.whl", hash = "sha256:91dd3f5edd97c179f49f9532c4e98007ebe65de12c790a34f5ce9a36a9b21766", size = 126930 },
+]
+
+[[package]]
 name = "django-htmx"
 version = "1.23.0"
 source = { registry = "https://pypi.org/simple" }
@@ -358,18 +359,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/57/ae/52275e8a49a963468f9f807c24df17416fad0220169a8e5d7bfd4778f17f/django_import_export-4.3.7.tar.gz", hash = "sha256:bd3fe0aa15a2bce9de4be1a2f882e2c4539fdbfdfa16f2052c98dd7aec0f085c", size = 2222150 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9d/ad/b1f4aef18fd4ab86ce68f3f0fff0e9c14e5fd2c866c47f0b1cfb9ccd85c8/django_import_export-4.3.7-py3-none-any.whl", hash = "sha256:5514d09636e84e823a42cd5e79292f70f20d6d2feed117a145f5b64a5b44f168", size = 142815 },
-]
-
-[[package]]
-name = "django-phonenumber-field"
-version = "8.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/95/4b/edec2f3e4b8f8048540d7d1844bc576a0bdb711e1f6a4cde364c505c865d/django_phonenumber_field-8.1.0.tar.gz", hash = "sha256:f19450625574ad3a2de047c409527d0e57699496849e71e53b53e8679ff67b27", size = 43854 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/98/0413e47d7d1fab0e5a81eda6caacdcba69d50f74f64b65febf943cbd1f1e/django_phonenumber_field-8.1.0-py3-none-any.whl", hash = "sha256:9ba66873bf47401b13fc57797fbf85e785864a6bfdc8b9daa3a9012886567045", size = 65208 },
 ]
 
 [[package]]

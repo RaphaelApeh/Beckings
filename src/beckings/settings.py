@@ -35,6 +35,7 @@ UNFOLD_APPS = (
     "unfold",
     "unfold.contrib.forms",
     "unfold.contrib.filters",
+    "unfold.contrib.guardian",
     "unfold.contrib.import_export",
 )
 
@@ -65,6 +66,7 @@ THIRD_PARTY_APPS = [
     "tailwind",
     "import_export",
     "django_filters",
+    "guardian",
 ]
 
 INTERNAL_APPS = [
@@ -162,7 +164,10 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     # default
     "django.contrib.auth.backends.ModelBackend",
-    
+
+    #guardian
+    "guardian.backends.ObjectPermissionBackend",
+        
     # email
     "clients.backends.EmailBackend"
 ]
