@@ -28,7 +28,7 @@ urlpatterns = [
     
     path(
         "change-password/done/",
-        auth_views.PasswordChangeDoneView.as_view(),
+        views.PasswordChangeDoneView.as_view(),
         name="change_password_done"),
     
     path(

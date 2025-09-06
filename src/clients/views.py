@@ -4,7 +4,7 @@ from functools import partial
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, resolve_url
 from django.core.exceptions import ValidationError
@@ -214,3 +214,26 @@ class UserAccountView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(
             redirect_to=self.request.get_full_path()
         )
+
+
+class PasswordChangeDoneView(TemplateView):
+
+    template_name = "accounts/password_change_done.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        password_change_url = request.build_absolute_uri(
+            resolve_url("change_password")
+        )
+        perv_url = request.META.get("HTTP_REFERER")
+        if perv_url != password_change_url:
+            msg = (
+                "You can't access this path"
+            )
+            return HttpResponseForbidden(msg)
+        logout(request)
+        messages.success(request, "Password change success")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("title", "Password Change done")
+        return super().get_context_data(**kwargs)
