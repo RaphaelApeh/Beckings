@@ -163,7 +163,10 @@ class RegisterForm(PhoneNumberCheckMixin, UserCreationForm):
         return kwargs
 
 
-class AccountForm(PhoneNumberCheckMixin, TailwindRenderFormMixin, forms.ModelForm):
+class AccountForm(
+    TailwindRenderFormMixin,
+    forms.ModelForm
+    ):
 
     field_order = (
         "username",
@@ -223,3 +226,16 @@ class AccountForm(PhoneNumberCheckMixin, TailwindRenderFormMixin, forms.ModelFor
         )
         obj.save()        
         return instance
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and not User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            return email
+        self.add_error("email", "Email already exists.")
+    
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get("phone_number")
+        if phone_number and not Client.objects.exclude(user_id=self.instance.pk).filter(phone_number=phone_number).exists():
+            return phone_number
+        self.add_error("phone_number", "Phone Number already exists.")
+

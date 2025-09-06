@@ -14,17 +14,12 @@ class PhoneNumberValidator(RegexValidator):
     flags = 0
 
 
-def validate_phone_number(phone_number, user=None):
+def validate_phone_number(phone_number):
     from clients.models import Client
 
     PhoneNumberValidator()(phone_number)
+    
     if Client.objects.filter(phone_number__iexact=phone_number).exists():
         raise ValidationError("Phone Number already exists.")
-    if user is None:
-        return
-    obj = user.client
-    if not obj.phone_number:
-        raise ValidationError("No Phone Number.")
-    if Client.objects.exclude(pk=obj.pk).filter(phone_number__iexact=phone_number).exists():
-        raise ValidationError("Phone Number already exists.")
+    
     

@@ -21,8 +21,6 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth import logout, login, REDIRECT_FIELD_NAME
 from django.utils.translation import gettext_lazy as _
 
-from django_htmx.http import HttpResponseClientRedirect
-
 from .forms import AccountForm, LoginForm, RegisterForm
 
 
@@ -46,11 +44,11 @@ class LoginView(FormRequestMixin, FormView):
     form_class = LoginForm
 
     def get_initial(self):
-        email = self.request.GET.get("email", None)
+        login = self.request.GET.get("login", None)
         kwargs = super().get_initial()
-        if not email:
+        if not login:
             return kwargs
-        kwargs = {"login": email, **(kwargs or {})}
+        kwargs = {"login": login, **(kwargs or {})}
         return kwargs
 
     def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
@@ -213,6 +211,6 @@ class UserAccountView(LoginRequiredMixin, FormView):
     
     def form_valid(self, form):
         form.save()
-        return HttpResponseClientRedirect(
+        return HttpResponseRedirect(
             redirect_to=self.request.get_full_path()
         )

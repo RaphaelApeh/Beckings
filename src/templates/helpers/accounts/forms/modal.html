@@ -13,7 +13,7 @@
           </button>
         </div>
         <!-- Modal body -->
-        <form class="p-4 md:p-5" hx-post=".">
+        <form class="p-4 md:p-5" method="post" action=".">
           {% csrf_token %}
           {{ form.as_tailwind }}
           <div class="border-t border-gray-200 pt-4 dark:border-gray-700 md:pt-5">
