@@ -1,5 +1,5 @@
 {% load humanize %}
-<article class="p-6 mb-3 ml-6 lg:ml-12 text-base bg-white rounded-lg">
+<article id="reply{{ object.pk }}" class="p-6 mb-3 ml-6 lg:ml-12 text-base bg-white rounded-lg">
     <p class="text-gray-400 text-sm">Replied to {{ comment.user.username }}</p>
     <footer class="flex justify-between items-center mb-2">
         <div class="flex items-center">
@@ -21,7 +21,9 @@
             <ul class="py-1 text-sm text-gray-700"
                 aria-labelledby="dropdownMenuIconHorizontalButton">
                 <li>
-                    <a href="#"
+                    <a hx-get="{% url 'reply_update' reply_id=object.pk %}"
+                        hx-target="#reply{{ object.pk }}"
+                        hx-swap="outerHTML"
                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
                 </li>
                 <li>

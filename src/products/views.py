@@ -718,6 +718,7 @@ class ReplyUpdateView(
     model = Reply
     template_name = "helpers/replies/form.html"
     object = None
+    pk_url_kwarg = "reply_id"
 
     def form_valid(self, form):
         

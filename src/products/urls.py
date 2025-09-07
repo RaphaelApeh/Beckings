@@ -14,7 +14,8 @@ from .views import (
     CommentCreateView,
     CommentUpdateView,
     ReplyView,
-    ReplyDeleteView
+    ReplyDeleteView,
+    ReplyUpdateView
 )
 
 
@@ -93,8 +94,14 @@ urlpatterns = [
     ),
 
     path(
-        "replies/<int:reply_id>",
+        "replies/<int:reply_id>/delete/",
         ReplyDeleteView.as_view(),
         name="reply_delete"
     ),
+
+    path(
+        "replies/<int:reply_id>/update/",
+        ReplyUpdateView.as_view(),
+        name="reply_update"
+    )
 ]
