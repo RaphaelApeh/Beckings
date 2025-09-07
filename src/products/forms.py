@@ -11,6 +11,7 @@ from .models import Product, Order
 from helpers.resources import OrderResource
 from helpers.enum import OrderStatusChoices
 from helpers.forms import FormatChoiceField
+from helpers.forms.mixins import TailwindRenderFormMixin
 from .order_utils import AddOrder
 
 
@@ -65,7 +66,7 @@ class TextField(forms.CharField):
     widget = forms.Textarea
 
 
-class ProductForm(forms.ModelForm):
+class ProductForm(TailwindRenderFormMixin, forms.ModelForm):
 
     class Meta:
         model = Product 
@@ -77,28 +78,29 @@ class ProductForm(forms.ModelForm):
             "active"
         ]
     
-    def __init__(self, *args, **kwargs) -> None:
-        request = kwargs.pop("request", None)
-        assert request is not None
-        super().__init__(*args, **kwargs)
+    def __init__(self, request=None, *args, **kwargs) -> None:
         self.request = request
-        self.fields["active"].widget.attrs["class"] = "None"
+        super().__init__(*args, **kwargs)
+        self.fields["active"].widget.attrs["class"] = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
     @property
     def user(self):
-
+        if not hasattr(self, "request") and self.request is None:
+            
+            self._user = None
         if not getattr(self, "_user", None):
             self._user = self.request.user
-        assert self._user is not None
+        
         return self._user
 
     @user.setter
     def user(self, value) -> None:
         self._user = value
 
-    def save(self, commit=True) -> Product:
+    def save(self, request=None, commit=True) -> Product:
         instance = super().save(commit=False)
-        if instance.user is None:
+        self.request = request
+        if instance.user is None and self.user is not None:
             instance.user = self.user
         if commit:
             instance.save()

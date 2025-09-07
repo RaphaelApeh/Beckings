@@ -6,6 +6,10 @@ from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
 from django.db.models import QuerySet
+from django.forms import (
+    modelformset_factory, 
+    ModelForm
+)
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic import (
@@ -19,7 +23,8 @@ from django.views.generic.edit import FormMixin
 from django.http import (
     Http404,
     HttpRequest,
-    HttpResponse
+    HttpResponse,
+    HttpResponseRedirect,
 )
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin, DeletionMixin
@@ -35,6 +40,7 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers._typing import HTMXHttpRequest
+from helpers.forms.mixins import TailwindRenderFormMixin
 from clients.views import FormRequestMixin
 from .models import (
     Product,
@@ -503,13 +509,25 @@ class UserOrderDeleteView(
 
 
 @method_decorator(staff_member_required(login_url="login"), name="dispatch")
-class ProductCreateView(FormRequestMixin,
-                        PermissionRequiredMixin,
-                        CreateView):
+class ProductCreateView(
+    PermissionRequiredMixin,
+    CreateView
+    ):
 
     template_name = "products/product_create.html"
-    form_class = ProductForm
     model = Product
+    class _ProductForm(TailwindRenderFormMixin, ModelForm):
+
+        class Meta:
+            model = Product
+            fields = [
+            "product_name",
+            "product_description",
+            "price",
+            "quantity",
+            "active"
+        ]
+    form_class = _ProductForm
     permission_required = "%(app_name)s.add_%(model_name)s"
 
     def get_permission_required(self):
@@ -526,12 +544,58 @@ class ProductCreateView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"
-        return super().get_context_data(**kwargs)
+        kwargs = super().get_context_data(**kwargs)
+        kwargs.update(
+            formset=self.get_form(),
+            form=None
+        )
+        return kwargs
 
-    def form_valid(self, form):
-        self.object = instance = form.save()
-        messages.success(self.request, "%s created success" % instance)
-        return HttpResponseClientRedirect(self.get_success_url())
+    def form_valid(self, formset):
+        request = self.request
+        saved_objs = set()
+        total_objs = len(formset.cleaned_data)
+        deleted_objs = len([data for data in formset.cleaned_data if data.get("DELETE")])
+        skipped = 0
+        for form in formset:
+            if form.is_valid() and not form.cleaned_data.get("DELETE", False):
+                obj = form.save()
+                saved_objs.add(obj)
+            else:
+                skipped += 1
+        msg = f"Saved {len(saved_objs)} Item(s), Total {total_objs} Item(s), Skipped {skipped} Item(s), Deleted {deleted_objs} Item(s)."
+        if skipped > len(saved_objs):
+            messages.warning(request, msg)
+        elif not len(saved_objs) and deleted_objs:
+            messages.error(request, msg)
+        else:
+            messages.success(self.request, msg)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return self.request.path
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        qs = self.get_queryset().none()
+        kwargs.setdefault("queryset", qs)
+        kwargs.pop("instance", None)
+        return kwargs
+    
+    def get_form_class(self):
+        model = self.get_queryset().model
+        assert hasattr(self, "form_class") and self.form_class is not None
+        return (
+            modelformset_factory(
+                model,
+                extra=1,
+                form=self.form_class,
+                fields=self.form_class._meta.fields,
+                exclude=self.form_class._meta.exclude,
+                can_delete=True
+            )
+        )
+    
 
 
 product_create_view = ProductCreateView.as_view()
