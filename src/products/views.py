@@ -588,11 +588,12 @@ class ProductCreateView(
         return (
             modelformset_factory(
                 model,
-                extra=1,
+                extra=0,
                 form=self.form_class,
                 fields=self.form_class._meta.fields,
                 exclude=self.form_class._meta.exclude,
-                can_delete=True
+                can_delete=True,
+                max_num=5
             )
         )
     
