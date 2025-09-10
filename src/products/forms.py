@@ -283,3 +283,19 @@ class SearchForm(forms.Form):
         widget=forms.SearchInput # 5.2
     )
 
+class ProductFormsetForm(TailwindRenderFormMixin, forms.ModelForm):
+
+        class Meta:
+            model = Product
+            fields = [
+            "product_name",
+            "product_description",
+            "price",
+            "quantity",
+            "active"
+        ]
+
+ProductFormset = forms.modelformset_factory(
+    Product,
+    ProductFormsetForm
+)

@@ -6,18 +6,13 @@ from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
 from django.db.models import QuerySet
-from django.forms import (
-    modelformset_factory, 
-    ModelForm
-)
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic import (
     View,
     ListView,
     DetailView,
-    FormView,
-    CreateView
+    FormView
     )
 from django.views.generic.edit import FormMixin
 from django.http import (
@@ -40,7 +35,9 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers._typing import HTMXHttpRequest
-from helpers.forms.mixins import TailwindRenderFormMixin
+from helpers.mixins import (
+    ModelFormsetView
+)
 from clients.views import FormRequestMixin
 from .models import (
     Product,
@@ -54,7 +51,8 @@ from .forms import (
     ExportForm,
     CommentForm,
     ReplyForm,
-    SearchForm
+    SearchForm,
+    ProductFormset
 )
 from .filters import (
     ProductFilter,
@@ -511,23 +509,13 @@ class UserOrderDeleteView(
 @method_decorator(staff_member_required(login_url="login"), name="dispatch")
 class ProductCreateView(
     PermissionRequiredMixin,
-    CreateView
+    ModelFormsetView
     ):
 
     template_name = "products/product_create.html"
     model = Product
-    class _ProductForm(TailwindRenderFormMixin, ModelForm):
-
-        class Meta:
-            model = Product
-            fields = [
-            "product_name",
-            "product_description",
-            "price",
-            "quantity",
-            "active"
-        ]
-    form_class = _ProductForm
+    formset_class = ProductFormset
+    for_creation = True
     permission_required = "%(app_name)s.add_%(model_name)s"
 
     def get_permission_required(self):
@@ -544,15 +532,9 @@ class ProductCreateView(
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"
-        kwargs = super().get_context_data(**kwargs)
-        kwargs.update(
-            formset=self.get_form(),
-            form=None
-        )
-        return kwargs
+        return super().get_context_data(**kwargs)
 
-    def form_valid(self, formset):
-        request = self.request
+    def formset_valid(self, request, formset):
         saved_objs = set()
         total_objs = len(formset.cleaned_data)
         deleted_objs = len([data for data in formset.cleaned_data if data.get("DELETE")])
@@ -574,28 +556,6 @@ class ProductCreateView(
     
     def get_success_url(self):
         return self.request.path
-    
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        qs = self.get_queryset().none()
-        kwargs.setdefault("queryset", qs)
-        kwargs.pop("instance", None)
-        return kwargs
-    
-    def get_form_class(self):
-        model = self.get_queryset().model
-        assert hasattr(self, "form_class") and self.form_class is not None
-        return (
-            modelformset_factory(
-                model,
-                extra=0,
-                form=self.form_class,
-                fields=self.form_class._meta.fields,
-                exclude=self.form_class._meta.exclude,
-                can_delete=True,
-                max_num=5
-            )
-        )
     
 
 
