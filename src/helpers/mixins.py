@@ -3,11 +3,15 @@ from django.forms import (
     modelformset_factory
 )
 from django.http import HttpResponseRedirect
-from django.views.generic.base import TemplateResponseMixin, View
+from django.views.generic.base import (
+    TemplateResponseMixin, 
+    ContextMixin,
+    View
+)
 from django.core.exceptions import ImproperlyConfigured
 
 
-class FormsetMixin(TemplateResponseMixin):
+class FormsetMixin(TemplateResponseMixin, ContextMixin):
 
     form_class = None
     formset_class = None
@@ -78,6 +82,7 @@ class ModelFormsetMixin(FormsetMixin):
     queryset = None
     success_url = None
     for_creation = False
+    template_suffix = "_formset"
 
 
     def get_queryset(self):
@@ -93,6 +98,12 @@ class ModelFormsetMixin(FormsetMixin):
 
     def get_formset_class(self):
 
+        if self.formset_class and self.form_class:
+            raise ImproperlyConfigured(
+                "Cannot set both %(cls)s.formset_class and %(cls)s.form_class" % (
+                    {"cls": self.__class__.__name__}
+                )
+            )
         if self.formset_class:
             return self.formset_class
         
@@ -141,6 +152,25 @@ class ModelFormsetMixin(FormsetMixin):
         )
         return kwargs
     
+    def get_template_names(self):
+        
+        if isinstance(self.template_name, str):
+            template_name = (self.template_name,)
+        else:
+            template_name = self.template_name
+        if template_name:
+            return template_name
+            
+        opts = self.get_queryset().model._meta
+        template_name = (
+            "%(app_label)s/%(model_name)s%(suffix)s.html"
+        ) % {
+            "app_label": opts.app_label, 
+            "model_name": opts.object_name.lower(),
+            "suffix": self.template_suffix
+            }
+        return (template_name,)
+    
     
     def formset_valid(self, request, formset):
         formset.save()
@@ -160,7 +190,26 @@ class ModelFormsetMixin(FormsetMixin):
 class ModelFormsetView(ModelFormsetMixin, View):
     """
     Model formset View
+
+    Attributes:
+        template_name (str)
+        model (Model, optional)
+        queryset (Queryset, optional)
+        formset_class (BaseFormset, optional)
+        success_url (str, optional)
+        for_creation (bool)
+        form_class (Form, optional)
+        fields (list, optional)
+        exclude (list, optional)
+    
+    Example:
+        >>> class AuthorCreateView(ModelFormsetView):
+        ...          model = Author
+        ...          template_name = "authors/create.html"
+        ...          formset_class = AuthorFormset
+        ...          for_creation = True
     """
+
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()

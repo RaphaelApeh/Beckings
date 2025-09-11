@@ -540,6 +540,7 @@ class ProductCreateView(
         deleted_objs = len([data for data in formset.cleaned_data if data.get("DELETE")])
         skipped = 0
         for form in formset:
+            form.request = request
             if form.is_valid() and not form.cleaned_data.get("DELETE", False):
                 obj = form.save()
                 saved_objs.add(obj)
