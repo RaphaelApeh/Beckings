@@ -28,8 +28,9 @@ function handleFormSet(event){
         errorMsg.classList.remove("hidden");
         const innerDiv = document.createElement("div");
         innerDiv.setAttribute("class", "text-sm opacity-80");
-        innerDiv.innerText = msg
-        errorMsg.appendChild(innerDiv)
+        innerDiv.innerText = msg;
+        errorMsg.appendChild(innerDiv);
+        addBtn.classList.add("hidden");
         return
     }
     totalForm.append(cloneForm);

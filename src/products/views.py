@@ -29,7 +29,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
-
+from guardian.shortcuts import assign_perm
 from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -543,6 +543,11 @@ class ProductCreateView(
             form.request = request
             if form.is_valid() and not form.cleaned_data.get("DELETE", False):
                 obj = form.save()
+                assign_perm(
+                    "add_product",
+                    request.user,
+                    obj
+                )
                 saved_objs.add(obj)
             else:
                 skipped += 1
