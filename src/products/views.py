@@ -26,10 +26,10 @@ from django.views.generic.edit import ModelFormMixin, DeletionMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.decorators import permission_required
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
 from guardian.shortcuts import assign_perm
+from guardian.decorators import permission_required_or_403
 from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -65,6 +65,7 @@ require_htmx_m = method_decorator(require_htmx, name="dispatch")
 never_cache_m = method_decorator(never_cache, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
+DEFAULT_OBJECT_PERM = "view_product"
 QUERY_SEACRH = "search"
 
 
@@ -145,6 +146,7 @@ class ProductDetailView(FormRequestMixin,
             return self.htmx_get(request, *args, **kwargs)
         return super().get(request, *args, **kwargs)
 
+    @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
     def post(self, request, *args, **kwargs):
 
         form = self.get_form()
@@ -155,6 +157,7 @@ class ProductDetailView(FormRequestMixin,
     def form_invalid(self, request, form):
         return super().form_invalid(form)
     
+    @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
     def put(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
 
@@ -214,7 +217,7 @@ class ProductDetailView(FormRequestMixin,
         return kw
 
     @require_htmx
-    @permission_required("products.delete_product")
+    @permission_required_or_403(DEFAULT_OBJECT_PERM)
     def product_delete_view(request, *args, **kwargs) -> HttpResponse:
         
         def get_object() -> Product:
