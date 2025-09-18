@@ -14,6 +14,7 @@ from import_export.admin import (
     ExportMixin,
     ExportActionMixin,
     )
+from guardian.admin import GuardedModelAdminMixin
 from unfold.admin import ModelAdmin, GenericStackedInline
 
 from helpers import resources
@@ -75,6 +76,7 @@ class ReplyAdmin(ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(
+                GuardedModelAdminMixin,
                 ImportExportMixin,
                 ExportActionMixin, 
                 ModelAdmin
