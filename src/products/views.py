@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TypeVar, NoReturn
+from typing import Any, TypeVar
 
 from django.urls import reverse
 from django.db import transaction
@@ -21,14 +21,13 @@ from django.http import (
     HttpResponse,
     HttpResponseRedirect,
 )
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.edit import ModelFormMixin, DeletionMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.cache import never_cache
 from django.contrib.admin.views.decorators import staff_member_required
-from guardian.shortcuts import assign_perm
+from guardian.shortcuts import assign_perm, get_perms
 from guardian.decorators import permission_required_or_403
 from django_filters.views import FilterView
 from django_htmx.http import HttpResponseClientRedirect
@@ -100,8 +99,9 @@ class ProductListView(ListView):
 
 
 class ProductDetailView(FormRequestMixin, 
-                        ModelFormMixin, 
-                        DetailView):
+                        ModelFormMixin,
+                        DetailView
+                        ):
     http_method_names = (
         "get",
         "post",
@@ -116,13 +116,8 @@ class ProductDetailView(FormRequestMixin,
     )
     template_name = "products/product-detail.html"
     query_pk_and_slug = True
+    slug_url_kwarg = "product_slug"
     form_class = ProductForm
-    permission_map = {
-        # GET is accessible to every user.
-        "POST": "{app_label}.add_{model_name}",
-        "PUT": "{app_label}.change_{model_name}",
-        "DELETE": "{app_label}.delete_{model_name}",
-    }
     method_map = {
         "post": "add_product",
         "put": "change_product",
@@ -146,9 +141,13 @@ class ProductDetailView(FormRequestMixin,
             return self.htmx_get(request, *args, **kwargs)
         return super().get(request, *args, **kwargs)
 
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
     @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
     def post(self, request, *args, **kwargs):
-
+        self.check_method_perm(request)
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(request, form)
@@ -157,30 +156,24 @@ class ProductDetailView(FormRequestMixin,
     def form_invalid(self, request, form):
         return super().form_invalid(form)
     
+    def check_method_perm(self, request):
+        obj = self.get_object()
+        if self.method_map[request.method.lower()] \
+            not in get_perms(request.user, obj):
+            self.permission_denied()
+
     @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
     def put(self, request, *args, **kwargs):
+        self.check_method_perm(request)
         return self.post(request, *args, **kwargs)
 
     def htmx_get(self, request, *args, **kwargs):
-        self.object = None
         return self.render_to_response(self.get_context_data())
 
     def get_form_kwargs(self) -> dict:
         kwargs = super().get_form_kwargs()
         kwargs.update({"instance": self.get_object()})
         return kwargs
-
-    def get_object(self, queryset: T = None) -> Product:
-
-        model = queryset.model if queryset is not None else None or self.get_queryset().model
-        kwargs = {"pk": self.kwargs["pk"], "product_slug": self.kwargs["slug"]}
-        obj = get_object_or_404(model, **kwargs)
-        self.object = obj
-        return obj
-    
-    def dispatch(self, request, *args, **kwargs):
-        self.check_user_permission(request)
-        return super().dispatch(request, *args, **kwargs)
 
     def delete_object(self, instance) -> None:
         instance.delete()
@@ -191,31 +184,6 @@ class ProductDetailView(FormRequestMixin,
         messages.success(request, "Object Save")
         return HttpResponseClientRedirect(self.object.get_absolute_url())
 
-    def check_user_permission(self, request) -> NoReturn:
-        
-        user = request.user
-        model = self.model or self.get_queryset().model
-        permissions = self.perms(model)
-        for method, perm in permissions.items():
-            if request.method == method and not self.has_perm(user, perm):
-                self.permission_denied()
-
-    def has_perm(self, user, perm) -> bool:
-        return user.is_authenticated and all([user.has_perm(perm), user.is_staff])
-
-    @property
-    def permissions(self):
-        kw = {}
-        user = self.request.user
-        model = self.get_queryset().model
-        method_map = self.method_map
-        for key, perm in self.perms(model).items():
-            method = method_map.get(key.lower())
-            assert method is not None
-            kw[method] = self.has_perm(user, perm)
-        
-        return kw
-
     @require_htmx
     @permission_required_or_403(DEFAULT_OBJECT_PERM)
     def product_delete_view(request, *args, **kwargs) -> HttpResponse:
@@ -224,6 +192,8 @@ class ProductDetailView(FormRequestMixin,
             obj = get_object_or_404(Product, **kwargs)
             return obj
         instance = get_object()
+        if "delete_product" not in get_perms(request.user, instance):
+            raise PermissionDenied
         if request.method in ("POST", "DELETE"):
             messages.success(request, "%s deleted successfully" % instance)
             with transaction.atomic():
@@ -235,20 +205,11 @@ class ProductDetailView(FormRequestMixin,
     staticmethod(product_delete_view)
 
     def get_context_data(self, **kwargs):
-        kwargs = {**self.permissions, **kwargs}
         kwargs["export_form"] = ExportForm()
         kwargs["comment_form"] = (
             CommentForm(**self.get_comment_form_initial_kwargs(self.request))
         )
         return super().get_context_data(**kwargs)
-
-    def perms(self, model_class: Any) -> dict[str, str]:
-        opts = model_class._meta
-        kwargs = {
-            "app_label": opts.app_label,
-            "model_name": opts.verbose_name
-        }
-        return {k: v.format(**kwargs) for (k, v) in self.permission_map.items()}
 
     def get_comment_form_initial_kwargs(self, request, **kwargs):
         
@@ -509,28 +470,19 @@ class UserOrderDeleteView(
         return self.delete(request, *args, **kwargs)
 
 
-@method_decorator(staff_member_required(login_url="login"), name="dispatch")
-class ProductCreateView(
-    PermissionRequiredMixin,
-    ModelFormsetView
-    ):
+@method_decorator(
+    (
+    staff_member_required(login_url="login"),
+    permission_required_or_403("products.add_product")
+    ), 
+    name="dispatch"
+)
+class ProductCreateView(ModelFormsetView):
 
     template_name = "products/product_create.html"
     model = Product
     formset_class = ProductFormset
     for_creation = True
-    permission_required = "%(app_name)s.add_%(model_name)s"
-
-    def get_permission_required(self):
-        opts = self.model._meta
-        kwargs = {
-            "app_name": opts.app_label,
-            "model_name": opts.model_name
-
-        }
-        self.permission_required = self.permission_required % kwargs
-        
-        return super().get_permission_required()
 
 
     def get_context_data(self, **kwargs):
@@ -565,8 +517,6 @@ class ProductCreateView(
     
     def get_success_url(self):
         return self.request.path
-    
-
 
 product_create_view = ProductCreateView.as_view()
 
