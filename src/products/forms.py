@@ -85,23 +85,17 @@ class ProductForm(TailwindRenderFormMixin, forms.ModelForm):
 
     @property
     def user(self):
-        if not hasattr(self, "request") and self.request is None:
-            
-            self._user = None
         if not getattr(self, "_user", None):
             self._user = self.request.user
-        
         return self._user
 
     @user.setter
     def user(self, value) -> None:
         self._user = value
 
-    def save(self, request=None, commit=True) -> Product:
+    def save(self, commit=True) -> Product:
         instance = super().save(commit=False)
-        self.request = request
-        if instance.user is None and self.user is not None:
-            instance.user = self.user
+        instance.user = self.user
         if commit:
             instance.save()
         return instance

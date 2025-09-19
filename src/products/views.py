@@ -64,7 +64,7 @@ require_htmx_m = method_decorator(require_htmx, name="dispatch")
 never_cache_m = method_decorator(never_cache, name="dispatch")
 
 T = TypeVar("T", bound=QuerySet)
-DEFAULT_OBJECT_PERM = "view_product"
+DEFAULT_OBJECT_PERM = "user_product"
 QUERY_SEACRH = "search"
 
 
@@ -118,16 +118,11 @@ class ProductDetailView(FormRequestMixin,
     query_pk_and_slug = True
     slug_url_kwarg = "product_slug"
     form_class = ProductForm
-    method_map = {
-        "post": "add_product",
-        "put": "change_product",
-        "delete": "delete_product",
-    }
 
     def get_template_names(self):
         
-        if self.request.htmx:
-            return ["products/partials/product_update.html"]
+        if self.request.htmx and self.request.method == "GET":
+            return ("products/partials/product_update.html",)
         
         assert self.template_name is not None
         assert isinstance(self.template_name, (str, list, tuple))
@@ -145,7 +140,6 @@ class ProductDetailView(FormRequestMixin,
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
     def post(self, request, *args, **kwargs):
         self.check_method_perm(request)
         form = self.get_form()
@@ -158,8 +152,7 @@ class ProductDetailView(FormRequestMixin,
     
     def check_method_perm(self, request):
         obj = self.get_object()
-        if self.method_map[request.method.lower()] \
-            not in get_perms(request.user, obj):
+        if DEFAULT_OBJECT_PERM not in get_perms(request.user, obj):
             self.permission_denied()
 
     @method_decorator(permission_required_or_403(DEFAULT_OBJECT_PERM))
@@ -182,17 +175,19 @@ class ProductDetailView(FormRequestMixin,
         form.save()
         self.object.refresh_from_db()
         messages.success(request, "Object Save")
-        return HttpResponseClientRedirect(self.object.get_absolute_url())
+        redirect_to = self.object.get_absolute_url()
+        if not request.htmx:
+            return HttpResponseRedirect(redirect_to)
+        return HttpResponseClientRedirect(redirect_to)
 
     @require_htmx
-    @permission_required_or_403(DEFAULT_OBJECT_PERM)
     def product_delete_view(request, *args, **kwargs) -> HttpResponse:
         
         def get_object() -> Product:
             obj = get_object_or_404(Product, **kwargs)
             return obj
         instance = get_object()
-        if "delete_product" not in get_perms(request.user, instance):
+        if DEFAULT_OBJECT_PERM not in get_perms(request.user, instance):
             raise PermissionDenied
         if request.method in ("POST", "DELETE"):
             messages.success(request, "%s deleted successfully" % instance)
@@ -471,10 +466,7 @@ class UserOrderDeleteView(
 
 
 @method_decorator(
-    (
-    staff_member_required(login_url="login"),
-    permission_required_or_403("products.add_product")
-    ), 
+    staff_member_required(login_url="login"), 
     name="dispatch"
 )
 class ProductCreateView(ModelFormsetView):
@@ -495,11 +487,11 @@ class ProductCreateView(ModelFormsetView):
         deleted_objs = len([data for data in formset.cleaned_data if data.get("DELETE")])
         skipped = 0
         for form in formset:
-            form.request = request
             if form.is_valid() and not form.cleaned_data.get("DELETE", False):
                 obj = form.save()
+                obj.user = request.user
                 assign_perm(
-                    "add_product",
+                    DEFAULT_OBJECT_PERM,
                     request.user,
                     obj
                 )

@@ -64,6 +64,9 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=["product_name"], name="product_name_index")
         ]
+        permissions = (
+            ("user_product", _("User Add/Update/Delete Product")),
+        )
 
 
     objects = ProductManager()
