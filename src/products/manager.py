@@ -16,3 +16,7 @@ class ProductManager(models.Manager):
         return self.annotate(search=_search).filter(search=query)
 
 
+    def active(self):
+        return self.filter(active=True)
+    
+

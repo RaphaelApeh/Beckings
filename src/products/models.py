@@ -5,7 +5,7 @@ from typing import Any
 
 from django.db import models
 from django.urls import reverse
-from django.utils.text import slugify
+from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
@@ -14,8 +14,9 @@ from django.contrib.contenttypes.fields import (
     GenericRelation
 )
 
-from cloudinary import CloudinaryImage #noqa
+from cloudinary.models import CloudinaryField
 
+from helpers.fields import AutoSlugField
 from helpers.enum import OrderStatusChoices
 from .manager import ProductManager
 
@@ -31,9 +32,9 @@ class Product(models.Model):
         db_index=True
     )
     product_description = models.TextField(null=True, blank=True)
-    product_slug = models.SlugField(blank=True, null=True, db_index=True)
+    product_slug = AutoSlugField(perform_from="product_name", blank=True, null=True, db_index=True)
     price = models.FloatField(default=1000.0)
-    # image = CloudinaryImage("image")
+    image = CloudinaryField("image", blank=True, null=True)
     active = models.BooleanField(default=True)
     quantities = None
     quantity = models.PositiveSmallIntegerField(default=1)
@@ -75,10 +76,6 @@ class Product(models.Model):
 
         return reverse("product-detail", kwargs={"pk": self.pk, "slug": self.product_slug})
     
-
-    def save(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
-        self.product_slug = slugify(self.product_name)
-        super().save(*args, **kwargs)
 
 
 def create_product(**kwargs: Any) -> Product:
@@ -124,6 +121,7 @@ class Order(models.Model):
                                 verbose_name=_("Manifest"))
     
     number_of_items = models.PositiveSmallIntegerField(default=0)
+    inactive_at = models.DateTimeField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=OrderStatusChoices.choices, default="pending")
 
@@ -137,6 +135,11 @@ class Order(models.Model):
 
     def can_delete(self):
         return ("pending",)
+    
+    def cancel(self):
+        self.status = "cancelled"
+        self.inactive_at = now()
+        self.save()
 
 
 class OrderProxy(Order):
