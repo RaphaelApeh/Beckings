@@ -172,10 +172,9 @@ class ProductDetailView(FormRequestMixin,
         instance.delete()
 
     def form_valid(self, request: HttpRequest, form):
-        form.save()
-        self.object.refresh_from_db()
+        obj = self.object = form.save()
         messages.success(request, "Object Save")
-        redirect_to = self.object.get_absolute_url()
+        redirect_to = obj.get_absolute_url()
         if not request.htmx:
             return HttpResponseRedirect(redirect_to)
         return HttpResponseClientRedirect(redirect_to)

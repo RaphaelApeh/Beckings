@@ -1,43 +1,43 @@
-import json
-from pathlib import Path
-
+from contextlib import contextmanager
 import pytest
-
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
+from products.models import Product
+from helpers.factories import ProductFactory
+
+@contextmanager
+def create_products(size=1):
+    ProductFactory.create_batch(size)
+    yield
 
 
 @pytest.mark.django_db
-def test_product_export(client, products_factory, user):
-
-    products_factory
+@create_products()
+def test_product_update(client, user):
+    obj = Product.objects.get()
     client.force_login(user)
-    response = client.get(reverse("export_import_product"), {"format": "json"})
+    response = client.put(
+        obj.get_absolute_url(), 
+        data={
+            "product_description": "Hello World"
+        },
+        HTMX_REQURST=True)
+    obj.refresh_from_db()
 
     assert response.status_code == 200
-
-    assert isinstance(json.loads(response.content), list)
+    assert obj.product_description == "Hello World"
 
 
 @pytest.mark.django_db
-def test_product_import(client, user, product):
-    
-    with open(Path().resolve() / "data.json", encoding="utf-8") as json_file:
-        file = SimpleUploadedFile(
-            "data.json",
-            content=json_file.read().encode(),
-            content_type="application/json"
-        )
+def test_product_delete(client, user):
+    obj = Product.objects.create(
+        user=user,
+        product_name="Test Product"
+    )
     client.force_login(user)
-    response = client.post(reverse("export_import_product"),
-                           data={
-                               "file": file,
-                               "format": "json"
-                           },
-                           follow=True)
-    
-    assert "Data Saved." in response.text
-    # TODO
-    print(product.objects.all()) # not savings to the db for some reason
-    #assert product.objects.count() == 1
-    
+    response = client.delete(
+        reverse("product_delete", args=(obj.pk, obj.product_slug)),
+        HTMX_REQURST=True)
+    obj.refresh_from_db()
+
+    assert response.status_code == 200
+    assert Product.objects.count() == 0
