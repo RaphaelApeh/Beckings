@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    ProductListView, 
+    ProductListView,
     ProductDetailView,
     product_search_view,
     AddOrderView,
@@ -15,93 +15,50 @@ from .views import (
     CommentUpdateView,
     ReplyView,
     ReplyDeleteView,
-    ReplyUpdateView
+    ReplyUpdateView,
 )
 
 
 urlpatterns = [
-
     path("", ProductListView.as_view(), name="products"),
-
-    path(
-        "<int:pk>/<slug:slug>/", 
-        ProductDetailView.as_view(),
-        name="product-detail"
-    ),
-
-    path(
-        "search/", 
-        product_search_view, 
-        name="product_search"
-    ),
-
+    path("<int:pk>/<slug:slug>/", ProductDetailView.as_view(), name="product-detail"),
+    path("search/", product_search_view, name="product_search"),
     path(
         "delete/<int:pk>/<slug:product_slug>/",
         ProductDetailView.product_delete_view,
-        name="product_delete"
+        name="product_delete",
     ),
-
     path("add/", product_create_view, name="product_create"),
-
     # Orders Path
     path("orders/", user_orders_view, name="user_orders"),
-
-    path(
-        "orders/add/<int:product_id>/", 
-        AddOrderView.as_view(), 
-        name="add_user_order"
-    ),
-
+    path("orders/add/<int:product_id>/", AddOrderView.as_view(), name="add_user_order"),
     path(
         "orders/delete/<int:order_id>/",
         UserOrderDeleteView.as_view(),
-        name="order_delete"
+        name="order_delete",
     ),
-
     path(
         "orders/detail/<uuid:order_id>/",
         UserOrderDetailView.as_view(),
-        name="order_user_detail"
+        name="order_user_detail",
     ),
-
-    path(
-        "orders/export/",
-        export_order_view,
-        name="export_order"
-    ),
-
-    path(
-        "comment/add/<int:pk>/", 
-        CommentCreateView.as_view(),
-        name="add_comment"
-        ),
-    
+    path("orders/export/", export_order_view, name="export_order"),
+    path("comment/add/<int:pk>/", CommentCreateView.as_view(), name="add_comment"),
     path(
         "comment/delete/<int:comment_id>/",
         CommentDeleteView.as_view(),
-        name="delete_comment"
+        name="delete_comment",
     ),
     path(
         "comment/update/<int:comment_id>/",
         CommentUpdateView.as_view(),
-        name="update_comment"
+        name="update_comment",
     ),
-
+    path("replies/<int:comment_id>/", ReplyView.as_view(), name="reply"),
     path(
-        "replies/<int:comment_id>/",
-        ReplyView.as_view(),
-        name="reply"
+        "replies/<int:reply_id>/delete/", ReplyDeleteView.as_view(), name="reply_delete"
     ),
-
     path(
-        "replies/<int:reply_id>/delete/",
-        ReplyDeleteView.as_view(),
-        name="reply_delete"
+        "replies/<int:reply_id>/update/", ReplyUpdateView.as_view(), name="reply_update"
     ),
-
-    path(
-        "replies/<int:reply_id>/update/",
-        ReplyUpdateView.as_view(),
-        name="reply_update"
-    )
 ]

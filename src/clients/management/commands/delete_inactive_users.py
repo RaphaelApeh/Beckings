@@ -11,6 +11,7 @@ UserModel = get_user_model()
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
 
     help = "Delete inactive user"
@@ -20,17 +21,21 @@ class Command(BaseCommand):
         parser.add_argument("--database", default="default")
 
     def handle(self, **options: Dict) -> None:
-    
-        assert getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True), "USE_ACCOUNT_ACTIVATION_VIEW is set to false.\n hint = USE_ACCOUNT_ACTIVATION_VIEW = True"
-        
+
+        assert getattr(
+            settings, "USE_ACCOUNT_ACTIVATION_VIEW", True
+        ), "USE_ACCOUNT_ACTIVATION_VIEW is set to false.\n hint = USE_ACCOUNT_ACTIVATION_VIEW = True"
+
         using = options.get("database")
-        default_timestamp = getattr(settings, "ACCOUNT_ACTIVATION_TIMESTAMP", timezone.timedelta(hours=23))
-        
+        default_timestamp = getattr(
+            settings, "ACCOUNT_ACTIVATION_TIMESTAMP", timezone.timedelta(hours=23)
+        )
+
         try:
             now = timezone.now()
             qs = UserModel._default_manager.using(using).filter(
-                    is_active=False, 
-                    date_joined__date=(now - default_timestamp))
+                is_active=False, date_joined__date=(now - default_timestamp)
+            )
             if count := len(qs):
                 qs.delete()
                 self.stdout.write(
@@ -40,4 +45,3 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING("No inactive users."))
         except Exception as e:
             logger.error(f"Error \n {str(e)}")
-

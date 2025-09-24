@@ -8,11 +8,11 @@ CLOUDINARY_SECRET_KEY = settings.CLOUDINARY_SECRET_KEY
 
 
 def init_cloudinary() -> None:
-          
-    cloudinary.config( 
-        cloud_name=CLOUDINARY_NAME, 
-        api_key=CLOUDINARY_API_KEY, 
-        api_secret=CLOUDINARY_SECRET_KEY 
+
+    cloudinary.config(
+        cloud_name=CLOUDINARY_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_SECRET_KEY,
     )
 
 

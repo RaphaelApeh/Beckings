@@ -18,20 +18,18 @@ UserType = TypeVar("UserType", AbstractBaseUser, AuthUser)
 User = get_user_model()
 
 
-class  ProductListSerializer(serializers.ModelSerializer):
-
+class ProductListSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        UserSerializer = serializer_factory(User,
-                                            fields=["username", "email"])
+        UserSerializer = serializer_factory(User, fields=["username", "email"])
         self.fields["user"] = UserSerializer()
         if use_cloudinary():
             self.fields["image"] = CloudinaryImageField()
 
     updated_at = serializers.SerializerMethodField()
     timestamp = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Product
         fields = [
@@ -43,11 +41,11 @@ class  ProductListSerializer(serializers.ModelSerializer):
             "updated_at",
             "timestamp",
             "price",
-            "active"
+            "active",
         ]
 
     def get_updated_at(self, obj: Product) -> str:
-        
+
         return obj.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
 
     def get_timestamp(self, obj: Product) -> str:
@@ -56,13 +54,12 @@ class  ProductListSerializer(serializers.ModelSerializer):
 
 
 class BaseProductSerializer(serializers.Serializer):
-
     """
     Base Product Serializer
     """
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
-        
+
         super().__init__(*args, **kwargs)
         request = self.context["request"]
         self._user = request.user if hasattr(request, "user") else None
@@ -75,9 +72,8 @@ class BaseProductSerializer(serializers.Serializer):
     price = serializers.FloatField()
     active = serializers.BooleanField()
 
-
     def get_user(self) -> UserType:
-        
+
         assert hasattr(self, "_user")
         assert self._user is not None
 
@@ -87,38 +83,37 @@ class BaseProductSerializer(serializers.Serializer):
         return user
 
 
-
 class ProductCreateSerializer(BaseProductSerializer):
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        """ Create Product """
+        """Create Product"""
         user = self.get_user()
         product_name = attrs["product_name"]
         product = Product.objects.all()
         if product.filter(product_name__iexact=product_name).exists():
             raise ValidationError("product already exists.")
-        
+
         obj = product.create(user=user, **attrs)
         attrs = copy.copy(attrs)
         attrs["product_slug"] = obj.product_slug
         attrs["user"] = model_to_dict(obj.user, fields=["username", "email"])
-        
+
         return super().validate(attrs)
 
 
 class ProductUpdateSerializer(BaseProductSerializer):
 
-
     def validate(self, data: dict[str, Any]):
-        
+
         instance = self.instance
         assert instance is not None
 
         with transaction.atomic():
-            for (key, value) in data.items():
-                assert hasattr(instance, key), "%s has no attribute, %d" % (instance.__class__.__name__, key)
+            for key, value in data.items():
+                assert hasattr(instance, key), "%s has no attribute, %d" % (
+                    instance.__class__.__name__,
+                    key,
+                )
                 setattr(instance, key, value)
             instance.save()
         return data
-    
-

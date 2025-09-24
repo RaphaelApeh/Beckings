@@ -13,11 +13,11 @@ CLOUDINARY_SECRET_KEY = settings.CLOUDINARY_SECRET_KEY
 
 
 def init_cloudinary() -> None:
-          
-    cloudinary.config( 
-        cloud_name=CLOUDINARY_NAME, 
-        api_key=CLOUDINARY_API_KEY, 
-        api_secret=CLOUDINARY_SECRET_KEY 
+
+    cloudinary.config(
+        cloud_name=CLOUDINARY_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_SECRET_KEY,
     )
 
 
@@ -26,25 +26,22 @@ def use_cloudinary() -> bool:
     return all([CLOUDINARY_API_KEY, CLOUDINARY_NAME, CLOUDINARY_SECRET_KEY])
 
 
-
 class CloudinaryImageField(serializers.ImageField):
 
-    default_error_messages = {
-        "invalid": "Invalid key {key}"
-    }
+    default_error_messages = {"invalid": "Invalid key {key}"}
 
     def __init__(self, *args, **kwargs) -> None:
 
         options = kwargs.pop("options", {})
-        
+
         super().__init__(*args, **kwargs)
         self.options = options
 
     def to_internal_value(self, data) -> str:
 
-        result = str(data) # public_id
+        result = str(data)  # public_id
         print(data)
-        
+
         if hasattr(data, "read"):
             result = self.handle_image_upload(data)
 
@@ -53,22 +50,21 @@ class CloudinaryImageField(serializers.ImageField):
     def handle_image_upload(self, data) -> str:
         returned_data = cloudinary.uploader.upload(data)
         try:
-            return returned_data["url"] # or public_id
+            return returned_data["url"]  # or public_id
         except AttributeError:
             self.fail("invalid", key="url")
 
     def to_representation(self, value) -> Optional[Union[str, Any]]:
-        
+
         print(value)
-        
+
         if value is None:
             return None
-        
+
         if hasattr(value, "url") and self.options is None:
             return value.url
-        
+
         if hasattr(value, "build_url") and self.options:
             return value.build_url(**self.options)
-                
-        return str(value)
 
+        return str(value)

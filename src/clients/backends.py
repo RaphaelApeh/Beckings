@@ -11,13 +11,15 @@ User = get_user_model()
 
 class _EmailAuth(TypedDict):
 
-    username : str
-    password : str
+    username: str
+    password: str
 
 
 class EmailBackend(ModelBackend):
 
-    def authenticate(self, request, **kwargs: Unpack[_EmailAuth]) -> AbstractBaseUser | None:
+    def authenticate(
+        self, request, **kwargs: Unpack[_EmailAuth]
+    ) -> AbstractBaseUser | None:
 
         email = kwargs["username"]
         password = kwargs["password"]
@@ -32,5 +34,3 @@ class EmailBackend(ModelBackend):
             if user.check_password(password) and user.is_active:
                 return user
             return None
-
-        

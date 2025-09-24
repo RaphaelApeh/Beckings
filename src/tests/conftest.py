@@ -36,23 +36,29 @@ def products(db):
 
     return Product.objects.all()
 
+
 @pytest.fixture
 def product(db):
 
     from products.models import Product
+
     return Product
+
 
 @pytest.fixture(autouse=True)
 def user(db):
     """
-    Create dumb user credencials 
+    Create dumb user credencials
     """
-    return User.objects.create_superuser(username="test_user", email="admin@test.com", password="password")
+    return User.objects.create_superuser(
+        username="test_user", email="admin@test.com", password="password"
+    )
 
 
 @pytest.fixture(autouse=True)
 def token(db):
     from api.models import get_token_model
+
     Token = get_token_model()
     return Token
 
@@ -69,5 +75,5 @@ def authenticated_client(api_client, user):
 @pytest.fixture
 def products_factory(db):
     from helpers.factories import ProductFactory
-    
+
     return ProductFactory.create_batch(random.randint(1, 10))

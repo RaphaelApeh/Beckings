@@ -12,6 +12,5 @@ urlpatterns = [
     path("accounts/", include("clients.urls")),
     path("health/", views.health_check_view, name="health_check"),
     path("products/", include("products.urls")),
-    path("api/", include("api.urls"))
+    path("api/", include("api.urls")),
 ]
-

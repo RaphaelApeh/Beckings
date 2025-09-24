@@ -11,10 +11,9 @@ class EnumChoiceMixin:
         return [x.value for x in cls]
 
 
-
 class OrderStatusChoices(TextChoices):
-    
+
     delivered = "delivered", _("Delivered")
     pending = "pending", _("Pending")
-    cancelled = "cancelled",  _("Cancelled")
+    cancelled = "cancelled", _("Cancelled")
     in_transit = "in_transit", _("In Transit")

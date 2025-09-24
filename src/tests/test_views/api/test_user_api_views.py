@@ -8,11 +8,11 @@ User = get_user_model()
 
 
 def test_change_password_view(authenticated_client, user) -> None:
-    
+
     data = {
         "old_password": "password",
-        "new_password": "sjsoddjso", # valid password
-        "confirmation_password": "sjsoddjso"
+        "new_password": "sjsoddjso",  # valid password
+        "confirmation_password": "sjsoddjso",
     }
     response = authenticated_client.post(reverse("user-change-password"), data)
 
@@ -22,11 +22,11 @@ def test_change_password_view(authenticated_client, user) -> None:
 
 
 def test_invalid_change_password_view(authenticated_client, user) -> None:
-    
+
     data = {
         "old_password": "password",
-        "new_password": "password1", # invalid password
-        "confirmation_password": "password1"
+        "new_password": "password1",  # invalid password
+        "confirmation_password": "password1",
     }
     response = authenticated_client.post(reverse("user-change-password"), data)
 
@@ -40,11 +40,11 @@ def test_user_create_api_endpoint(api_client) -> None:
         "username": "johndoe",
         "email": "johndoe@test.com",
         "password1": "a_strong_password",
-        "password2": "a_strong_password"
+        "password2": "a_strong_password",
     }
     response = api_client.post(reverse("user-list"), data)
     qs = User.objects.filter(username=data["username"])
-    
+
     assert response.status_code == 201
     assert data["username"] == response.data["user"]["username"]
     assert qs.exists()
@@ -67,7 +67,7 @@ def test_user_update_api_endpoint(api_client) -> None:
         "username": "johndoe",
         "email": "johndoe@test.com",
         "password1": "a_strong_password",
-        "password2": "a_strong_password"
+        "password2": "a_strong_password",
     }
     response = api_client.post(reverse("user-list"), data)
     qs = User.objects.filter(username=data["username"])
@@ -78,17 +78,11 @@ def test_user_update_api_endpoint(api_client) -> None:
 
     user = qs.get()
     api_client.force_authenticate(user=user)
-    updated_data = {
-        "username": "johnsmith"
-    }
-    response = api_client.put(reverse("user-detail", 
-                                        args=(user.pk,)), 
-                                        updated_data)
-    
+    updated_data = {"username": "johnsmith"}
+    response = api_client.put(reverse("user-detail", args=(user.pk,)), updated_data)
 
     user.refresh_from_db()
 
     assert response.status_code == status.HTTP_200_OK
     assert user.username == updated_data["username"]
     assert "details updated." in response.data.get("message")
-

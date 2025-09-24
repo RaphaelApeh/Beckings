@@ -29,23 +29,11 @@ FORM_TEXT = (
     "rounded-md",
 )
 
-TEXT = (
-    "font-medium",
-    "text-gray-900"
-)
+TEXT = ("font-medium", "text-gray-900")
 
-PADDING = (
-    "p-2",
-    "mb-2",
-    "mt-2"
-)
+PADDING = ("p-2", "mb-2", "mt-2")
 
-FOCUS = (
-    "focus:z-10",
-    "focus:ring-4",
-    "focus:ring-gray-200",
-    "focus:outline-none"
-)
+FOCUS = ("focus:z-10", "focus:ring-4", "focus:ring-gray-200", "focus:outline-none")
 
 SELECT = (
     *BORDER,
@@ -57,31 +45,27 @@ SELECT = (
     "rounded-lg",
     "bg-white",
     *FOCUS,
-    *TEXT
-
+    *TEXT,
 )
 
+
 class TextField(forms.CharField):
-    
+
     widget = forms.Textarea
 
 
 class ProductForm(TailwindRenderFormMixin, forms.ModelForm):
 
     class Meta:
-        model = Product 
-        fields = [
-            "product_name",
-            "product_description",
-            "price",
-            "quantity",
-            "active"
-        ]
-    
+        model = Product
+        fields = ["product_name", "product_description", "price", "quantity", "active"]
+
     def __init__(self, request=None, *args, **kwargs) -> None:
         self.request = request
         super().__init__(*args, **kwargs)
-        self.fields["active"].widget.attrs["class"] = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        self.fields["active"].widget.attrs[
+            "class"
+        ] = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
     @property
     def user(self):
@@ -99,45 +83,30 @@ class ProductForm(TailwindRenderFormMixin, forms.ModelForm):
         if commit:
             instance.save()
         return instance
-    
+
 
 class AddOrderForm(forms.ModelForm):
-    
+
     product = forms.ModelChoiceField(
-        Product.objects.filter(active=True),
-        widget=forms.HiddenInput
+        Product.objects.filter(active=True), widget=forms.HiddenInput
     )
-    address = forms.CharField(
-        widget=forms.Textarea
-    )
+    address = forms.CharField(widget=forms.Textarea)
     number_of_items = forms.IntegerField(
-        label="Quantity",
-        widget=forms.NumberInput(
-            attrs={
-                "min": 0
-            }
-        )
+        label="Quantity", widget=forms.NumberInput(attrs={"min": 0})
     )
 
     class Meta:
         model = Order
         fields = ("number_of_items", "manifest")
-        labels = {
-            "manifest": _("Note (Optional)")
-        }
-    
-    field_order = (
-        "address",
-        "phone_number",
-        "number_of_items"
-    )
+        labels = {"manifest": _("Note (Optional)")}
+
+    field_order = ("address", "phone_number", "number_of_items")
 
     def __init__(self, *args: Any, request=None, **kwargs: Any) -> None:
 
         view = kwargs.pop("view", None)
 
-        assert request is not None and \
-                view is not None
+        assert request is not None and view is not None
 
         super().__init__(*args, **kwargs)
         self.request = request
@@ -178,7 +147,6 @@ class AddOrderForm(forms.ModelForm):
             case _:
                 pass
         return data
-    
 
     def _save_client_data(self, user, data):
 
@@ -192,18 +160,17 @@ class AddOrderForm(forms.ModelForm):
                 field.save_form_data(client, data[name])
             except (ValueError, FieldDoesNotExist):
                 continue
-        
+
         client.save()
 
-
     def save(self, commit=True) -> Any:
-       instance = super().save(commit=False) #noqa
-       cleaned_data = self.cleaned_data
-       # Do not call instance.save()
-       self._save_client_data(self.user, cleaned_data)
-       return AddOrder(
-           product_instance=cleaned_data["product"]
-       ).create(self.user, cleaned_data) # This will save the order and return the order
+        instance = super().save(commit=False)  # noqa
+        cleaned_data = self.cleaned_data
+        # Do not call instance.save()
+        self._save_client_data(self.user, cleaned_data)
+        return AddOrder(product_instance=cleaned_data["product"]).create(
+            self.user, cleaned_data
+        )  # This will save the order and return the order
 
 
 class ExportForm(forms.Form):
@@ -211,36 +178,29 @@ class ExportForm(forms.Form):
     format = FormatChoiceField(formats=base_formats.DEFAULT_FORMATS)
 
     def __init__(self, *args, **kwargs) -> None:
-    
+
         super().__init__(*args, **kwargs)
-        
+
         format = self.fields["format"]
-        
+
         if len(format.choices):
             format.choices = (("", "-------"), *format.choices)
 
-    def date_format(self, format, object_name: str)-> str:
+    def date_format(self, format, object_name: str) -> str:
         date_str = timezone.now().strftime("%d-%m-%Y")
-        return "{}-{}.{}".format(
-            date_str, 
-            object_name.lower(), 
-            format.get_extension()
-        )
-    
+        return "{}-{}.{}".format(date_str, object_name.lower(), format.get_extension())
+
     def export_data(self, request, queryset, **kwargs):
 
         format = self.cleaned_data["format"]
-        dataset = OrderResource().export(queryset, **kwargs) # export fields
+        dataset = OrderResource().export(queryset, **kwargs)  # export fields
         return format, format.export_data(dataset)
 
 
 class OrderActionForm(forms.Form):
 
-    action = forms.ChoiceField(
-        choices=ORDER_CHOICES,
-        widget=forms.Select
-        )
-    
+    action = forms.ChoiceField(choices=ORDER_CHOICES, widget=forms.Select)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         action = self.fields["action"]
@@ -250,46 +210,27 @@ class OrderActionForm(forms.Form):
 
 class CommentForm(forms.Form):
 
-    message = forms.CharField(
-        label="Your Comment",
-        widget=forms.Textarea
-    )
-    product_id = forms.IntegerField(
-        widget=forms.HiddenInput
-    )
+    message = forms.CharField(label="Your Comment", widget=forms.Textarea)
+    product_id = forms.IntegerField(widget=forms.HiddenInput)
 
 
 class ReplyForm(forms.Form):
 
-    message = forms.CharField(
-        label="Message"
-    )
-    comment_id = forms.IntegerField(
-        widget=forms.HiddenInput
-    )
-    redirect_url = forms.CharField(
-        widget=forms.HiddenInput
-    )
+    message = forms.CharField(label="Message")
+    comment_id = forms.IntegerField(widget=forms.HiddenInput)
+    redirect_url = forms.CharField(widget=forms.HiddenInput)
+
 
 class SearchForm(forms.Form):
 
-    search = forms.CharField(
-        widget=forms.SearchInput # 5.2
-    )
+    search = forms.CharField(widget=forms.SearchInput)  # 5.2
+
 
 class ProductFormsetForm(TailwindRenderFormMixin, forms.ModelForm):
 
-        class Meta:
-            model = Product
-            fields = [
-            "product_name",
-            "product_description",
-            "price",
-            "quantity",
-            "active"
-        ]
+    class Meta:
+        model = Product
+        fields = ["product_name", "product_description", "price", "quantity", "active"]
 
-ProductFormset = forms.modelformset_factory(
-    Product,
-    ProductFormsetForm
-)
+
+ProductFormset = forms.modelformset_factory(Product, ProductFormsetForm)

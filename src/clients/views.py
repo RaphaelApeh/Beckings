@@ -8,10 +8,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, resolve_url
 from django.core.exceptions import ValidationError
-from django.views.generic import (
-    TemplateView, 
-    FormView
-)
+from django.views.generic import TemplateView, FormView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -28,10 +25,11 @@ User = get_user_model()
 
 never_cache_m = method_decorator(never_cache, name="dispatch")
 
+
 class FormRequestMixin:
 
     def get_form_kwargs(self) -> dict[str, Any]:
-        kwargs =  super().get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         kwargs["request"] = self.request
         return kwargs
 
@@ -51,7 +49,9 @@ class LoginView(FormRequestMixin, FormView):
         kwargs = {"login": login, **(kwargs or {})}
         return kwargs
 
-    def dispatch(self, request, *args: list[str], **kwargs: dict[str, str]) -> HttpResponse:
+    def dispatch(
+        self, request, *args: list[str], **kwargs: dict[str, str]
+    ) -> HttpResponse:
         if request.user.is_authenticated:
             messages.error(request, "Authenticated User can re-login.")
             _url = request.META["HTTP_RERFER"] or "/products/"
@@ -59,12 +59,10 @@ class LoginView(FormRequestMixin, FormView):
         self.next_url = request.GET.get(REDIRECT_FIELD_NAME)
         return super().dispatch(request, *args, **kwargs)
 
-    
     def get_context_data(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Login"
         return context
-    
 
     def form_valid(self, form: LoginForm) -> HttpResponseRedirect:
         request = self.request
@@ -76,11 +74,11 @@ class LoginView(FormRequestMixin, FormView):
         messages.success(request, "Loggedin Successfully :)")
         next_url = self.next_url or self.success_url
         return redirect(next_url)
-    
 
     def validate_path(self, path: str) -> None:
-        
-        if path.startswith(("https", "http")):...
+
+        if path.startswith(("https", "http")):
+            ...
 
 
 class RegisterView(FormView):
@@ -93,7 +91,6 @@ class RegisterView(FormView):
             messages.error(request, _("Authenticated User can register."))
             return HttpResponseRedirect(resolve_url("products"))
         return super().dispatch(request, *args, **kwargs)
-    
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -105,10 +102,9 @@ class RegisterView(FormView):
         template_name = response_kwargs.pop("template_name", None)
         if template_name is not None:
             self.template_name = template_name
-        
+
         assert self.template_name is not None
         return super().render_to_response(context, **response_kwargs)
-
 
     @method_decorator(sensitive_variables(["username", "password", "password1"]))
     def form_valid(self, form: RegisterForm) -> HttpResponse:
@@ -116,40 +112,37 @@ class RegisterView(FormView):
         if getattr(settings, "USE_ACCOUNT_ACTIVATION_VIEW", True):
             form.send_email(self.request, obj)
             template_name = "accounts/check-email.html"
-            return (
-                self.render_to_response(self.get_context_data(), template_name=template_name)
+            return self.render_to_response(
+                self.get_context_data(), template_name=template_name
             )
-        messages.success(
-            self.request,
-            _("Account Created Sucessfully.")
-        )
+        messages.success(self.request, _("Account Created Sucessfully."))
         return HttpResponseRedirect(resolve_url("login"))
 
 
 class AccountActivationView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
-        
+
         user_id = kwargs.get("user_id")
-        
+
         token = kwargs.get("token")
 
         if not all([user_id, token]):
             return self.handle_invalid_response()
-        
+
         if self.check_token(request, user_id, token):
             user = self.get_user(user_id)
             redirect_url = resolve_url("login")
-            
+
             if user.is_active:
 
                 messages.info(request, _("Account already activated."))
                 return HttpResponseRedirect(redirect_url)
-            
+
             self.set_user_active_state(request, user)
             messages.success(request, _("Account Acctivated Successfully"))
             return HttpResponseRedirect(redirect_url)
-        
+
         return self.handle_invalid_response()
 
     def check_token(self, request, user_id, token) -> bool:
@@ -160,7 +153,7 @@ class AccountActivationView(TemplateView):
         return default_token_generator.check_token(user, token)
 
     def set_user_active_state(self, request, user) -> None:
-        
+
         if request.user.is_authenticated:
             return
         assert not user.is_active
@@ -184,19 +177,18 @@ class AccountActivationView(TemplateView):
 
 
 class LogoutView(LoginRequiredMixin, TemplateView):
-
     """
     Logout page
     """
+
     template_name: str = "accounts/logout.html"
-    
+
     def post(self, request: HttpRequest) -> HttpResponseRedirect:
 
         logout(request)
 
         messages.warning(request, "Loggedout Successfully.")
         return redirect("/accounts/login/")
-    
 
 
 class UserAccountView(LoginRequiredMixin, FormView):
@@ -208,12 +200,10 @@ class UserAccountView(LoginRequiredMixin, FormView):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.request.user
         return kwargs
-    
+
     def form_valid(self, form):
         form.save()
-        return HttpResponseRedirect(
-            redirect_to=self.request.get_full_path()
-        )
+        return HttpResponseRedirect(redirect_to=self.request.get_full_path())
 
 
 class PasswordChangeDoneView(TemplateView):
@@ -221,14 +211,10 @@ class PasswordChangeDoneView(TemplateView):
     template_name = "accounts/password_change_done.html"
 
     def dispatch(self, request, *args, **kwargs):
-        password_change_url = request.build_absolute_uri(
-            resolve_url("change_password")
-        )
+        password_change_url = request.build_absolute_uri(resolve_url("change_password"))
         perv_url = request.META.get("HTTP_REFERER")
         if perv_url != password_change_url:
-            msg = (
-                "You can't access this path"
-            )
+            msg = "You can't access this path"
             return HttpResponseForbidden(msg)
         logout(request)
         messages.success(request, "Password change success")

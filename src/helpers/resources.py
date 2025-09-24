@@ -16,27 +16,21 @@ class ProductResource(ModelResource):
 
     class Meta:
         model = "products.Product"
-        fields = (
-            "product_name",
-            "product_description",
-            "price",
-            "active",
-            "quantity"
-        )
+        fields = ("product_name", "product_description", "price", "active", "quantity")
         import_id_fields = (
             "product_name",
             "product_description",
             "price",
             "active",
-            "quantity"
+            "quantity",
         )
-    
+
     @classmethod
     def export_data(cls, queryset=None, **kwargs: Any) -> Dataset:
-        export_fields = kwargs.pop("export_fields", None)  
+        export_fields = kwargs.pop("export_fields", None)
         self = cls(**kwargs)
         return self.export(queryset, export_fields=export_fields)
-    
+
     def after_init_instance(self, instance, new, row, **kwargs):
         assert "user" in kwargs, "Forgot to pass in `user` argument"
         user = kwargs.pop("user")
@@ -49,16 +43,9 @@ class OrderResource(ModelResource):
     product = Field(
         column_name="product",
         attribute="product",
-        widget=ForeignKeyWidget(Product, field="product_name")
+        widget=ForeignKeyWidget(Product, field="product_name"),
     )
 
     class Meta:
         model = "products.Order"
-        fields = (
-            "order_id",
-            "product",
-            "product__price",
-            "number_of_items",
-            "status"
-        )
-    
+        fields = ("order_id", "product", "product__price", "number_of_items", "status")

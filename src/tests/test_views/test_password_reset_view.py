@@ -19,7 +19,5 @@ class TestPasswordResetView:
 
         assert response.status_code == 302
         assert response.url == reverse("password_reset_done")
-        assert len(mail.outbox) == 1 # TODO raises an exception
+        assert len(mail.outbox) == 1  # TODO raises an exception
         assert "Password Reset Sent" in mail.outbox[0].subject
-
-

@@ -4,7 +4,6 @@ from django.utils.safestring import SafeText
 
 
 class TailwindRenderFormMixin(RenderableMixin):
-
     """Helper mixin for adding tailwind css to Forms"""
 
     template_name_tailwind = "helpers/forms/tailwind.html"
@@ -15,7 +14,7 @@ class TailwindRenderFormMixin(RenderableMixin):
         return render_to_string(self.template_name_tailwind, self.get_context())
 
     def as_tailwind_table(self) -> SafeText:
-    
+
         return render_to_string(self.template_name_tailwind_table, self.get_context())
 
     @property

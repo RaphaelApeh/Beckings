@@ -7,9 +7,7 @@ from django.core.exceptions import ValidationError
 from import_export.formats.base_formats import Format
 
 
-__all__ = [
-    "FormatChoiceField"
-]
+__all__ = ["FormatChoiceField"]
 
 T = TypeVar("T")
 
@@ -24,22 +22,19 @@ class FormatChoiceField(ChoiceField):
 
     def _get_fromats(self) -> Union[Any, None, OrderedDict[str, Any]]:
         return self._formats
-    
+
     def _set_formats(self, formats) -> None:
 
         self.choices = self._formats_choices(formats, self.encoding)
-        
+
         if formats is not None:
             self._formats = self._build_formats(
-                formats,
-                encoding=self.encoding,
-                as_dict=True
+                formats, encoding=self.encoding, as_dict=True
             )
             return
         self._formats = {}
 
     formats = property(_get_fromats, _set_formats)
-
 
     @staticmethod
     def _formats_choices(formats, encoding=None) -> Union[None, tuple[str, str]]:
@@ -52,18 +47,21 @@ class FormatChoiceField(ChoiceField):
         )
 
     @staticmethod
-    def _build_formats(formats, *, encoding=None, raise_asserts=True, as_dict=False) -> Generator[tuple[str, Any], None, None] | OrderedDict[str, Any]:
+    def _build_formats(
+        formats, *, encoding=None, raise_asserts=True, as_dict=False
+    ) -> Generator[tuple[str, Any], None, None] | OrderedDict[str, Any]:
 
         assert formats is not None or not raise_asserts
-        assert hasattr(formats, "__iter__") or not raise_asserts, \
-        "formats need to be an Iterable but"
+        assert (
+            hasattr(formats, "__iter__") or not raise_asserts
+        ), "formats need to be an Iterable but"
         "Got {}".format(type(formats).__name__)
-        assert all((f for f in formats if issubclass(f, Format))) or not raise_asserts, \
-        "formats needs to be a subclass of Format class."
+        assert (
+            all((f for f in formats if issubclass(f, Format))) or not raise_asserts
+        ), "formats needs to be a subclass of Format class."
 
         choices = (
-            (str(f(encoding).get_title()), f(encoding=encoding))
-            for f in formats
+            (str(f(encoding).get_title()), f(encoding=encoding)) for f in formats
         )
         if not as_dict:
             return choices
@@ -76,7 +74,6 @@ class FormatChoiceField(ChoiceField):
         if format is not None:
             return format
         raise ValidationError(self.error_messages["invalid"])
-    
+
     def validate(self, value):
         Field.validate(self, value)
-

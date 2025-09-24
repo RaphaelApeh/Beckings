@@ -2,9 +2,7 @@ from typing import Any, final
 from collections import OrderedDict
 
 from django import template
-from django.template.base import (
-    Token, Parser
-)
+from django.template.base import Token, Parser
 from django.forms import BoundField
 
 
@@ -14,7 +12,7 @@ DEFAULT_TAILWIND_CSS = "bg-gray-50 border border-gray-300 text-gray-900 text-sm 
 
 
 def do_render_field(parser: Parser, token: Token):
-    """ Usage {% render_field "form.name" class="btn-class" %} """
+    """Usage {% render_field "form.name" class="btn-class" %}"""
     _, *bits = token.split_contents()
     if len(bits) < 1:
         msg = ""
@@ -29,22 +27,23 @@ def do_render_field(parser: Parser, token: Token):
     attr = OrderedDict(class_attr)
     return FieldRenderNode(form_field, attr)
 
+
 @final
 class FieldRenderNode(template.Node):
 
     def __init__(self, form_field, attr: dict[Any]):
-        
+
         self.form_field = form_field
         self.attr = attr
 
     def render(self, context):
-        
-        boundfield = self.form_field.resolve(context) #noqa
+
+        boundfield = self.form_field.resolve(context)  # noqa
         field = boundfield.field
         kwargs = self._parse_class_attr(context)
         field.widget.attrs.update(kwargs)
         return str(boundfield)
-    
+
     def _parse_class_attr(self, context) -> dict[Any]:
         kwargs = {}
         if attr := self.attr:

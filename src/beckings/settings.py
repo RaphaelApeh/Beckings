@@ -18,12 +18,17 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", cast=bool, default=False)
 
-ALLOWED_HOSTS = ["beckings-production.up.railway.app", "localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = [
+    "beckings-production.up.railway.app",
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.up.railway.app",
     "https://*.railway.app",
-    "https://beckings-production.up.railway.app"
+    "https://beckings-production.up.railway.app",
 ]
 
 CSRF_COOKIE_SECURE = not DEBUG
@@ -40,9 +45,7 @@ UNFOLD_APPS = (
 )
 
 DJANGO_APPS = [
-    
     *UNFOLD_APPS,
-    
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -86,14 +89,13 @@ TAILWIND_APP_NAME = "theme"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
     # HTMX
     "django_htmx.middleware.HtmxMiddleware",
 ]
@@ -111,7 +113,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                
                 "helpers.context_processors.default_price",
             ],
             "builtins": [
@@ -119,7 +120,7 @@ TEMPLATES = [
                 "django.templatetags.i18n",
                 "tailwind.templatetags.tailwind_tags",
                 "helpers.templatetags.form_utils",
-            ]
+            ],
         },
     },
 ]
@@ -139,7 +140,8 @@ DATABASES = {
 
 DATABASE_URL = config("DATABASE_URL", default="")
 if DATABASE_URL:
-    import dj_database_url # noqa
+    import dj_database_url  # noqa
+
     DATABASES["default"] = dj_database_url.config(default=DATABASE_URL)
 
 # Password validation
@@ -164,12 +166,10 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     # default
     "django.contrib.auth.backends.ModelBackend",
-
-    #guardian
+    # guardian
     "guardian.backends.ObjectPermissionBackend",
-        
     # email
-    "clients.backends.EmailBackend"
+    "clients.backends.EmailBackend",
 ]
 
 # Internationalization
@@ -192,13 +192,11 @@ STATIC_URL = "static/"
 STATIC_DIR = BASE_DIR / "static"
 
 
-STATICFILES_DIRS = [
-    STATIC_DIR
-]
+STATICFILES_DIRS = [STATIC_DIR]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -228,9 +226,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Admin
 
-ADMINS = [
-    (SITE_ADMIN_NAME, EMAIL_HOST_USER)
-]
+ADMINS = [(SITE_ADMIN_NAME, EMAIL_HOST_USER)]
 
 
 # Rest framework
@@ -238,28 +234,24 @@ ADMINS = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "api.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication"
+        "rest_framework.authentication.SessionAuthentication",
     ],
-
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
-
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 API_TOKEN_MODEL = "api.Token"
-API_TOKEN_EXPIRE_TIME = timedelta(days=2) # two days
+API_TOKEN_EXPIRE_TIME = timedelta(days=2)  # two days
 
 # DRF Spectacular
 
 SPECTACULAR_SETTINGS = {
-
     "TITLE": "Beckings API",
     "DESCRIPTION": "Products for Cleaning, freshening, and disinfecting, and very good for muiltipurpose.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
-    "REDOC_DIST": "SIDECAR"
-    
+    "REDOC_DIST": "SIDECAR",
 }
 
 
@@ -280,17 +272,12 @@ if REDIS_URL:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": REDIS_URL,
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient"
-            }
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
 
 
-UNFOLD = {
-    "SITE_HEADER": "Beckings",
-    "SITE_TITLE": "Becking inc."
-}
+UNFOLD = {"SITE_HEADER": "Beckings", "SITE_TITLE": "Becking inc."}
 
 # https://docs.djangoproject.com/en/stable/ref/django-admin/#envvar-DJANGO_RUNSERVER_HIDE_WARNNING
 if DEBUG:

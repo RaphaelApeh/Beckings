@@ -8,12 +8,7 @@ from django.contrib import messages
 from django.db.models import QuerySet
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import (
-    View,
-    ListView,
-    DetailView,
-    FormView
-    )
+from django.views.generic import View, ListView, DetailView, FormView
 from django.views.generic.edit import FormMixin
 from django.http import (
     Http404,
@@ -34,29 +29,19 @@ from django_htmx.http import HttpResponseClientRedirect
 
 from helpers.decorators import require_htmx
 from helpers._typing import HTMXHttpRequest
-from helpers.mixins import (
-    ModelFormsetView
-)
+from helpers.mixins import ModelFormsetView
 from clients.views import FormRequestMixin
-from .models import (
-    Product,
-    Order, 
-    Comment, 
-    Reply
-)
+from .models import Product, Order, Comment, Reply
 from .forms import (
-    AddOrderForm, 
+    AddOrderForm,
     ProductForm,
     ExportForm,
     CommentForm,
     ReplyForm,
     SearchForm,
-    ProductFormset
+    ProductFormset,
 )
-from .filters import (
-    ProductFilter,
-    OrderFilter
-)
+from .filters import ProductFilter, OrderFilter
 
 
 login_required_m = method_decorator(login_required, name="dispatch")
@@ -86,47 +71,32 @@ class ProductListView(ListView):
 
     def get_template_names(self):
         if self.request.htmx:
-            return (
-                "helpers/products/object_list.html",
-            )
+            return ("helpers/products/object_list.html",)
         return super().get_template_names()
 
     def get_context_data(self, **kwargs):
-        kwargs.update({
-            "search_form": SearchForm()
-        })
+        kwargs.update({"search_form": SearchForm()})
         return super().get_context_data(**kwargs)
 
 
-class ProductDetailView(FormRequestMixin, 
-                        ModelFormMixin,
-                        DetailView
-                        ):
-    http_method_names = (
-        "get",
-        "post",
-        "put",
-        "delete"
-    )
-    queryset = (
-        Product.objects.prefetch_related(
-            "comments", 
-            "comments__replies"
-        ).select_related("user")
-    )
+class ProductDetailView(FormRequestMixin, ModelFormMixin, DetailView):
+    http_method_names = ("get", "post", "put", "delete")
+    queryset = Product.objects.prefetch_related(
+        "comments", "comments__replies"
+    ).select_related("user")
     template_name = "products/product-detail.html"
     query_pk_and_slug = True
     slug_url_kwarg = "product_slug"
     form_class = ProductForm
 
     def get_template_names(self):
-        
+
         if self.request.htmx and self.request.method == "GET":
             return ("products/partials/product_update.html",)
-        
+
         assert self.template_name is not None
         assert isinstance(self.template_name, (str, list, tuple))
-        
+
         if isinstance(self.template_name, str):
             return [self.template_name]
         return self.template_name
@@ -146,10 +116,10 @@ class ProductDetailView(FormRequestMixin,
         if form.is_valid():
             return self.form_valid(request, form)
         return self.form_invalid(request, form)
-    
+
     def form_invalid(self, request, form):
         return super().form_invalid(form)
-    
+
     def check_method_perm(self, request):
         obj = self.get_object()
         if DEFAULT_OBJECT_PERM not in get_perms(request.user, obj):
@@ -181,10 +151,11 @@ class ProductDetailView(FormRequestMixin,
 
     @require_htmx
     def product_delete_view(request, *args, **kwargs) -> HttpResponse:
-        
+
         def get_object() -> Product:
             obj = get_object_or_404(Product, **kwargs)
             return obj
+
         instance = get_object()
         if DEFAULT_OBJECT_PERM not in get_perms(request.user, instance):
             raise PermissionDenied
@@ -192,7 +163,7 @@ class ProductDetailView(FormRequestMixin,
             messages.success(request, "%s deleted successfully" % instance)
             with transaction.atomic():
                 instance.delete()
-    
+
             return HttpResponseClientRedirect(reverse("products"))
         raise PermissionDenied()
 
@@ -200,49 +171,40 @@ class ProductDetailView(FormRequestMixin,
 
     def get_context_data(self, **kwargs):
         kwargs["export_form"] = ExportForm()
-        kwargs["comment_form"] = (
-            CommentForm(**self.get_comment_form_initial_kwargs(self.request))
+        kwargs["comment_form"] = CommentForm(
+            **self.get_comment_form_initial_kwargs(self.request)
         )
         return super().get_context_data(**kwargs)
 
     def get_comment_form_initial_kwargs(self, request, **kwargs):
-        
-        kwargs.setdefault("initial", {
-            "product_id": self.get_object().pk
-        })
+
+        kwargs.setdefault("initial", {"product_id": self.get_object().pk})
         return kwargs
 
     def permission_denied(self):
-        
+
         raise PermissionDenied()
 
 
 @method_decorator(require_htmx, name="dispatch")
 class ProductSearchView(FilterView):
 
-    ordering =  ("-timestamp",)
-    template_name = (
-        "helpers/products/search.html"
-    )
+    ordering = ("-timestamp",)
+    template_name = "helpers/products/search.html"
     filterset_class = ProductFilter
-    
+
     def get_filterset_data(self, request: HttpRequest, filter_class) -> dict:
 
         data = dict.fromkeys(
-            (filter_class.base_filters.keys()),
-            request.GET[QUERY_SEACRH]
+            (filter_class.base_filters.keys()), request.GET[QUERY_SEACRH]
         )
-        
+
         return data
-    
+
     def get_filterset_kwargs(self, filterset_class):
-        
+
         kwargs = super().get_filterset_kwargs(filterset_class)
-        kwargs.update(
-            {
-                "data": self.get_filterset_data(self.request, filterset_class)
-            }
-        )
+        kwargs.update({"data": self.get_filterset_data(self.request, filterset_class)})
         return kwargs
 
 
@@ -252,7 +214,7 @@ product_search_view = ProductSearchView.as_view()
 @login_required_m
 class UserOrderView(ListView):
 
-    queryset = Order.objects.select_related("user", "product")   
+    queryset = Order.objects.select_related("user", "product")
     template_name = "orders/order_list.html"
     allow_empty = False
     filter_class = OrderFilter
@@ -265,52 +227,43 @@ class UserOrderView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
-            {
-                "order_form": OrderFilter().form,
-                "export_form": ExportForm(auto_id=False)
-            }
+            {"order_form": OrderFilter().form, "export_form": ExportForm(auto_id=False)}
         )
         return context
-    
+
     def get_filter_class(self, request):
 
         return self.filter_class
-    
-    
+
     def get_filter_instance(self, data, request, queryset):
 
         _filter = self.get_filter_class(request)
         return _filter(data, queryset, request=request)
-    
 
     def filter(self, data, request, queryset):
-        
+
         self._filter = self.get_filter_instance(data, request, queryset)
         return self._filter
-
 
     def get(self, request, *args, **kwargs):
         if request.htmx:
             return self.htmx_get(request, *args, **kwargs)
         return super().get(request, *args, **kwargs)
-    
+
     def htmx_get(self, request, *args, **kwargs):
         qs = self.get_queryset()
         form = self.filter(request.GET or None, request, qs)
         if not form.is_valid():
             qs = qs.all()
             return render(
-                request, 
-                "helpers/orders/object_list.html",
-                {"object_list": qs}) 
+                request, "helpers/orders/object_list.html", {"object_list": qs}
+            )
         qs = form.qs
-        return render(
-            request, 
-            "helpers/orders/object_list.html", 
-            {"object_list": qs})
-    
+        return render(request, "helpers/orders/object_list.html", {"object_list": qs})
+
     def get_order_action_choices(self, request):
         return None
+
 
 user_orders_view = UserOrderView.as_view()
 
@@ -328,7 +281,7 @@ class UserOrderDetailView(DetailView):
             with transaction.atomic():
                 obj = self._cancel_user_order(request, obj)
             return self.render_to_response(context=self.get_context_data(object=obj))
-        return HttpResponse(status=204) # NO CONENT
+        return HttpResponse(status=204)  # NO CONENT
 
     def _cancel_user_order(self, request, obj):
         obj.status = "cancelled"
@@ -338,15 +291,11 @@ class UserOrderDetailView(DetailView):
 
 
 @method_decorator((login_required, require_htmx), name="dispatch")
-class AddOrderView(
-    SingleObjectMixin,
-    FormRequestMixin, 
-    FormView
-    ):
+class AddOrderView(SingleObjectMixin, FormRequestMixin, FormView):
 
     template_name = "orders/add_order.html"
     form_class = AddOrderForm
-    model = Product # for form field
+    model = Product  # for form field
     object = None
     pk_url_kwarg = "product_id"
 
@@ -355,11 +304,11 @@ class AddOrderView(
         kw.setdefault("view", self)
         kw["initial"] = self.get_form_initial(self.request, None, None)
         return kw
-    
+
     def get_form_initial(self, request, obj, form):
         kwargs = {}
         kwargs["product"] = self.get_object()
-    
+
         return kwargs
 
     def form_valid(self, form) -> HttpResponse:
@@ -370,14 +319,10 @@ class AddOrderView(
 
 @never_cache_m
 @login_required_m
-class OrderExportView(
-    FormMixin,
-    View
-    ):
+class OrderExportView(FormMixin, View):
 
     form_class = ExportForm
     queryset = Order.objects.select_related("user", "product")
-
 
     def get_queryset(self) -> QuerySet:
         if self.queryset:
@@ -385,47 +330,33 @@ class OrderExportView(
         elif getattr(self, "model", None) is not None:
             return self.model._default_manager.filter(user=self.request.user)
         raise AttributeError(
-            "get_queryset() method required"
-            "queryset or model attribute"
+            "get_queryset() method required" "queryset or model attribute"
         )
 
     def get(self, request) -> HttpResponse:
         if request.htmx:
-            return HttpResponseClientRedirect(
-                request.get_full_path()
-            )
+            return HttpResponseClientRedirect(request.get_full_path())
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
-
 
     def form_valid(self, form) -> HttpResponse:
         qs = self.get_queryset()
         model = qs.model
         object_name = model._meta.object_name
         format, export_data = form.export_data(self.request, qs)
-        response = (
-            HttpResponse(
-                export_data, 
-                content_type=format.get_content_type()
-            )
-        )
-        response["Content-Disposition"] = (
-            'attachment; filename="{}"'.format(
-                form.date_format(format, object_name)
-                )
+        response = HttpResponse(export_data, content_type=format.get_content_type())
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+            form.date_format(format, object_name)
         )
         return response
-    
+
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         if self.request.method == "GET":
             kwargs.update(
-                {
-                    "data": self.request.GET or None,
-                    "files": self.request.FILES or None
-                }
+                {"data": self.request.GET or None, "files": self.request.FILES or None}
             )
         return kwargs
 
@@ -435,21 +366,13 @@ export_order_view = OrderExportView.as_view()
 
 @login_required_m
 @require_htmx_m
-class UserOrderDeleteView(
-    SingleObjectMixin,
-    ObjectUserCheckMixin,
-    View
-):
-    queryset = (
-        Order.objects.select_related("user", "product")
-    )
+class UserOrderDeleteView(SingleObjectMixin, ObjectUserCheckMixin, View):
+    queryset = Order.objects.select_related("user", "product")
     pk_url_kwarg = "order_id"
 
     def get_queryset(self):
-        return (
-            super().get_queryset().filter(user=self.request.user)
-        )
-    
+        return super().get_queryset().filter(user=self.request.user)
+
     def delete(self, request: HTMXHttpRequest, *args, **kwargs):
 
         user = request.user
@@ -464,17 +387,13 @@ class UserOrderDeleteView(
         return self.delete(request, *args, **kwargs)
 
 
-@method_decorator(
-    staff_member_required(login_url="login"), 
-    name="dispatch"
-)
+@method_decorator(staff_member_required(login_url="login"), name="dispatch")
 class ProductCreateView(ModelFormsetView):
 
     template_name = "products/product_create.html"
     model = Product
     formset_class = ProductFormset
     for_creation = True
-
 
     def get_context_data(self, **kwargs):
         kwargs["title"] = "Create Product"
@@ -483,17 +402,15 @@ class ProductCreateView(ModelFormsetView):
     def formset_valid(self, request, formset):
         saved_objs = set()
         total_objs = len(formset.cleaned_data)
-        deleted_objs = len([data for data in formset.cleaned_data if data.get("DELETE")])
+        deleted_objs = len(
+            [data for data in formset.cleaned_data if data.get("DELETE")]
+        )
         skipped = 0
         for form in formset:
             if form.is_valid() and not form.cleaned_data.get("DELETE", False):
                 obj = form.save()
                 obj.user = request.user
-                assign_perm(
-                    DEFAULT_OBJECT_PERM,
-                    request.user,
-                    obj
-                )
+                assign_perm(DEFAULT_OBJECT_PERM, request.user, obj)
                 saved_objs.add(obj)
             else:
                 skipped += 1
@@ -505,39 +422,37 @@ class ProductCreateView(ModelFormsetView):
         else:
             messages.success(self.request, msg)
         return HttpResponseRedirect(self.get_success_url())
-    
+
     def get_success_url(self):
         return self.request.path
+
 
 product_create_view = ProductCreateView.as_view()
 
 
 # Comments
 
+
 @require_htmx_m
 @login_required_m
-class CommentCreateView(
-    SingleObjectMixin,
-    FormView):
+class CommentCreateView(SingleObjectMixin, FormView):
 
     model = Product
-    form_class = (
-        CommentForm
-    )
+    form_class = CommentForm
     template_name = "helpers/comments/object.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.object = None
         return super().dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
-        
+
         kwargs = {}
         data = form.cleaned_data
         object = Comment.objects.create(
             user=self.request.user,
             content_object=self.get_object(),
-            message=data.get("message")
+            message=data.get("message"),
         )
         kwargs["comment"] = object
         return self.render_to_response(self.get_context_data(**kwargs))
@@ -545,11 +460,7 @@ class CommentCreateView(
 
 @login_required_m
 @require_htmx_m
-class CommentDeleteView(
-    SingleObjectMixin,
-    ObjectUserCheckMixin,
-    DeletionMixin,
-    View):
+class CommentDeleteView(SingleObjectMixin, ObjectUserCheckMixin, DeletionMixin, View):
     model = Comment
     pk_url_kwarg = "comment_id"
     success_url = "/"
@@ -557,11 +468,7 @@ class CommentDeleteView(
 
 @login_required_m
 @require_htmx_m
-class CommentUpdateView(
-    SingleObjectMixin,
-    ObjectUserCheckMixin,
-    FormView
-):
+class CommentUpdateView(SingleObjectMixin, ObjectUserCheckMixin, FormView):
     model = Comment
     form_class = CommentForm
     template_name = "helpers/comments/update.html"
@@ -570,19 +477,12 @@ class CommentUpdateView(
     def get_form_kwargs(self):
         context = super().get_form_kwargs()
         obj = self.get_object()
-        context.update(
-            {
-                "initial": self.get_form_initial(self.request, obj)
-            }
-        )
+        context.update({"initial": self.get_form_initial(self.request, obj)})
         return context
-    
+
     def get_form_initial(self, request, obj):
-        return {
-            "product_id": obj.object_id,
-            "message": obj.message
-        }
-    
+        return {"product_id": obj.object_id, "message": obj.message}
+
     def form_valid(self, form):
 
         obj = self.get_object()
@@ -590,22 +490,20 @@ class CommentUpdateView(
         with transaction.atomic():
             self.object = self._save_object(self.request, form, obj)
         return render(
-            self.request,
-            "helpers/comments/object.html",
-            self.get_context_data()
+            self.request, "helpers/comments/object.html", self.get_context_data()
         )
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
             {
                 "object": Product.objects.get(id=self.object.object_id),
                 "comment": self.object,
-                "comment_form": self.get_form()
+                "comment_form": self.get_form(),
             }
         )
         return context
-    
+
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().get(request, *args, **kwargs)
@@ -619,9 +517,7 @@ class CommentUpdateView(
 
 @login_required_m
 @require_htmx_m
-class ReplyView(
-    SingleObjectMixin,
-    FormView):
+class ReplyView(SingleObjectMixin, FormView):
 
     model = Comment
     template_name = "helpers/replies/form.html"
@@ -632,48 +528,35 @@ class ReplyView(
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         obj = self.get_object()
-        kwargs.update(
-            {
-                "initial": self.get_form_initial(self.request, obj)
-            }
-        )
+        kwargs.update({"initial": self.get_form_initial(self.request, obj)})
         return kwargs
-    
+
     def get_form_initial(self, request, obj):
         kwargs = {}
-        kwargs["comment_id"] = obj.pk 
+        kwargs["comment_id"] = obj.pk
         kwargs["redirect_url"] = request.META["HTTP_REFERER"]
         return kwargs
 
     def form_valid(self, form):
-        
+
         obj = self.get_object()
-        
+
         with transaction.atomic():
-            self.object = self._create_reply(
-                self.request, form, obj
-            )
+            self.object = self._create_reply(self.request, form, obj)
         url = self.request.META["HTTP_REFERER"]
         return HttpResponseClientRedirect(url)
-    
+
     def _create_reply(self, request, form, obj):
 
         Reply.objects.create(
-            user=request.user,
-            comment=obj,
-            message=form.cleaned_data["message"]
+            user=request.user, comment=obj, message=form.cleaned_data["message"]
         )
         return obj
 
 
 @login_required_m
 @require_htmx_m
-class ReplyDeleteView(
-    DeletionMixin,
-    SingleObjectMixin,
-    ObjectUserCheckMixin,
-    View
-):
+class ReplyDeleteView(DeletionMixin, SingleObjectMixin, ObjectUserCheckMixin, View):
     model = Reply
     pk_url_kwarg = "reply_id"
 
@@ -683,11 +566,7 @@ class ReplyDeleteView(
 
 @login_required_m
 @require_htmx_m
-class ReplyUpdateView(
-    SingleObjectMixin,
-    ObjectUserCheckMixin,
-    FormView
-):
+class ReplyUpdateView(SingleObjectMixin, ObjectUserCheckMixin, FormView):
 
     form_class = ReplyForm
     model = Reply
@@ -696,20 +575,16 @@ class ReplyUpdateView(
     pk_url_kwarg = "reply_id"
 
     def form_valid(self, form):
-        
+
         with transaction.atomic():
             self.object = self._save_reply_object(self.request, self.get_object(), form)
-        
-        return HttpResponseClientRedirect(
-            self.get_success_url()
-        )
+
+        return HttpResponseClientRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update(
-            {
-                "initial": self.get_form_initial(self.request, self.get_object())
-            }
+            {"initial": self.get_form_initial(self.request, self.get_object())}
         )
         return kwargs
 
@@ -718,7 +593,7 @@ class ReplyUpdateView(
         return {
             "comment_id": obj.comment_id,
             "redirect_url": self.get_success_url(),
-            "message": obj.message
+            "message": obj.message,
         }
 
     def get_success_url(self):
@@ -730,4 +605,3 @@ class ReplyUpdateView(
         obj.message = message
         obj.save()
         return obj
-

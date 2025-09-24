@@ -10,8 +10,4 @@ class ClientAdmin(ModelAdmin):
 
     list_display = ("user__username", "phone_number")
     list_filter = ("phone_number",)
-    search_fields = (
-        "user__username",
-        "phone_number",
-        "address"
-    )
+    search_fields = ("user__username", "phone_number", "address")

@@ -1,4 +1,4 @@
-import pytest #noqa
+import pytest  # noqa
 
 from django.urls import reverse
 
@@ -9,5 +9,3 @@ def test_health_check_view(client) -> None:
 
     assert response.status_code == 200
     assert response.text.lower() == "Ok".lower()
-
-

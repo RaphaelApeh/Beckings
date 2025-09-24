@@ -11,10 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ImproperlyConfigured
 
 
-
 def get_token_model() -> type[Token]:
 
-    
     token = getattr(settings, "API_TOKEN_MODEL", None)
 
     try:
@@ -22,8 +20,8 @@ def get_token_model() -> type[Token]:
 
     except Exception as err:
 
-        raise ImproperlyConfigured("\"API_TOKEN_MODEL\" was not set properly.") from err
-    
+        raise ImproperlyConfigured('"API_TOKEN_MODEL" was not set properly.') from err
+
     else:
         return model
 
@@ -36,7 +34,7 @@ def create_token_expire(sender, instance, *args, **kwargs) -> None:
         created = instance.created
 
         expire = created + expire_when
-    
+
         instance.expired_at = expire
         instance.save()
 
@@ -47,16 +45,13 @@ class Token(models.Model):
 
     key = models.CharField(_("Key"), max_length=40, primary_key=True)
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE, verbose_name=_("User")
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("User")
     )
     created = models.DateTimeField(_("Created"), auto_now_add=True)
     expired_at = models.DateTimeField(_("Expired"), blank=True, null=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["key"], name="token_key_idx")
-        ]
+        indexes = [models.Index(fields=["key"], name="token_key_idx")]
         swappable = "API_TOKEN_MODEL"
 
     def save(self, *args, **kwargs) -> None:
@@ -68,10 +63,8 @@ class Token(models.Model):
     def generate_key(cls) -> str:
         return binascii.hexlify(os.urandom(20)).decode()
 
-    
     def __str__(self) -> str:
         return self.key
-
 
     def is_expired(self) -> bool:
 
@@ -81,4 +74,3 @@ class Token(models.Model):
 
 
 models.signals.post_save.connect(create_token_expire, sender=Token)
-

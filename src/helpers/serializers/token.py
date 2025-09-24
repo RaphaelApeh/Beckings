@@ -13,8 +13,8 @@ from api.models import get_token_model
 
 Token = get_token_model()
 
-class PasswordField(CharField):
 
+class PasswordField(CharField):
 
     def __init__(self, **kwargs):
         style = kwargs.setdefault("style", {})
@@ -28,37 +28,32 @@ class TokenLoginSerializer(serializers.Serializer):
     username = CharField()
     password = PasswordField()
 
-
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         data = super().validate(attrs)
         request = self.context["request"]
         username = data.pop("username", None)
         password = data.pop("password", None)
-        credentials = {
-            "username": username,
-            "password": password
-        }
+        credentials = {"username": username, "password": password}
         user = authenticate(request=request, **credentials)
         if user is None:
             raise AuthenticationFailed("invaild credentials :(.")
-        update_last_login(sender=None, user=user)    
+        update_last_login(sender=None, user=user)
         obj, _ = Token.objects.get_or_create(user=user)
         data["token"] = obj.key
         data["username"] = username
         return data
-    
 
     def __class_getitem__(cls, *args: list[Any], **kwargs: dict[str, Any]):
 
         return cls
-    
+
 
 class TokenLogoutSerializer(serializers.Serializer):
 
     token = serializers.CharField()
 
     def validate(self, attrs: dict[str, Any]) -> dict[None, None]:
-        
+
         token = attrs["token"]
         try:
             obj = Token.objects.get(key=token)
@@ -68,5 +63,3 @@ class TokenLogoutSerializer(serializers.Serializer):
             obj.delete()
 
         return {}
-
-

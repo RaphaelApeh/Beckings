@@ -10,12 +10,12 @@ class TestLogoutView:
 
         client.login(username="test_user", password="password")
         response = client.get(reverse("logout"))
-        
+
         assert response.status_code == 200
         assert "Logout" in response.text
 
     def test_logout_view_with_post(self, client):
-        
+
         client.login(username="test_user", password="password")
         response = client.post(reverse("logout"))
 

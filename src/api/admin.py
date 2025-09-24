@@ -16,8 +16,6 @@ class TokenAdmin(ModelAdmin):
     search_fields = ["user__username", "key"]
     list_filter = ["created", "expired_at"]
 
-
     def get_queryset(self, request) -> QuerySet:
 
         return super().get_queryset(request).select_related("user")
-

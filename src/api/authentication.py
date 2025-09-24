@@ -13,22 +13,21 @@ T = TypeVar("T")
 class TokenAuthentication(BaseTokenAuthentication):
     """
     Overiding the base token authentication
-    """    
+    """
+
     model: Union[Token, None] = get_token_model()
 
     def authenticate_credentials(self, key: str) -> tuple[T, Optional[str]]:
         model = self.get_model()
         try:
-            token = model.objects.select_related('user').get(key=key)
+            token = model.objects.select_related("user").get(key=key)
         except model.DoesNotExist:
-            raise exceptions.AuthenticationFailed(_('Invalid token.'))
+            raise exceptions.AuthenticationFailed(_("Invalid token."))
 
         if not token.user.is_active:
-            raise exceptions.AuthenticationFailed(_('User inactive or deleted.'))
-        
+            raise exceptions.AuthenticationFailed(_("User inactive or deleted."))
+
         if hasattr(token, "is_expired") and token.is_expired():
             raise exceptions.AuthenticationFailed(_("Token expired."))
 
         return (token.user, token)
-
-

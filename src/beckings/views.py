@@ -4,12 +4,12 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 
 def health_check_view(request: HttpRequest) -> HttpResponse:
-    
+
     return HttpResponse("Ok")
 
 
 def homepage_view(request: HttpRequest) -> HttpResponse | HttpResponseRedirect:
-    
+
     _viewed = request.session.get("_viewed")
     if _viewed or request.user.is_authenticated:
         return redirect("/products/")
@@ -24,5 +24,3 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
     template = get_template("robots.txt")
 
     return HttpResponse("\n".join(template.render({"url": sitemap})))
-
-
