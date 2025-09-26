@@ -78,6 +78,7 @@ INTERNAL_APPS = [
     "products",
     "clients",
     "helpers",
+    "feedbacks",
 ]
 
 INSTALLED_APPS = list(set(DJANGO_APPS) | set(THIRD_PARTY_APPS) | set(INTERNAL_APPS))

@@ -16,7 +16,7 @@ class AutoSlugField(models.SlugField):
         return [
             *super().check(**kwargs),
             *self._check_perform_from(),
-            *self._check_perform_from_obj(),
+            *self._check_perform_field_exists(),
         ]
 
     def _check_perform_from(self):
