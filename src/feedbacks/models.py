@@ -32,9 +32,13 @@ class ComplainType(models.TextChoices):
 class FeedBack(models.Model):
 
     email = models.EmailField()
-    user_id = models.CharField(default="")
+    user_id = models.CharField(
+        max_length=250,
+        default=""
+    )
     complan = models.TextField()
     complain_type = models.CharField(
+        max_length=20,
         choices=ComplainType.choices,
         default=ComplainType.OTHER 
     )
