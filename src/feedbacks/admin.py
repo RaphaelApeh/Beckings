@@ -1,3 +1,10 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
-# Register your models here.
+from .models import FeedBack
+
+
+@admin.register(FeedBack)
+class FeedBackAdmin(ModelAdmin):
+    list_display = ("email", "complain_type", "resolved", "timestamp")    
+

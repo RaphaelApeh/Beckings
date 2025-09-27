@@ -33,10 +33,10 @@ class FeedBack(models.Model):
 
     email = models.EmailField()
     user_id = models.CharField(
-        max_length=250,
+        max_length=300,
         default=""
     )
-    complan = models.TextField()
+    complain = models.TextField()
     complain_type = models.CharField(
         max_length=20,
         choices=ComplainType.choices,
@@ -56,6 +56,6 @@ class FeedBack(models.Model):
         if not self.user_id:
             return
         try:
-            return UserModel._default_manager.get(pk=self.user_id)
+            return UserModel._default_manager.get(pk=self.user_id, email=self.email)
         except UserModel.DoesNotExist:
             return
