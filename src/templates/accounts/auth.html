@@ -2,8 +2,6 @@
 
 {% block title %}{{ title|title }} | {{ block.super }}{% endblock %}
 {% block content %}
-    {% tailwind_css %}
-    <c-base-header />
     <form method="post">
         {% csrf_token %}
         <section class="bg-gray-50">

@@ -2,12 +2,7 @@
 
 {% block title %}{{ object.product_name|title }} | {{ block.super }}{% endblock %}
 
-{% block extra_head %}
-    {% tailwind_css %}
-{% endblock %}
-
 {% block content %}
-    <c-base-header />
     <c-product-detail />
     <section class="bg-white dark:bg-gray-900 py-8 lg:py-16 antialiased">
         <div class="max-w-2xl mx-auto px-4">

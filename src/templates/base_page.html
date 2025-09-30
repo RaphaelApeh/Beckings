@@ -24,10 +24,12 @@
                 crossorigin=""></script>
 
         {% htmx_script %}
+        {% tailwind_css %}
 
         {% block extra_head %}{% endblock %}
     </head>
     <body hx-headers="{'x-csrftoken': '{{ csrf_token }}'}">
+        <c-base-header />
         {% block content %}
         {% endblock %}
 

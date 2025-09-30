@@ -37,7 +37,9 @@ class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         non_user_fields = self.non_user_fields
-        user_ = self.data.get("user")
+        user_ = (
+            self.data.get("user") or self.initial.get("user")
+        )
         if not user_ and non_user_fields:
             for name in non_user_fields:
                 del self.fields[name]
