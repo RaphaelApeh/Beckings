@@ -55,7 +55,8 @@ class FeedBack(models.Model):
     def get_user(self):
         if not self.user_id:
             return
+        pk = UserModel._meta.pk.to_python(self.user_id)
         try:
-            return UserModel._default_manager.get(pk=self.user_id, email=self.email)
+            return UserModel._default_manager.get(pk=pk, email=self.email)
         except UserModel.DoesNotExist:
             return

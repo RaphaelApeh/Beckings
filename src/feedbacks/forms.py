@@ -2,29 +2,13 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from helpers.forms.mixins import TailwindRenderFormMixin
-from .models import FeedBack, ComplainType
+from .models import FeedBack
 
 
 UserModel = get_user_model()
 
 
-class FeedBackMixin:
-
-    def save(self, commit=True):
-        model = self.model
-        if "user" in self.cleaned_data:
-            user = self.cleaned_data.pop("user", None)
-            _, _instance = model.objects.create_for_user(user, **self.cleaned_data)
-            return _instance
-        instance = None
-        if hasattr(super(), "save"):
-            instance = super().save(commit)
-        if instance is None:
-            instance = model.objects.create(**self.cleaned_data)
-        return instance
-
-
-class FeedBackForm(TailwindRenderFormMixin, FeedBackMixin, forms.Form):
+class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
 
     non_user_fields = ("user",)
 
@@ -36,19 +20,44 @@ class FeedBackForm(TailwindRenderFormMixin, FeedBackMixin, forms.Form):
         widget=forms.HiddenInput,
         required=False
     )
-    complain = forms.CharField(
-        widget=forms.Textarea
-    )
-    complain_type = forms.ChoiceField(
-        choices=ComplainType.choices
-    )
 
-    def __init__(self, user=None, *args, **kwargs):
-        self.model = FeedBack
+    class Meta:
+        model = FeedBack
+        fields = (
+            "email",
+            "user_id",
+            "complain",
+            "complain_type"
+        )
+        widget = {
+            "user_id": forms.HiddenInput()
+        }
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         non_user_fields = self.non_user_fields
-        if not user and non_user_fields:
+        user_ = self.data.get("user")
+        if not user_ and non_user_fields:
             for name in non_user_fields:
                 del self.fields[name]
-        elif user:
+        elif user_:
             del self.fields["email"]
+
+    def _post_clean(self):
+        cleaned_data = self.cleaned_data.copy()
+        while "user" in cleaned_data:
+            user = cleaned_data["user"]
+            cleaned_data["email"] = user.email
+            cleaned_data["user_id"] = user.pk
+            del cleaned_data["user"]
+        
+        self.cleaned_data = cleaned_data
+        
+        self.cleaned_data.update(cleaned_data)
+        super()._post_clean()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance.get_user(), instance
