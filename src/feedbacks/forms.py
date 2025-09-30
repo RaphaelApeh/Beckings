@@ -20,6 +20,10 @@ class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
         widget=forms.HiddenInput,
         required=False
     )
+    user_id = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput
+    )
 
     class Meta:
         model = FeedBack
@@ -29,9 +33,6 @@ class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
             "complain",
             "complain_type"
         )
-        widget = {
-            "user_id": forms.HiddenInput()
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,10 +51,7 @@ class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
             cleaned_data["email"] = user.email
             cleaned_data["user_id"] = user.pk
             del cleaned_data["user"]
-        
         self.cleaned_data = cleaned_data
-        
-        self.cleaned_data.update(cleaned_data)
         super()._post_clean()
 
     def save(self, commit=True):
