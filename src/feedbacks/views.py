@@ -45,6 +45,8 @@ class FeedBackCreateView(generic.FormView):
             input_html = ""
         else:
             input_html = format_html('<input name="user" value="{}" />', str(user.pk))
+        msg = _("Feed back sent.")
+        kwargs.setdefault("msg", msg)
         kwargs.setdefault("title", self.title)
         kwargs["user_html_field"] = input_html
         return super().get_context_data(**kwargs)

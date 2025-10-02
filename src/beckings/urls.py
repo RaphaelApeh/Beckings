@@ -10,6 +10,7 @@ urlpatterns = [
     path("robots.txt", views.robots_txt),
     path("products-rss/", ProductFeed()),
     path("accounts/", include("clients.urls")),
+    path("feedbacks/", include("feedbacks.urls")),
     path("health/", views.health_check_view, name="health_check"),
     path("products/", include("products.urls")),
     path("api/", include("api.urls")),
