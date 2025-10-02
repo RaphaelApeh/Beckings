@@ -1,18 +1,24 @@
 <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
 
-    {{ error }}
-
+    {% if errors %}
+        <p class="mt-4 text-red-500 font-bold">{{ errors }}</p>
+    {% endif %}
+    
     {% if form.non_field_errors %}
         <p class="mt-5 text-red-500">{{ form.non_field_errors }}</p>
     {% endif %}
 
     {% for field in hidden_fields %}
-        <p class="mt-4 text-red-500 font-bold"></p>{{ field.error }}
+        {% if field.error %}
+            <p class="mt-4 text-red-500 font-bold">{{ field.error }}</p>
+        {% endif %}
         {{ field }}
     {% endfor %}
     
     {% for field, error in fields %}
+    {% if error %}
     <p class="mt-4 text-red-500 font-bold">{{ error }}</p>
+    {% endif %}
     <div class="sm:col-span-2">
         <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">{{ field.label }}</label>
         {% render_field field class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" %}

@@ -35,7 +35,8 @@ class FeedBackCreateView(generic.FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         user = get_user_or_None(self.request)
-        initial = (kwargs.get("initial") or {}).setdefault("user", user)
+        initial = (kwargs.get("initial") or {})
+        initial.setdefault("user", user)
         kwargs["initial"] = initial
         return kwargs
     
@@ -44,7 +45,7 @@ class FeedBackCreateView(generic.FormView):
         if user is None:
             input_html = ""
         else:
-            input_html = format_html('<input name="user" value="{}" />', str(user.pk))
+            input_html = format_html('<input type="hidden" name="user" value="{}" />', str(user.pk))
         msg = _("Feed back sent.")
         kwargs.setdefault("msg", msg)
         kwargs.setdefault("title", self.title)
