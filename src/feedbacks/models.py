@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 
 UserModel = get_user_model()
@@ -25,8 +26,9 @@ class FeedBackManager(models.Manager):
 
 class ComplainType(models.TextChoices):
 
-    ORDER = "order", "Order"
-    OTHER = "other", "Other"
+    ORDER = "order", _("Order")
+    SITE = "site", _("Site")
+    OTHER = "other", _("Other")
     
 
 class FeedBack(models.Model):

@@ -35,7 +35,7 @@ class FeedBackCreateView(generic.FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         user = get_user_or_None(self.request)
-        initial = (kwargs.get("initial") or {})
+        initial = kwargs.get("initial") or {}
         initial.setdefault("user", user)
         kwargs["initial"] = initial
         return kwargs
