@@ -45,6 +45,14 @@ class FeedBackForm(TailwindRenderFormMixin, forms.ModelForm):
                 del self.fields[name]
         elif user_:
             del self.fields["email"]
+    
+    def clean(self):
+        user = self.initial.get("user")
+        cleaned_data = super().clean()
+        if not user:
+            return cleaned_data
+        cleaned_data.setdefault("user", user)
+        return cleaned_data
 
     def _post_clean(self):
         cleaned_data = self.cleaned_data.copy()
