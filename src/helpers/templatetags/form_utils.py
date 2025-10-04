@@ -12,18 +12,18 @@ DEFAULT_TAILWIND_CSS = "bg-gray-50 border border-gray-300 text-gray-900 text-sm 
 
 
 def do_render_field(parser: Parser, token: Token):
-    """Usage {% render_field "form.name" class="btn-class" %}"""
+    """ Helpful template tag for rendering form bound fields """
     _, *bits = token.split_contents()
     if len(bits) < 1:
-        msg = ""
+        msg = "{% render_field form.name class=\"btn-class\" %}"
         raise template.TemplateSyntaxError(msg)
     form_field = parser.compile_filter(bits.pop(0))
     class_attr = []
-    if bits:
-        for bit in bits:
-            k, v = bit.split("=")
-            v = parser.compile_filter(v)
-            class_attr.append((k, v))
+    while bits:
+        bit = bits.pop(0)
+        key, _, value = bit.partition("=")
+        value = parser.compile_filter(value)
+        class_attr.append((key, value))
     attr = OrderedDict(class_attr)
     return FieldRenderNode(form_field, attr)
 
