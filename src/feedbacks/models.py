@@ -34,8 +34,7 @@ class ComplainType(models.TextChoices):
 class FeedBack(models.Model):
 
     email = models.EmailField()
-    user_id = models.CharField(
-        max_length=300,
+    user_id = models.TextField(
         default=""
     )
     complain = models.TextField()
@@ -49,6 +48,10 @@ class FeedBack(models.Model):
 
     objects = FeedBackManager()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=("user_id", "email"), name="user_idx")
+        ]
 
     def __str__(self):
         return self.email
