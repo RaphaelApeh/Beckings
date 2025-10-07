@@ -11,7 +11,11 @@
     {% endif %}
     <div class="h-56 w-full">
         <a href="{{ object.get_absolute_url }}">
-            <img class="mx-auto h-full" src="{% static 'images/image.jpg' %}" alt="" />
+            {% if object.image %}
+                {{ object.render_image }}
+            {% else %}
+            <img class="mx-auto h-full" src="{% static 'images/image.jpg' %}" alt="" loading="lazy" />
+            {% endif %}
         </a>
     </div>
     <div class="pt-6">

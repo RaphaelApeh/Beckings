@@ -7,6 +7,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -70,6 +71,22 @@ class Product(models.Model):
         return reverse(
             "product-detail", kwargs={"pk": self.pk, "slug": self.product_slug}
         )
+    
+    def render_image(self, lazy=True, **option):
+        image = self.image
+        if not image:
+            raise ValueError(
+                f"{type(self).__name__}.image cannot be None."
+            )
+        attr = {
+            "class": "mx-auto h-full"
+        }
+        if lazy:
+            attr["loading"] = "lazy"
+        url = image.build_url(**option)
+        attr["src"] = url
+        merge = " ".join([f"{key}={attr[key]}" for key in attr])
+        return format_html("<img {0}/>", merge)
 
 
 def create_product(**kwargs: Any) -> Product:
