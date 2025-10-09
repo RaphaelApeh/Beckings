@@ -129,13 +129,18 @@ class Order(models.Model):
     status = models.CharField(
         max_length=20, choices=OrderStatusChoices.choices, default="pending"
     )
+    total_price = models.GeneratedField(
+        expression=models.F("product__price") * models.F("product__quantity"),
+        db_persist=False,
+        output_field=models.IntegerField()
+    )
 
     class Meta:
         ordering = ("-timestamp",)
 
     def __str__(self) -> str:
 
-        return "{id} - {name}".format(id=self.order_id, name=self.__class__.__name__)
+        return "%s's Order" % self.user.username
 
     def can_delete(self):
         return ("pending",)
