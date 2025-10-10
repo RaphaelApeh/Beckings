@@ -16,7 +16,7 @@ from cloudinary.models import CloudinaryField
 
 from helpers.fields import AutoSlugField
 from helpers.enum import OrderStatusChoices
-from .manager import ProductManager
+from .manager import ProductManager, OrderManager
 
 
 User = get_user_model()
@@ -123,17 +123,14 @@ class Order(models.Model):
 
     manifest = models.TextField(blank=True, null=True, verbose_name=_("Manifest"))
 
-    number_of_items = models.PositiveSmallIntegerField(default=0)
+    number_of_items = models.PositiveSmallIntegerField(default=1)
     inactive_at = models.DateTimeField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20, choices=OrderStatusChoices.choices, default="pending"
     )
-    total_price = models.GeneratedField(
-        expression=models.F("product__price") * models.F("product__quantity"),
-        db_persist=False,
-        output_field=models.IntegerField()
-    )
+
+    objects = OrderManager()
 
     class Meta:
         ordering = ("-timestamp",)

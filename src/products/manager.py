@@ -17,3 +17,12 @@ class ProductManager(models.Manager):
 
     def active(self):
         return self.filter(active=True)
+
+
+class OrderManager(models.Manager):
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            total_cost=models.F("product__price") * models.F("number_of_items")
+        )
+
