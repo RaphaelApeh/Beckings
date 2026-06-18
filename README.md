@@ -1,6 +1,6 @@
 # Beckings
 
-> **Note**: This project is currently on development.
+> **Note**: This project is currently in development.
 
 ## Contributing
 
